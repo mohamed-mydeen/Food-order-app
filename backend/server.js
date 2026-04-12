@@ -69,8 +69,8 @@ app.use((err, req, res, next) => {
   try {
     await sequelize.authenticate();
     console.log("✅ Database connected successfully");
-    // sync({ alter: true }) updates tables without dropping data
-    await sequelize.sync({ alter: true });
+    // sync({ alter: true }) can cause issues with TiDB, disable in production
+    await sequelize.sync({ alter: process.env.NODE_ENV === "development" });
     console.log("✅ Database synced");
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
