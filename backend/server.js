@@ -19,11 +19,8 @@ app.use(
   cors({
     // Allow any localhost port (5173, 5174, 5175, 3000, etc.)
     origin: function (origin, callback) {
-      if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
+      // Allow any origin (development and production)
+      callback(null, true);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
