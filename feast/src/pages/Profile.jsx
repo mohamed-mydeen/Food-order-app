@@ -5,7 +5,7 @@ import BottomNav from '../components/BottomNav'
 import TopBar from '../components/TopBar'
 import { useAuth } from '../context/AuthContext'
 
-const API = 'http://localhost:5000/api'
+const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 
 
 const itemVariants = {

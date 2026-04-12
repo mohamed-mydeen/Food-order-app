@@ -5,7 +5,7 @@ import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 
-const API          = 'http://localhost:5000/api'
+const API          = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 const DELIVERY_FEE = 45
 const TAX_RATE     = 0.05
 

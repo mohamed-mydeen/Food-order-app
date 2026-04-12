@@ -7,7 +7,7 @@ import { SkeletonCard, SkeletonCircle, SkeletonBanner } from '../components/Skel
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 
-const API_URL = 'http://localhost:5000/api'
+const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com';
 
 /* ── Inline Product Sheet (same as Menu.jsx) ────────────────────── */
 function ProductSheet({ product, onClose }) {
@@ -103,20 +103,23 @@ export default function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res  = await fetch(`${API_URL}/products`)
-        const data = await res.json()
-        if (data.success) {
-          setProducts(data.data)
-          setCategories([...new Set(data.data.map(p => p.category))])
+        console.log("Fetching from API:", API);
+        const res  = await fetch(`${API}/api/products`);
+        const data = await res.json();
+        console.log("Response data:", data);
+        
+        if (data.success && data.data) {
+          setProducts(data.data);
+          setCategories([...new Set(data.data.map(p => p.category))]);
         }
-      } catch {
-        // silently fail — empty state shown
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
       } finally {
-        setTimeout(() => setLoading(false), 1000)
+        setTimeout(() => setLoading(false), 1000);
       }
-    }
-    fetchProducts()
-  }, [])
+    };
+    fetchProducts();
+  }, []);
 
   // Search filter
   const q = query.toLowerCase().trim()

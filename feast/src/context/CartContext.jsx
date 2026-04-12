@@ -1,7 +1,7 @@
 import { createContext, useState, useCallback, useContext, useEffect } from 'react'
 import { useAuth } from './AuthContext'
 
-const API = 'http://localhost:5000/api'
+const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 
 export const CartContext = createContext(null)
 

@@ -7,7 +7,7 @@ import { SkeletonCard } from '../components/SkeletonCard'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 
-const API_URL = 'http://localhost:5000/api'
+const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com';
 
 /* ── Product Detail Bottom Sheet ─────────────────────────────────── */
 function ProductSheet({ product, onClose }) {
@@ -217,17 +217,26 @@ export default function Menu() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res  = await fetch(`${API_URL}/products`)
-        const data = await res.json()
-        if (data.success) {
-          setProducts(data.data)
-          setCategories(['All', ...new Set(data.data.map(p => p.category))])
-        } else setError(true)
-      } catch { setError(true) }
-      finally { setTimeout(() => setLoading(false), 700) }
-    }
-    fetchProducts()
-  }, [])
+        console.log("Fetching menu from API:", API);
+        const res  = await fetch(`${API}/api/products`);
+        const data = await res.json();
+        console.log("Response menu data:", data);
+        
+        if (data.success && data.data) {
+          setProducts(data.data);
+          setCategories(['All', ...new Set(data.data.map(p => p.category))]);
+        } else {
+          setError(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch menu:", err);
+        setError(true);
+      } finally {
+        setTimeout(() => setLoading(false), 700);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const displayItems = activeCategory === 'All'
     ? products

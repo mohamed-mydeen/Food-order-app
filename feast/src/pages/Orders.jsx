@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 
-const API = 'http://localhost:5000/api'
+const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 
 const STATUS_CONFIG = {
   Pending:            { color: 'text-amber-700',  bg: 'bg-amber-50',   border: 'border-amber-200', dot: 'bg-amber-500',  icon: 'schedule'         },
