@@ -8,6 +8,12 @@
     box-sizing: border-box;
   }
 
+  html {
+    /* Use safe area so app respects iPhone notch / home indicator */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+             env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
   html, body, #root {
     height: 100%;
     width: 100%;
@@ -28,6 +34,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    /* dvh = dynamic viewport height — accounts for mobile browser chrome */
     height: 100dvh;
   }
 }
@@ -37,13 +44,33 @@
   .app-shell {
     position: relative;
     width: 100%;
-    max-width: 430px;
+    max-width: 430px;          /* phone frame on desktop */
     height: 100%;
     background-color: #f5f6f7;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
+  }
+
+  /* When installed as PWA (standalone) OR on a real mobile screen:
+     go truly full screen — no max-width, no box shadow */
+  @media (display-mode: standalone) {
+    .app-shell {
+      max-width: 100% !important;
+      box-shadow: none !important;
+      /* extend into safe areas (notch / home bar) */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+
+  /* Also go full width on actual narrow screens (real phones in browser) */
+  @media (max-width: 480px) {
+    .app-shell {
+      max-width: 100% !important;
+      box-shadow: none !important;
+    }
   }
 
   .hide-scrollbar::-webkit-scrollbar { display: none; }
