@@ -48,7 +48,7 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl shadow-2xl shadow-orange-500/40 mb-4">
             <span className="text-3xl">🍽️</span>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Feast Admin</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight">mpm hub Admin</h1>
           <p className="text-slate-400 mt-1.5 text-sm">Sign in to manage your restaurant</p>
         </div>
 
@@ -79,7 +79,7 @@ export default function Login() {
                   type="email"
                   value={form.email}
                   onChange={handleChange}
-                  placeholder="admin@feast.com"
+                  placeholder="admin@mpmhub.com"
                   required
                   autoComplete="email"
                   className="w-full bg-white/8 border border-white/15 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-orange-400/70 focus:bg-white/10 transition-all text-sm"
@@ -148,7 +148,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-slate-600 text-xs mt-6">
-          Feast At Night · Admin Panel v1.0
+          mpm hub · Admin Panel v1.0
         </p>
       </div>
     </div>

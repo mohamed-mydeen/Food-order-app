@@ -40,7 +40,7 @@ export default function Login() {
         <img
           className="w-full h-full object-cover"
           src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSGlQFmkqPMwEF5CUr1vnUXRKSrbTSo4gbReOhsiBB9NtFWgD7KkUsL4YoFjqCekzUl1NG7cPryK-8rQ0hYM373RZlpsz5ntO2VrPCzuPtIJeaNk4RYPUekRILkqykJ3OJudT8Ig6afgLylLp_lD6VDb0P0kzG9K7gekxqR-9D0x3jjMu3oSj7peZXggoYHDeoemogf-w1q4PHOFNpyBPpqHD8Tfy8F8qqHBiAccFIKUyGWj0W31BcIptZIkNsTLJQmPVoEtGLub0"
-          alt="Feast Background"
+          alt="mpm hub Background"
         />
         <div className="absolute inset-0 backdrop-blur-[2px]"
           style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.72) 100%)' }}
@@ -50,7 +50,7 @@ export default function Login() {
       {/* Brand */}
       <header className="relative z-10 mb-10 text-center">
         <h1 className="font-headline font-black text-5xl md:text-6xl tracking-tighter text-white drop-shadow-2xl">
-          FEAST AT NIGHT
+          MPM HUB
         </h1>
         <p className="text-white/60 text-sm mt-2">Sign in to your account</p>
       </header>
@@ -114,7 +114,7 @@ export default function Login() {
 
         <div className="mt-8 text-center">
           <p className="text-on-surface-variant font-medium text-sm">
-            New to Feast At Night?{' '}
+            New to mpm hub?{' '}
             <button onClick={() => navigate('/signup')} className="text-primary font-bold hover:underline ml-1">
               Create an account
             </button>

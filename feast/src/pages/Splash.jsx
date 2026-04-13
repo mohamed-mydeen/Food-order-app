@@ -70,7 +70,7 @@ export default function Splash() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
               >
-                Feast At Night
+                mpm hub
               </motion.h1>
 
               <motion.p

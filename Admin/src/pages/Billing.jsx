@@ -23,7 +23,7 @@ function Bill({ order }) {
       {/* Restaurant header */}
       <div className="text-center mb-4 pb-4 border-b-2 border-dashed border-slate-300">
         <div className="text-2xl mb-1">🍽️</div>
-        <h2 className="font-bold text-lg tracking-wide">FEAST AT NIGHT</h2>
+        <h2 className="font-bold text-lg tracking-wide">MPM HUB</h2>
         <p className="text-xs text-slate-500">Delicious food, delivered fast</p>
         <p className="text-xs text-slate-400 mt-0.5">GSTIN: 29XXXXXX1234Z5</p>
       </div>
@@ -101,7 +101,7 @@ function Bill({ order }) {
       {/* Footer */}
       <div className="text-center mt-5 pt-4 border-t-2 border-dashed border-slate-300 text-xs text-slate-400">
         <p className="font-medium text-slate-500">Thank you for your order! 🙏</p>
-        <p className="mt-0.5">Visit us again at <strong>feastatnight.com</strong></p>
+        <p className="mt-0.5">Visit us again at <strong>mpmhub.com</strong></p>
         <p className="mt-0.5 text-[10px]">This is a computer-generated invoice. No signature required.</p>
       </div>
     </div>
@@ -117,7 +117,7 @@ function BillModal({ order, onClose }) {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Invoice INV-${String(order.id).padStart(5, '0')} – Feast at Night</title>
+          <title>Invoice INV-${String(order.id).padStart(5, '0')} – mpm hub</title>
           <style>
             * { box-sizing: border-box; margin: 0; padding: 0; }
             body { font-family: 'Courier New', monospace; font-size: 13px; padding: 24px; color: #1e293b; background: #fff; }

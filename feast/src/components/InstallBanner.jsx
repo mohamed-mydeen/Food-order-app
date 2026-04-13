@@ -55,7 +55,7 @@ export default function InstallBanner() {
             {/* Text */}
             <div className="relative flex-1 min-w-0">
               <p className="text-white text-sm font-bold leading-tight font-headline">
-                Install Feast At Night
+                Install mpm hub
               </p>
               <p className="text-white/60 text-[11px] mt-0.5 leading-snug">
                 Add to Home Screen for the best experience

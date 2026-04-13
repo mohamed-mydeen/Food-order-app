@@ -268,7 +268,7 @@ export default function Home() {
                     </div>
                     <h2 className="text-white font-headline font-extrabold text-2xl leading-tight">
                       60% OFF<br />
-                      <span className="text-primary-container text-xl">Night Feast Special</span>
+                      <span className="text-primary-container text-xl">mpm hub Special</span>
                     </h2>
                     <p className="text-on-primary text-xs font-medium opacity-90">Valid on orders above ₹499</p>
                   </div>

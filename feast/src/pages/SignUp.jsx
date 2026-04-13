@@ -60,7 +60,7 @@ export default function SignUp() {
         <button onClick={() => navigate('/login')} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
           <span className="material-symbols-outlined text-on-surface">arrow_back</span>
         </button>
-        <span className="text-xl font-black tracking-tighter text-zinc-900">FEAST AT NIGHT</span>
+        <span className="text-xl font-black tracking-tighter text-zinc-900">MPM HUB</span>
         <div className="w-10" />
       </header>
 
@@ -70,7 +70,7 @@ export default function SignUp() {
           <div className="mb-7">
             <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Create Account</h1>
             <p className="text-secondary text-sm leading-relaxed">
-              Join Feast At Night and curate your midnight culinary journey.
+              Join mpm hub and curate your culinary journey.
             </p>
           </div>
 

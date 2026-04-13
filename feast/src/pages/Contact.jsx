@@ -54,9 +54,9 @@ export default function Contact() {
             <span className="text-primary font-black tracking-[0.3em] uppercase text-xs mb-2 block">
               Reservations &amp; Support
             </span>
-            <h1 className="font-headline font-black text-white text-3xl tracking-tighter mb-2">
-              Book Your Feast
-            </h1>
+            <h2 className="text-white font-headline font-extrabold text-3xl tracking-tighter mb-1">
+              Book Your Order
+            </h2>
             <p className="text-white/60 text-sm leading-relaxed max-w-xs">
               Planning a grand evening? Call or WhatsApp us to pre-order or book a table.
             </p>
@@ -151,8 +151,8 @@ export default function Contact() {
                 </div>
                 <h2 className="font-headline font-bold text-on-surface">Our Location</h2>
               </div>
-              <p className="text-on-surface font-semibold text-sm mb-0.5">Feast At Night</p>
-              <p className="text-on-surface-variant text-sm leading-relaxed">
+              <p className="text-on-surface font-semibold text-sm mb-0.5">mpm hub</p>
+              <p className="text-on-surface-variant text-xs leading-relaxed">
                 Melapalayam, Tirunelveli,<br />Tamil Nadu, India.
               </p>
             </div>

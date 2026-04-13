@@ -10,8 +10,8 @@ export default defineConfig({
       injectRegister: 'auto',           // ← explicitly auto-inject SW registration
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'Feast At Night',
-        short_name: 'Feast',
+        name: 'mpm hub',
+        short_name: 'mpm hub',
         description: 'Food Ordering App — Authentic Mandi & Fresh Juices delivered to your door.',
         theme_color: '#000000',
         background_color: '#000000',
@@ -56,7 +56,7 @@ export default defineConfig({
             urlPattern: /\/api\//i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'feast-api-cache',
+              cacheName: 'mpm-api-cache',
               expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 },
               networkTimeoutSeconds: 10,
             },
@@ -83,14 +83,14 @@ export default defineConfig({
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'feast-images-cache',
+              cacheName: 'mpm-images-cache',
               expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
           {
             urlPattern: /\.(?:js|css)$/i,
             handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'feast-static-cache' },
+            options: { cacheName: 'mpm-static-cache' },
           },
         ],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],

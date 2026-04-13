@@ -10,11 +10,11 @@ const DELIVERY_FEE = 45
 const TAX_RATE     = 0.05
 
 // ── Change to your real UPI ID ──
-const MERCHANT_UPI  = 'feastatnight@upi'
-const MERCHANT_NAME = 'Feast At Night'
+const MERCHANT_UPI  = 'mpmhub@upi'
+const MERCHANT_NAME = 'mpm hub'
 
 const makeUpiLink  = (amount) =>
-  `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Feast At Night Order')}`
+  `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount.toFixed(2)}&cu=INR&tn=${encodeURIComponent('mpm hub Order')}`
 const makeGPayLink = (amount) =>
   `tez://upi/pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount.toFixed(2)}&cu=INR`
 const makePhonePeLink = (amount) =>
@@ -159,16 +159,16 @@ export default function Cart() {
     <div className="flex flex-col h-full w-full bg-surface text-on-surface">
       <div className="flex-shrink-0 bg-white/90 backdrop-blur-xl shadow-sm border-b border-surface-container">
         <div className="flex items-center px-5 py-4 gap-3">
-          <span className="material-symbols-outlined text-[22px] text-orange-800">menu</span>
-          <span className="font-headline font-black text-orange-900 tracking-tighter text-lg">Feast At Night</span>
+            <span className="material-symbols-outlined text-orange-900 text-[24px]">restaurant</span>
+          <span className="font-headline font-black text-orange-900 tracking-tighter text-lg">mpm hub</span>
         </div>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8 text-center">
         <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center">
           <span className="material-symbols-outlined text-primary text-4xl">lock</span>
         </div>
-        <h2 className="font-headline font-bold text-xl text-on-surface">Sign in to view your cart</h2>
-        <p className="text-secondary text-sm max-w-xs">Your cart is saved — log in to continue your midnight feast.</p>
+        <h2 className="font-headline font-black text-2xl text-on-surface mb-2 tracking-tight">Your Cart is Empty</h2>
+        <p className="text-secondary text-sm max-w-xs">Your cart is saved — log in to continue your order.</p>
         <button onClick={() => navigate('/login')} className="px-8 py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">Sign In</button>
         <button onClick={() => navigate('/signup')} className="text-primary font-bold text-sm hover:underline">New here? Create account</button>
       </div>
