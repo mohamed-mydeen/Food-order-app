@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import { usePWAInstall } from '../hooks/usePWAInstall'
 
 const navLinks = [
   { icon: 'home',           label: 'Home',    path: '/home' },
@@ -161,6 +162,7 @@ export default function TopBar({ showSubtitle = true }) {
   const navigate = useNavigate()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const { isLoggedIn, user } = useAuth()
+  const { canInstall, promptInstall } = usePWAInstall()
 
   return (
     <>
@@ -188,6 +190,26 @@ export default function TopBar({ showSubtitle = true }) {
                 In the name of Allah
               </div>
             )}
+
+            {/* PWA Install button — only shown when installable */}
+            <AnimatePresence>
+              {canInstall && (
+                <motion.button
+                  key="install-btn"
+                  onClick={promptInstall}
+                  title="Install App"
+                  className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  whileTap={{ scale: 0.85 }}
+                  whileHover={{ scale: 1.12 }}
+                >
+                  <span className="material-symbols-outlined text-orange-700 text-[18px]">download_for_offline</span>
+                </motion.button>
+              )}
+            </AnimatePresence>
+
             <motion.button
               onClick={() => navigate(isLoggedIn ? '/profile' : '/login')}
               className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden"

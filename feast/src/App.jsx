@@ -8,6 +8,7 @@ import Cart from './pages/Cart'
 import Profile from './pages/Profile'
 import Orders from './pages/Orders'
 import Contact from './pages/Contact'
+import InstallBanner from './components/InstallBanner'
 
 export default function App() {
   return (
@@ -25,6 +26,9 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="*"        element={<Navigate to="/" replace />} />
         </Routes>
+
+        {/* Global floating PWA install prompt */}
+        <InstallBanner />
       </div>
     </BrowserRouter>
   )
