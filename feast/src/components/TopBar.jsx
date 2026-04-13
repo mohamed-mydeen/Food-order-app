@@ -1,9 +1,97 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { usePWAInstall } from '../hooks/usePWAInstall'
+
+// Detect if already running as installed PWA
+const isStandalone = () =>
+  window.matchMedia('(display-mode: standalone)').matches ||
+  window.navigator.standalone === true
+
+function InstallGuideModal({ open, onClose }) {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+          <motion.div
+            className="fixed bottom-0 left-1/2 z-[9999] w-full max-w-sm rounded-t-3xl overflow-hidden"
+            style={{ x: '-50%' }}
+            initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+          >
+            <div className="bg-white px-6 pt-5 pb-8">
+              {/* Handle */}
+              <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow"
+                  style={{ background: 'linear-gradient(135deg,#c23a00,#ff784c)' }}>
+                  <span className="material-symbols-outlined text-white text-[24px]">install_mobile</span>
+                </div>
+                <div>
+                  <p className="font-headline font-black text-gray-900 text-base">Install Feast At Night</p>
+                  <p className="text-gray-500 text-xs">Add to Home Screen in 3 easy steps</p>
+                </div>
+              </div>
+
+              {/* Steps */}
+              {isIOS ? (
+                <div className="space-y-3">
+                  {[
+                    { icon: 'ios_share', step: '1', text: 'Tap the Share button at the bottom of Safari' },
+                    { icon: 'add_box',   step: '2', text: 'Scroll down and tap "Add to Home Screen"' },
+                    { icon: 'check_circle', step: '3', text: 'Tap "Add" in the top right corner' },
+                  ].map(({ icon, step, text }) => (
+                    <div key={step} className="flex items-center gap-3 p-3 rounded-xl bg-orange-50">
+                      <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-black">{step}</span>
+                      </div>
+                      <span className="text-gray-700 text-sm leading-snug">{text}</span>
+                    </div>
+                  ))}
+                  <p className="text-center text-[11px] text-gray-400 mt-2">⚠️ Must use Safari on iPhone/iPad</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {[
+                    { icon: 'more_vert',    step: '1', text: 'Tap the ⋮ menu (top right) in Chrome' },
+                    { icon: 'add_to_home_screen', step: '2', text: 'Tap "Add to Home Screen" or "Install app"' },
+                    { icon: 'check_circle', step: '3', text: 'Tap "Add" to confirm — done!' },
+                  ].map(({ icon, step, text }) => (
+                    <div key={step} className="flex items-center gap-3 p-3 rounded-xl bg-orange-50">
+                      <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-black">{step}</span>
+                      </div>
+                      <span className="text-gray-700 text-sm leading-snug">{text}</span>
+                    </div>
+                  ))}
+                  <p className="text-center text-[11px] text-gray-400 mt-2">⚠️ Must use Chrome browser on Android</p>
+                </div>
+              )}
+
+              <button onClick={onClose}
+                className="mt-5 w-full py-3 rounded-2xl font-headline font-bold text-sm text-white"
+                style={{ background: 'linear-gradient(135deg,#c23a00,#ff784c)' }}
+              >
+                Got it!
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}
 
 const navLinks = [
   { icon: 'home',           label: 'Home',    path: '/home' },
@@ -18,9 +106,19 @@ function SideDrawer({ open, onClose }) {
   const { pathname } = useLocation()
   const { user, isLoggedIn, logout } = useAuth()
   const { cartCount } = useCart()
+  const { canInstall, promptInstall } = usePWAInstall()
+  const [guideOpen, setGuideOpen] = useState(false)
+  const [installed, setInstalled] = useState(isStandalone)
 
   const go = (path) => { onClose(); setTimeout(() => navigate(path), 180) }
   const handleLogout = () => { onClose(); logout(); setTimeout(() => navigate('/login'), 200) }
+  const handleInstallClick = () => {
+    if (canInstall) {
+      promptInstall()
+    } else {
+      setGuideOpen(true)
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -137,6 +235,25 @@ function SideDrawer({ open, onClose }) {
                   <span className="font-headline font-bold text-sm">{label}</span>
                 </button>
               ))}
+
+              {/* Install App button — always visible if not already installed */}
+              {!installed && (
+                <button onClick={handleInstallClick}
+                  className="w-full flex items-center gap-4 px-6 py-3.5 text-left hover:bg-orange-50 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ background: 'linear-gradient(135deg,#c23a00,#ff784c)' }}>
+                    <span className="material-symbols-outlined text-white text-[20px]">install_mobile</span>
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-headline font-bold text-sm text-orange-700">Install App</span>
+                    <p className="text-[10px] text-gray-400">Add to Home Screen</p>
+                  </div>
+                  <span className="text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full">
+                    {canInstall ? 'Ready' : 'How?'}
+                  </span>
+                </button>
+              )}
             </div>
 
             {/* Footer */}
@@ -154,6 +271,9 @@ function SideDrawer({ open, onClose }) {
           </motion.div>
         </>
       )}
+
+      {/* Install guide modal */}
+      <InstallGuideModal open={guideOpen} onClose={() => setGuideOpen(false)} />
     </AnimatePresence>
   )
 }
