@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
-import { useAuth } from '../context/AuthContext'
+import { useState, useEffect, useRef, useContext } from 'react'
+import { AuthContext } from '../context/AuthContext'
 
 const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'
 
 export default function Offers() {
-  const { token } = useAuth()
+  const { token } = useContext(AuthContext)
   const [offers, setOffers]       = useState([])
   const [loading, setLoading]     = useState(true)
   const [uploading, setUploading] = useState(false)
