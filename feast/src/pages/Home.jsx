@@ -177,12 +177,10 @@ export default function Home() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            {query ? (
+            {query && (
               <button onClick={() => setQuery('')}>
                 <span className="material-symbols-outlined text-outline text-[20px]">close</span>
               </button>
-            ) : (
-              <span className="material-symbols-outlined text-primary cursor-pointer text-[20px]">mic</span>
             )}
           </motion.div>
 

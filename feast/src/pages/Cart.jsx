@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import TopBar from '../components/TopBar'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
@@ -8,86 +9,70 @@ import { useCart } from '../context/CartContext'
 const API          = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 const DELIVERY_FEE = 45
 const TAX_RATE     = 0.05
-
-// ── Change to your real UPI ID ──
 const MERCHANT_UPI  = 'mpmhub@upi'
 const MERCHANT_NAME = 'Feast At Night'
 
-const makeUpiLink  = (amount) =>
-  `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Feast At Night Order')}`
-const makeGPayLink = (amount) =>
-  `tez://upi/pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount.toFixed(2)}&cu=INR`
-const makePhonePeLink = (amount) =>
-  `phonepe://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount.toFixed(2)}&cu=INR`
+const makeGPayLink    = (amt) => `tez://upi/pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR`
+const makePhonePeLink = (amt) => `phonepe://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR`
 
-/* ─── Inline brand SVG icons ─────────────────────────────────── */
-const GPayLogo = () => (
-  <svg viewBox="0 0 48 20" className="w-10 h-4" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <text x="0" y="16" fontFamily="'Product Sans', sans-serif" fontWeight="700" fontSize="16" fill="#4285F4">G</text>
-    <text x="11" y="16" fontFamily="'Product Sans', sans-serif" fontWeight="500" fontSize="16">
-      <tspan fill="#4285F4">o</tspan><tspan fill="#EA4335">o</tspan><tspan fill="#FBBC05">g</tspan><tspan fill="#34A853">l</tspan><tspan fill="#EA4335">e</tspan>
-    </text>
-  </svg>
-)
+/* ── Web Audio success chime (no file needed) ───────────────────── */
+function playSuccessChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const notes = [523.25, 659.25, 783.99, 1046.5] // C5 E5 G5 C6
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain); gain.connect(ctx.destination)
+      osc.type      = 'sine'
+      osc.frequency.value = freq
+      const t = ctx.currentTime + i * 0.12
+      gain.gain.setValueAtTime(0, t)
+      gain.gain.linearRampToValueAtTime(0.18, t + 0.04)
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35)
+      osc.start(t); osc.stop(t + 0.35)
+    })
+  } catch { /* audio blocked — silently ignore */ }
+}
 
-/* ─── Payment option config (2 options only) ─────────────────── */
+/* ── Payment options ────────────────────────────────────────────── */
 const getPaymentOptions = (amount) => [
   {
-    id:       'GPAY',
-    method:   'UPI',
-    label:    'Google Pay',
-    sub:      'Pay securely via GPay',
-    deepLink: makeGPayLink(amount),
+    id: 'GPAY', method: 'UPI', label: 'Google Pay',
+    sub: 'Pay via Google Pay UPI', deepLink: makeGPayLink(amount),
+    badge: 'Recommended', badgeCls: 'bg-blue-50 text-blue-600',
     logo: (
       <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-white border border-gray-100 shadow-sm">
-        <img
-          src="https://cdn.simpleicons.org/googlepay/5F6368"
-          alt="GPay"
-          className="w-6 h-6 object-contain"
-          onError={e => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'; e.target.style.display='none' }}
-        />
+        <img src="https://cdn.simpleicons.org/googlepay/5F6368" alt="GPay" className="w-6 h-6 object-contain"
+          onError={e => { e.target.style.display='none' }} />
       </div>
     ),
-    badge: 'Recommended',
-    badgeCls: 'bg-blue-50 text-blue-600',
   },
   {
-    id:       'PHONEPE',
-    method:   'UPI',
-    label:    'PhonePe',
-    sub:      'Pay securely via PhonePe',
-    deepLink: makePhonePeLink(amount),
+    id: 'PHONEPE', method: 'UPI', label: 'PhonePe',
+    sub: 'Pay via PhonePe UPI', deepLink: makePhonePeLink(amount),
+    badge: null, badgeCls: '',
     logo: (
       <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#5f259f] shadow-sm">
-        <img
-          src="https://cdn.simpleicons.org/phonepe/ffffff"
-          alt="PhonePe"
-          className="w-6 h-6 object-contain"
-          onError={e => { e.target.style.display='none' }}
-        />
+        <img src="https://cdn.simpleicons.org/phonepe/ffffff" alt="PhonePe" className="w-6 h-6 object-contain"
+          onError={e => { e.target.style.display='none' }} />
       </div>
     ),
-    badge: null,
-    badgeCls: '',
   },
   {
-    id:       'COD',
-    method:   'COD',
-    label:    'Cash on Delivery',
-    sub:      'Pay when your order arrives',
-    deepLink: null,
+    id: 'COD', method: 'COD', label: 'Cash on Delivery',
+    sub: 'Pay when order arrives', deepLink: null,
+    badge: null, badgeCls: '',
     logo: (
       <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-        <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
+        <span className="material-symbols-outlined text-emerald-600 text-[22px]">payments</span>
       </div>
     ),
-    badge: null,
-    badgeCls: '',
   },
 ]
+
+/* ── Divider ────────────────────────────────────────────────────── */
+const Divider = () => <div className="h-2 bg-surface-container -mx-0" />
 
 export default function Cart() {
   const navigate = useNavigate()
@@ -102,7 +87,7 @@ export default function Cart() {
   const [error, setError]               = useState('')
   const [countdown, setCountdown]       = useState(5)
 
-  // Auto-redirect countdown when order placed
+  /* auto-redirect countdown after success */
   useEffect(() => {
     if (!orderSuccess) return
     if (countdown <= 0) { navigate('/orders'); return }
@@ -110,22 +95,19 @@ export default function Cart() {
     return () => clearTimeout(t)
   }, [orderSuccess, countdown])
 
-  const subtotal = cartItems.reduce((s, it) => s + parseFloat(it.product?.price || 0) * it.quantity, 0)
-  const taxes    = subtotal * TAX_RATE
-  const total    = subtotal + DELIVERY_FEE + taxes
-
+  const subtotal       = cartItems.reduce((s, it) => s + parseFloat(it.product?.price || 0) * it.quantity, 0)
+  const taxes          = subtotal * TAX_RATE
+  const total          = subtotal + DELIVERY_FEE + taxes
+  const totalItems     = cartItems.reduce((s, it) => s + it.quantity, 0)
   const PAYMENT_OPTIONS = getPaymentOptions(total)
-  const chosen = PAYMENT_OPTIONS.find(p => p.id === selectedPayment)
-
-  const openCheckout  = () => { setError(''); setShowCheckout(true) }
-  const closeCheckout = () => { setShowCheckout(false); setError('') }
+  const chosen          = PAYMENT_OPTIONS.find(p => p.id === selectedPayment)
 
   const handlePay = async () => {
     if (!address.trim()) { setError('Please enter a delivery address.'); return }
     setPlacing(true); setError('')
     try {
       const res  = await fetch(`${API}/orders`, {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           address,
@@ -136,21 +118,18 @@ export default function Cart() {
       const data = await res.json()
       if (!data.success) throw new Error(data.message)
 
-      // Save address silently
       if (address.trim() !== (user?.address || '').trim()) {
         fetch(`${API}/users/profile`, {
-          method:  'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ address }),
         }).then(r => r.json()).then(d => { if (d.success) updateUser({ address }) }).catch(() => {})
       }
 
       await fetchCart()
+      playSuccessChime()   // 🔔 Play chime!
 
-      // Open UPI app after order is saved
       if (chosen.deepLink) {
         window.location.href = chosen.deepLink
-        // fallback: show success after brief delay if app doesn't open
         setTimeout(() => setOrderSuccess(true), 800)
       } else {
         setOrderSuccess(true)
@@ -163,21 +142,18 @@ export default function Cart() {
     }
   }
 
-  /* ── Not logged in ────────────────────────────────────────────── */
+  /* ── Not logged in ──────────────────────────────────────────── */
   if (!isLoggedIn) return (
     <div className="flex flex-col h-full w-full bg-surface text-on-surface">
-      <div className="flex-shrink-0 bg-white/90 backdrop-blur-xl shadow-sm border-b border-surface-container">
-        <div className="flex items-center px-5 py-4 gap-3">
-            <span className="material-symbols-outlined text-orange-900 text-[24px]">restaurant</span>
-          <span className="font-headline font-black text-orange-900 tracking-tighter text-lg">Feast At Night</span>
-        </div>
-      </div>
+      <TopBar />
       <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8 text-center">
-        <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center">
-          <span className="material-symbols-outlined text-primary text-4xl">lock</span>
+        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+          <span className="material-symbols-outlined text-primary text-4xl">shopping_cart</span>
         </div>
-        <h2 className="font-headline font-black text-2xl text-on-surface mb-2 tracking-tight">Your Cart is Empty</h2>
-        <p className="text-secondary text-sm max-w-xs">Your cart is saved — log in to continue your order.</p>
+        <div>
+          <h2 className="font-headline font-black text-2xl text-on-surface mb-2">Sign in to view cart</h2>
+          <p className="text-on-surface-variant text-sm">Your cart is saved — log in to continue your order.</p>
+        </div>
         <button onClick={() => navigate('/login')} className="px-8 py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">Sign In</button>
         <button onClick={() => navigate('/signup')} className="text-primary font-bold text-sm hover:underline">New here? Create account</button>
       </div>
@@ -185,20 +161,15 @@ export default function Cart() {
     </div>
   )
 
-  /* ── Order success — Flipkart-style 🎉 ────────────────────────── */
+  /* ── Order success ──────────────────────────────────────────── */
   if (orderSuccess) {
     const confetti = Array.from({ length: 32 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      delay: Math.random() * 0.8,
+      id: i, x: Math.random() * 100, delay: Math.random() * 0.8,
       color: ['#a83100','#ff784c','#22c55e','#3b82f6','#f59e0b','#8b5cf6'][i % 6],
-      size: 6 + Math.random() * 8,
-      rotation: Math.random() * 360,
+      size: 6 + Math.random() * 8, rotation: Math.random() * 360,
     }))
-
     return (
       <div className="flex flex-col h-full w-full bg-surface text-on-surface overflow-hidden relative">
-        {/* Confetti burst */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {confetti.map(c => (
             <motion.div key={c.id} className="absolute rounded-sm"
@@ -209,65 +180,44 @@ export default function Cart() {
             />
           ))}
         </div>
-
         <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8 text-center relative z-10">
-
-          {/* Animated ring + check */}
           <div className="relative">
             <motion.div className="absolute inset-0 rounded-full bg-green-200"
-              initial={{ scale: 0.8, opacity: 0.8 }}
-              animate={{ scale: 1.7, opacity: 0 }}
+              initial={{ scale: 0.8, opacity: 0.8 }} animate={{ scale: 1.7, opacity: 0 }}
               transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 0.4 }} />
             <motion.div className="w-28 h-28 rounded-full bg-green-500 flex items-center justify-center shadow-2xl shadow-green-500/40"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
+              initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 240, damping: 18 }}>
               <svg viewBox="0 0 52 52" className="w-14 h-14">
-                <motion.path d="M14 27 L22 35 L38 17"
-                  fill="none" stroke="white" strokeWidth="5"
+                <motion.path d="M14 27 L22 35 L38 17" fill="none" stroke="white" strokeWidth="5"
                   strokeLinecap="round" strokeLinejoin="round"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
+                  initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
                   transition={{ duration: 0.5, delay: 0.4, ease: 'easeOut' }} />
               </svg>
             </motion.div>
           </div>
-
-          {/* Title */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <h2 className="font-headline font-black text-3xl text-on-surface tracking-tight">Order Placed Successfully</h2>
-              <p className="text-on-surface-variant text-sm mt-2">
-              {chosen?.id === 'COD'
-                ? `Pay ₹${total.toFixed(0)} when your order arrives`
-                : `Complete payment in ${chosen?.label}`}
+            <h2 className="font-headline font-black text-3xl text-on-surface tracking-tight">Order Placed!</h2>
+            <p className="text-on-surface-variant text-sm mt-2">
+              {chosen?.id === 'COD' ? `Pay ₹${total.toFixed(0)} when your order arrives` : `Complete payment in ${chosen?.label}`}
             </p>
           </motion.div>
-
-          {/* Amount card */}
           <motion.div className="w-full max-w-xs bg-green-50 border border-green-100 rounded-2xl px-5 py-4 flex items-center gap-4"
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.65 }}>
             <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
               <span className="material-symbols-outlined text-green-600 text-[22px] icon-filled">receipt_long</span>
             </div>
             <div className="text-left">
-              <p className="text-xs text-gray-400 font-medium">Total Amount</p>
+              <p className="text-xs text-on-surface-variant font-medium">Total Amount</p>
               <p className="font-headline font-black text-2xl text-green-600">₹{total.toFixed(0)}</p>
-              <p className="text-xs text-gray-400 mt-0.5">via {chosen?.label}</p>
+              <p className="text-xs text-on-surface-variant mt-0.5">via {chosen?.label}</p>
             </div>
           </motion.div>
-
-          {/* Buttons + countdown */}
           <motion.div className="flex flex-col gap-3 w-full max-w-xs"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85 }}>
             <p className="text-xs text-on-surface-variant">Redirecting in <strong className="text-on-surface">{countdown}s</strong></p>
-            <button onClick={() => navigate('/orders')}
-              className="w-full py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">
-              View My Orders
-            </button>
-            <button onClick={() => navigate('/home')}
-              className="w-full py-3 border border-outline-variant text-on-surface-variant rounded-full font-medium text-sm">
-              Back to Home
-            </button>
+            <button onClick={() => navigate('/orders')} className="w-full py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">View My Orders</button>
+            <button onClick={() => navigate('/home')} className="w-full py-3 border border-outline-variant text-on-surface-variant rounded-full font-medium text-sm">Back to Home</button>
           </motion.div>
         </div>
         <BottomNav />
@@ -275,288 +225,211 @@ export default function Cart() {
     )
   }
 
+  /* ── Empty cart ─────────────────────────────────────────────── */
+  if (cartItems.length === 0) return (
+    <div className="flex flex-col h-full w-full bg-surface text-on-surface">
+      <TopBar />
+      <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8 text-center">
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}
+          className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center text-5xl">
+          🛒
+        </motion.div>
+        <div>
+          <h2 className="font-headline font-black text-2xl text-on-surface mb-2">Your cart is empty</h2>
+          <p className="text-on-surface-variant text-sm">Add delicious items from our menu</p>
+        </div>
+        <button onClick={() => navigate('/menu')} className="px-8 py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">restaurant_menu</span>Browse Menu
+        </button>
+      </div>
+      <BottomNav />
+    </div>
+  )
 
-
-  /* ── Main Cart ─────────────────────────────────────────────────── */
+  /* ── Main Cart — Zomato Style ───────────────────────────────── */
   return (
-    <div className="relative flex flex-col h-full w-full bg-[#f5f5f5] text-on-surface font-body">
+    <div className="flex flex-col h-full w-full bg-surface-container text-on-surface font-body">
+      <TopBar />
 
-      {/* Topbar */}
-      <div className="flex-shrink-0 z-10 bg-white shadow-sm">
-        <div className="flex justify-between items-center px-5 py-4">
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-[22px] text-orange-800">menu</span>
-            <span className="font-headline font-black text-orange-900 tracking-tighter text-lg">Your Cart</span>
+      <div className="flex-1 overflow-y-auto hide-scrollbar">
+
+        {/* ── Header strip ──────────────────────────────────────── */}
+        <div className="bg-surface px-5 py-4 flex items-center justify-between border-b border-surface-container">
+          <div>
+            <h1 className="font-headline font-black text-xl text-on-surface tracking-tight">My Cart</h1>
+            <p className="text-xs text-on-surface-variant mt-0.5">{totalItems} item{totalItems !== 1 ? 's' : ''} · ₹{total.toFixed(0)} to pay</p>
           </div>
-          {cartItems.length > 0 && (
-            <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
-              {cartItems.reduce((s, it) => s + it.quantity, 0)} items
-            </span>
-          )}
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="material-symbols-outlined text-primary text-[20px]">shopping_cart</span>
+          </div>
+        </div>
+
+        <div className="space-y-2 pb-36">
+
+          {/* ── Delivery info bar ─────────────────────────────────── */}
+          <div className="bg-surface px-5 py-3 flex items-center gap-3">
+            <span className="material-symbols-outlined text-green-500 text-[20px]">directions_bike</span>
+            <div>
+              <p className="text-xs font-bold text-on-surface">Delivery in <span className="text-green-600">30–40 mins</span></p>
+              <p className="text-[11px] text-on-surface-variant">Delivery fee ₹{DELIVERY_FEE}</p>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* ── Cart Items ─────────────────────────────────────────── */}
+          <div className="bg-surface px-5 pt-4 pb-2">
+            <p className="text-[11px] font-black uppercase tracking-widest text-on-surface-variant mb-3">Items</p>
+            <AnimatePresence>
+              {cartItems.map((item) => {
+                const product  = item.product || {}
+                const lineTotal = parseFloat(product.price || 0) * item.quantity
+                return (
+                  <motion.div key={item.id} layout
+                    initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 60, height: 0 }} transition={{ duration: 0.22 }}
+                    className="flex items-center gap-4 py-3.5 border-b border-surface-container last:border-0"
+                  >
+                    {/* Veg/Non-veg dot */}
+                    <div className="flex-shrink-0 w-4 h-4 border-2 border-green-500 rounded-sm flex items-center justify-center">
+                      <div className="w-2 h-2 bg-green-500 rounded-sm" />
+                    </div>
+
+                    {/* Product image */}
+                    <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-surface-container">
+                      {product.image
+                        ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
+                        : <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>}
+                    </div>
+
+                    {/* Name + qty */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-on-surface truncate">{product.name}</p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">{product.category}</p>
+                      <p className="font-black text-primary text-sm mt-1">₹{lineTotal.toFixed(0)}</p>
+                    </div>
+
+                    {/* Qty controls */}
+                    <div className="flex items-center bg-surface-container-low border border-outline-variant/20 rounded-lg overflow-hidden flex-shrink-0">
+                      <button onClick={() => updateQty(item.product_id, item.quantity - 1)}
+                        className="w-8 h-8 flex items-center justify-center text-primary active:bg-primary/10 transition-colors">
+                        <span className="material-symbols-outlined text-[16px]">remove</span>
+                      </button>
+                      <span className="w-7 text-center font-black text-sm text-on-surface">{item.quantity}</span>
+                      <button onClick={() => updateQty(item.product_id, item.quantity + 1)}
+                        className="w-8 h-8 flex items-center justify-center bg-primary text-on-primary active:opacity-80 transition-opacity">
+                        <span className="material-symbols-outlined text-[16px]">add</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
+          </div>
+
+          <Divider />
+
+          {/* ── Delivery Address ───────────────────────────────────── */}
+          <div className="bg-surface px-5 py-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined text-primary text-[18px]">location_on</span>
+              <p className="font-bold text-sm text-on-surface">Delivery Address</p>
+            </div>
+            {user?.address && (
+              <button onClick={() => setAddress(user.address)}
+                className={`w-full flex items-center gap-2 px-3 py-2.5 mb-2.5 rounded-xl border text-left text-sm transition-all ${
+                  address === user.address ? 'border-primary bg-primary/5' : 'border-surface-container bg-surface-container hover:border-primary/30'
+                }`}>
+                <span className="material-symbols-outlined text-[14px] text-on-surface-variant flex-shrink-0">home</span>
+                <span className="text-on-surface text-xs truncate flex-1">{user.address}</span>
+                {address === user.address && <span className="material-symbols-outlined text-primary text-[14px] flex-shrink-0">check_circle</span>}
+              </button>
+            )}
+            <textarea value={address} onChange={e => setAddress(e.target.value)}
+              placeholder="Enter delivery address..." rows={2}
+              className="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-3 py-2.5 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none" />
+          </div>
+
+          <Divider />
+
+          {/* ── Bill Summary ────────────────────────────────────────── */}
+          <div className="bg-surface px-5 py-4">
+            <p className="font-bold text-sm text-on-surface mb-3">Bill Summary</p>
+            <div className="space-y-2.5 text-sm">
+              <div className="flex justify-between text-on-surface-variant">
+                <span>Item Total</span><span className="text-on-surface font-medium">₹{subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-on-surface-variant">
+                <span>Delivery Fee</span><span className="text-on-surface font-medium">₹{DELIVERY_FEE.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-on-surface-variant">
+                <span>GST (5%)</span><span className="text-on-surface font-medium">₹{taxes.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-black text-on-surface border-t border-dashed border-surface-container pt-2.5 mt-1 text-base">
+                <span>To Pay</span><span className="text-primary">₹{total.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* ── Payment Method ──────────────────────────────────────── */}
+          <div className="bg-surface px-5 pt-4 pb-2">
+            <p className="font-bold text-sm text-on-surface mb-1">Payment</p>
+            <p className="text-xs text-on-surface-variant mb-3">Choose how you'd like to pay</p>
+            {PAYMENT_OPTIONS.map((opt, idx) => (
+              <button key={opt.id} onClick={() => setPayment(opt.id)}
+                className={`w-full flex items-center gap-3.5 py-3.5 transition-all rounded-xl px-3 mb-1 ${
+                  selectedPayment === opt.id ? 'bg-primary/5 border border-primary/20' : 'bg-surface-container border border-transparent'
+                }`}>
+                <div className="flex-shrink-0">{opt.logo}</div>
+                <div className="flex-1 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-on-surface">{opt.label}</span>
+                    {opt.badge && <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${opt.badgeCls}`}>{opt.badge}</span>}
+                  </div>
+                  <p className="text-xs text-on-surface-variant mt-0.5">{opt.sub}</p>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                  selectedPayment === opt.id ? 'border-primary' : 'border-outline-variant'
+                }`}>
+                  {selectedPayment === opt.id && (
+                    <motion.div layoutId="pay-dot" className="w-2.5 h-2.5 rounded-full bg-primary"
+                      transition={{ type: 'spring', stiffness: 400, damping: 28 }} />
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <main className="px-4 pt-4 pb-36 space-y-3 max-w-2xl mx-auto">
-
-          <AnimatePresence>
-            {error && (
-              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm"
-              >{error}</motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Empty */}
-          {cartItems.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
-              <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center text-4xl">🛒</div>
-              <h3 className="font-headline font-bold text-lg text-on-surface">Your cart is empty</h3>
-              <p className="text-secondary text-sm">Add items from our menu</p>
-              <button onClick={() => navigate('/menu')} className="px-6 py-3 bg-primary text-on-primary rounded-full font-bold shadow-md">Browse Menu</button>
-            </div>
-          )}
-
-          {/* Cart Items */}
-          {cartItems.length > 0 && (
-            <>
-              <div className="space-y-2.5">
-                <AnimatePresence>
-                  {cartItems.map((item) => {
-                    const product   = item.product || {}
-                    const lineTotal = parseFloat(product.price || 0) * item.quantity
-                    return (
-                      <motion.div key={item.id} layout
-                        initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 60, height: 0 }} transition={{ duration: 0.22 }}
-                        className="bg-white rounded-2xl overflow-hidden shadow-sm"
-                      >
-                        <div className="flex gap-3 p-3">
-                          <div className="w-[72px] h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-                            {product.image
-                              ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                              : <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>}
-                          </div>
-                          <div className="flex-1 flex flex-col justify-between min-w-0">
-                            <div className="flex justify-between items-start">
-                              <div className="min-w-0 pr-2">
-                                <h3 className="font-bold text-sm text-gray-900 truncate">{product.name}</h3>
-                                <p className="text-gray-400 text-xs mt-0.5">{product.category}</p>
-                              </div>
-                              <button onClick={() => removeFromCart(item.product_id)}
-                                className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-red-400 transition-colors"
-                              >
-                                <span className="material-symbols-outlined text-[14px]">close</span>
-                              </button>
-                            </div>
-                            <div className="flex items-center justify-between mt-1.5">
-                              <div className="flex items-center bg-gray-50 border border-gray-100 rounded-full p-0.5">
-                                <button onClick={() => updateQty(item.product_id, item.quantity - 1)}
-                                  className="w-7 h-7 flex items-center justify-center rounded-full text-gray-500 hover:bg-white active:scale-90 transition-all"
-                                ><span className="material-symbols-outlined text-[14px]">remove</span></button>
-                                <span className="px-2.5 font-bold text-sm text-gray-800">{item.quantity}</span>
-                                <button onClick={() => updateQty(item.product_id, item.quantity + 1)}
-                                  className="w-7 h-7 flex items-center justify-center rounded-full bg-primary text-on-primary active:scale-90 transition-all"
-                                ><span className="material-symbols-outlined text-[14px]">add</span></button>
-                              </div>
-                              <span className="font-black text-primary text-sm">₹{lineTotal.toFixed(0)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )
-                  })}
-                </AnimatePresence>
-              </div>
-
-              {/* Bill Summary */}
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl px-5 py-4 shadow-sm"
-              >
-                <h2 className="font-bold text-sm text-gray-800 mb-3">Bill Details</h2>
-                <div className="space-y-2 text-sm text-gray-500">
-                  <div className="flex justify-between"><span>Item Total</span><span className="text-gray-800">₹{subtotal.toFixed(2)}</span></div>
-                  <div className="flex justify-between"><span>Delivery Fee</span><span className="text-gray-800">₹{DELIVERY_FEE.toFixed(2)}</span></div>
-                  <div className="flex justify-between"><span>GST (5%)</span><span className="text-gray-800">₹{taxes.toFixed(2)}</span></div>
-                  <div className="flex justify-between font-bold text-gray-900 border-t border-dashed border-gray-100 pt-2.5 mt-1">
-                    <span>To Pay</span>
-                    <span className="text-primary text-base">₹{total.toFixed(2)}</span>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Proceed button */}
-              <motion.button
-                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                onClick={openCheckout}
-                className="w-full bg-primary text-on-primary py-4 rounded-full font-headline font-bold text-base shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-              >
-                Proceed to Checkout <span className="material-symbols-outlined">arrow_forward</span>
-              </motion.button>
-            </>
-          )}
-        </main>
-      </div>
-
-      {/* ── Zomato-style Checkout Sheet ─────────────────────────────── */}
-      <AnimatePresence>
-        {showCheckout && (
-          <>
-            <motion.div
-              className="absolute inset-0 z-40 bg-black/40"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={closeCheckout}
-            />
-            <motion.div
-              className="absolute left-0 right-0 z-50 bg-[#f5f5f5] rounded-t-3xl shadow-2xl flex flex-col"
-              style={{ bottom: '68px', maxHeight: 'calc(94% - 68px)' }}
-              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            >
-              {/* Handle */}
-              <div className="flex justify-center pt-3 pb-0 flex-shrink-0">
-                <div className="w-10 h-1 bg-gray-300 rounded-full" />
-              </div>
-
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 pt-3 pb-2 flex-shrink-0">
-                <h3 className="font-headline font-black text-lg text-gray-900">Checkout</h3>
-                <button onClick={closeCheckout} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200">
-                  <span className="material-symbols-outlined text-[18px] text-gray-600">close</span>
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto px-4 pb-3 space-y-3">
-
-                {/* ── Delivery Address ─────────────────────────────── */}
-                <div className="bg-white rounded-2xl p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="material-symbols-outlined text-primary text-[18px]">location_on</span>
-                    <h4 className="font-bold text-sm text-gray-800">Delivery Address</h4>
-                  </div>
-                  {user?.address && (
-                    <button
-                      onClick={() => setAddress(user.address)}
-                      className={`w-full flex items-center gap-2 px-3 py-2.5 mb-2 rounded-xl border text-left text-sm transition-all ${
-                        address === user.address ? 'border-primary bg-primary/5' : 'border-gray-100 bg-gray-50 hover:border-primary/30'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[14px] text-gray-400 flex-shrink-0">home</span>
-                      <span className="text-gray-700 text-xs truncate flex-1">{user.address}</span>
-                      {address === user.address && <span className="material-symbols-outlined text-primary text-[14px] flex-shrink-0">check_circle</span>}
-                    </button>
-                  )}
-                  <textarea
-                    value={address}
-                    onChange={e => setAddress(e.target.value)}
-                    placeholder="Enter delivery address..."
-                    rows={2}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
-                  />
-                </div>
-
-                {/* ── Order items recap ────────────────────────────── */}
-                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                  {cartItems.map((it, idx) => (
-                    <div key={it.id} className={`flex justify-between items-center px-4 py-3 text-sm ${idx < cartItems.length - 1 ? 'border-b border-gray-50' : ''}`}>
-                      <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 border border-green-500 rounded-sm flex items-center justify-center flex-shrink-0">
-                          <span className="w-2 h-2 bg-green-500 rounded-sm" />
-                        </span>
-                        <span className="text-gray-700 font-medium truncate max-w-[150px]">{it.product?.name}</span>
-                        <span className="text-gray-400 text-xs">× {it.quantity}</span>
-                      </div>
-                      <span className="font-bold text-gray-800">₹{(parseFloat(it.product?.price || 0) * it.quantity).toFixed(0)}</span>
-                    </div>
-                  ))}
-                  <div className="flex justify-between px-4 py-3 bg-gray-50 font-bold text-sm border-t border-gray-100">
-                    <span className="text-gray-600">To Pay</span>
-                    <span className="text-primary">₹{total.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {/* ── Payment Method ───────────────────────────────── */}
-                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                  <div className="px-4 pt-3 pb-2">
-                    <h4 className="font-bold text-sm text-gray-800">Payment</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">Choose your payment method</p>
-                  </div>
-
-                  {PAYMENT_OPTIONS.map((opt, idx) => (
-                    <button
-                      key={opt.id}
-                      onClick={() => setPayment(opt.id)}
-                      className={`w-full flex items-center gap-3.5 px-4 py-3.5 transition-colors text-left ${
-                        idx < PAYMENT_OPTIONS.length - 1 ? 'border-b border-gray-50' : ''
-                      } ${selectedPayment === opt.id ? 'bg-primary/5' : 'hover:bg-gray-50'}`}
-                    >
-                      {/* Brand logo */}
-                      <div className="flex-shrink-0">{opt.logo}</div>
-
-                      {/* Label */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-gray-800">{opt.label}</span>
-                          {opt.badge && (
-                            <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${opt.badgeCls}`}>{opt.badge}</span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-400 mt-0.5">{opt.sub}</p>
-                      </div>
-
-                      {/* Radio */}
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                        selectedPayment === opt.id ? 'border-primary' : 'border-gray-300'
-                      }`}>
-                        {selectedPayment === opt.id && (
-                          <motion.div
-                            layoutId="payment-dot"
-                            className="w-2.5 h-2.5 rounded-full bg-primary"
-                            transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                          />
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-2.5 text-sm">{error}</div>
-                )}
-              </div>
-
-              {/* ── CTA ─────────────────────────────────────────────── */}
-              <div className="flex-shrink-0 px-4 pt-3 pb-5 bg-white border-t border-gray-100">
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <span className="text-xs text-gray-400">Paying via <strong className="text-gray-700">{chosen?.label}</strong></span>
-                  <span className="font-black text-primary">₹{total.toFixed(2)}</span>
-                </div>
-                <button
-                  onClick={handlePay}
-                  disabled={placing}
-                  className={`w-full py-4 rounded-full font-headline font-bold text-base active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2.5 shadow-lg ${
-                    selectedPayment === 'COD'
-                      ? 'bg-primary text-on-primary shadow-primary/20'
-                      : selectedPayment === 'GPAY'
-                        ? 'bg-white text-gray-800 border-2 border-gray-200 shadow-gray-200'
-                        : 'bg-[#5f259f] text-white shadow-purple-500/25'
-                  }`}
-                >
-                  {placing ? (
-                    <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Placing Order...</>
-                  ) : selectedPayment === 'COD' ? (
-                    <><span className="material-symbols-outlined text-[20px]">restaurant</span>Place Order — ₹{total.toFixed(2)}</>
-                  ) : selectedPayment === 'GPAY' ? (
-                    <><img src="https://cdn.simpleicons.org/googlepay/5F6368" alt="" className="w-5 h-5 object-contain" />Pay ₹{total.toFixed(2)} with GPay</>
-                  ) : (
-                    <><img src="https://cdn.simpleicons.org/phonepe/ffffff" alt="" className="w-5 h-5 object-contain" />Pay ₹{total.toFixed(2)} with PhonePe</>
-                  )}
-                </button>
-              </div>
+      {/* ── Sticky bottom CTA ─────────────────────────────────────── */}
+      <div className="flex-shrink-0 bg-surface border-t border-surface-container px-5 pt-3 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        <AnimatePresence>
+          {error && (
+            <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-2.5 text-xs mb-3 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[14px]">error</span>{error}
             </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+
+        <div className="flex items-center justify-between mb-3 px-1">
+          <div>
+            <p className="text-xs text-on-surface-variant">Paying via <strong className="text-on-surface">{chosen?.label}</strong></p>
+          </div>
+          <p className="font-headline font-black text-primary text-lg">₹{total.toFixed(2)}</p>
+        </div>
+
+        <button onClick={handlePay} disabled={placing}
+          className="w-full py-4 rounded-2xl font-headline font-bold text-base transition-all disabled:opacity-60 flex items-center justify-center gap-2.5 shadow-lg bg-primary text-on-primary shadow-primary/25 active:scale-[0.98]">
+          {placing
+            ? <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Placing Order...</>
+            : <><span className="material-symbols-outlined text-[20px]">restaurant</span>Place Order · ₹{total.toFixed(0)}</>
+          }
+        </button>
+      </div>
 
       <BottomNav />
     </div>

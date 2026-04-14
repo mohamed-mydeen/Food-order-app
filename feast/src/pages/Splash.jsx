@@ -123,24 +123,6 @@ export default function Splash() {
                   <span className="material-symbols-outlined text-lg">arrow_forward</span>
                 </span>
               </motion.button>
-            </div>
-
-            {/* Bottom icons */}
-            <motion.div
-              className="flex flex-col items-center gap-3 mb-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.1 }}
-            >
-              <div className="w-px h-8 bg-gradient-to-b from-[#ff784c] to-transparent opacity-50" />
-              <div className="flex gap-3">
-                {['restaurant_menu', 'local_bar', 'delivery_dining'].map((icon) => (
-                  <div key={icon} className="p-3 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
-                    <span className="material-symbols-outlined text-white text-[20px]">{icon}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
           </div>
 
         </motion.div>
