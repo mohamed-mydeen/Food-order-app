@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TopBar from '../components/TopBar'
@@ -6,6 +6,7 @@ import BottomNav from '../components/BottomNav'
 import { SkeletonCard, SkeletonCircle, SkeletonBanner } from '../components/SkeletonCard'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import OfferPopup, { shouldShowOffer, markOfferSeen } from '../components/OfferPopup'
 
 const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com';
 
@@ -99,6 +100,16 @@ export default function Home() {
   const [products, setProducts]     = useState([])
   const [categories, setCategories] = useState([])
   const [selected, setSelected]     = useState(null)
+  const [offerOpen, setOfferOpen]   = useState(false)
+
+  const closeOffer = useCallback(() => {
+    setOfferOpen(false)
+    markOfferSeen()
+  }, [])
+
+  const openOffer = useCallback(() => {
+    setOfferOpen(true)
+  }, [])
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -115,7 +126,13 @@ export default function Home() {
       } catch (err) {
         console.error("Failed to fetch products:", err);
       } finally {
-        setTimeout(() => setLoading(false), 1000);
+        setTimeout(() => {
+          setLoading(false)
+          // Auto-show offer once per session after content loads
+          if (shouldShowOffer()) {
+            setTimeout(() => setOfferOpen(true), 600)
+          }
+        }, 1000);
       }
     };
     fetchProducts();
@@ -253,10 +270,14 @@ export default function Home() {
                 <SkeletonBanner />
               ) : (
                 <motion.div
-                  className="relative overflow-hidden rounded-xl h-40 flex items-center bg-primary"
+                  className="relative overflow-hidden rounded-xl h-40 flex items-center bg-primary cursor-pointer select-none"
                   initial={{ opacity: 0, scale: 0.97 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={openOffer}
+                  role="button"
+                  aria-label="View today's offer"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/60 to-transparent z-10" />
                   <div className="absolute inset-0 opacity-30"
@@ -270,6 +291,10 @@ export default function Home() {
                       View Today Offer For You<br />
                       <span className="text-primary-container text-xl">Feast At Night Special</span>
                     </h2>
+                  </div>
+                  {/* Tap hint arrow */}
+                  <div className="absolute right-5 z-20 bg-white/20 rounded-full p-2">
+                    <span className="material-symbols-outlined text-white text-[22px]">local_offer</span>
                   </div>
                 </motion.div>
               )}
@@ -389,6 +414,9 @@ export default function Home() {
           <ProductSheet product={selected} onClose={() => setSelected(null)} />
         )}
       </AnimatePresence>
+
+      {/* Offer Popup */}
+      <OfferPopup isOpen={offerOpen} onClose={closeOffer} />
 
       <BottomNav />
     </div>

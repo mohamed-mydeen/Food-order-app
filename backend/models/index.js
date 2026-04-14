@@ -4,6 +4,7 @@ const Product = require("./Product");
 const Cart = require("./Cart");
 const Order = require("./Order");
 const OrderItem = require("./OrderItem");
+const Offer = require("./Offer");
 
 // ─── Associations ─────────────────────────────────────────────────────────────
 
@@ -27,4 +28,4 @@ Cart.belongsTo(User, { foreignKey: "user_id", as: "user" });
 Product.hasMany(Cart, { foreignKey: "product_id", as: "cartEntries", onDelete: "CASCADE" });
 Cart.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 
-module.exports = { sequelize, User, Product, Cart, Order, OrderItem };
+module.exports = { sequelize, User, Product, Cart, Order, OrderItem, Offer };

@@ -10,6 +10,7 @@ import Products from './pages/Products'
 import Orders from './pages/Orders'
 import Billing from './pages/Billing'
 import Users from './pages/Users'
+import Offers from './pages/Offers'
 
 function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -26,6 +27,7 @@ function AdminLayout() {
               <Route path="orders"    element={<Orders />} />
               <Route path="billing"   element={<Billing />} />
               <Route path="users"     element={<Users />} />
+              <Route path="offers"    element={<Offers />} />
               <Route path="*"         element={<Navigate to="dashboard" replace />} />
             </Routes>
           </div>
