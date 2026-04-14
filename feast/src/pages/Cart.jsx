@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import BottomNav from '../components/BottomNav'
@@ -100,6 +100,15 @@ export default function Cart() {
   const [selectedPayment, setPayment]   = useState('GPAY')
   const [orderSuccess, setOrderSuccess] = useState(false)
   const [error, setError]               = useState('')
+  const [countdown, setCountdown]       = useState(5)
+
+  // Auto-redirect countdown when order placed
+  useEffect(() => {
+    if (!orderSuccess) return
+    if (countdown <= 0) { navigate('/orders'); return }
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [orderSuccess, countdown])
 
   const subtotal = cartItems.reduce((s, it) => s + parseFloat(it.product?.price || 0) * it.quantity, 0)
   const taxes    = subtotal * TAX_RATE
@@ -176,40 +185,97 @@ export default function Cart() {
     </div>
   )
 
-  /* ── Order success ─────────────────────────────────────────────── */
-  if (orderSuccess) return (
-    <div className="flex flex-col h-full w-full bg-surface text-on-surface">
-      <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8 text-center">
-        <motion.div
-          initial={{ scale: 0 }} animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-          className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center"
-        >
-          <span className="material-symbols-outlined text-green-500 icon-filled" style={{ fontSize: 56 }}>check_circle</span>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <h2 className="font-headline font-bold text-2xl text-on-surface">Order Placed! 🎉</h2>
-          <p className="text-secondary text-sm mt-2 max-w-xs">
-            {chosen?.id === 'COD'
-              ? `Pay ₹${total.toFixed(2)} cash when your order arrives`
-              : `Complete the payment in ${chosen?.label} if it opened`}
-          </p>
-          <div className={`mt-4 rounded-2xl px-5 py-3 flex items-center gap-3 ${chosen?.id === 'COD' ? 'bg-emerald-50' : 'bg-[#5f259f]/5 border border-[#5f259f]/20'}`}>
-            {chosen?.logo}
-            <div className="text-left">
-              <p className="font-bold text-sm text-gray-800">{chosen?.label}</p>
-              <p className="text-xs text-gray-400">{chosen?.id === 'COD' ? 'Pay at door' : 'Payment in progress'}</p>
-            </div>
+  /* ── Order success — Flipkart-style 🎉 ────────────────────────── */
+  if (orderSuccess) {
+    const confetti = Array.from({ length: 32 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      delay: Math.random() * 0.8,
+      color: ['#a83100','#ff784c','#22c55e','#3b82f6','#f59e0b','#8b5cf6'][i % 6],
+      size: 6 + Math.random() * 8,
+      rotation: Math.random() * 360,
+    }))
+
+    return (
+      <div className="flex flex-col h-full w-full bg-white overflow-hidden relative">
+        {/* Confetti burst */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {confetti.map(c => (
+            <motion.div key={c.id} className="absolute rounded-sm"
+              style={{ left: `${c.x}%`, top: '-20px', width: c.size, height: c.size, backgroundColor: c.color }}
+              initial={{ y: -20, rotate: c.rotation, opacity: 1 }}
+              animate={{ y: '110vh', rotate: c.rotation + 1080, opacity: [1, 1, 0] }}
+              transition={{ duration: 2.5 + Math.random() * 1.5, delay: c.delay, ease: 'easeIn' }}
+            />
+          ))}
+        </div>
+
+        <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8 text-center relative z-10">
+
+          {/* Animated ring + check */}
+          <div className="relative">
+            <motion.div className="absolute inset-0 rounded-full bg-green-200"
+              initial={{ scale: 0.8, opacity: 0.8 }}
+              animate={{ scale: 1.7, opacity: 0 }}
+              transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 0.4 }} />
+            <motion.div className="w-28 h-28 rounded-full bg-green-500 flex items-center justify-center shadow-2xl shadow-green-500/40"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 240, damping: 18 }}>
+              <svg viewBox="0 0 52 52" className="w-14 h-14">
+                <motion.path d="M14 27 L22 35 L38 17"
+                  fill="none" stroke="white" strokeWidth="5"
+                  strokeLinecap="round" strokeLinejoin="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4, ease: 'easeOut' }} />
+              </svg>
+            </motion.div>
           </div>
-        </motion.div>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-col gap-3 w-full max-w-xs">
-          <button onClick={() => navigate('/home')} className="w-full px-8 py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">Back to Home</button>
-          <button onClick={() => navigate('/orders')} className="w-full px-8 py-3 border border-primary text-primary rounded-full font-bold">View My Orders</button>
-        </motion.div>
+
+          {/* Title */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+            <h2 className="font-headline font-black text-3xl text-gray-900 tracking-tight">Order Placed! 🎉</h2>
+            <p className="text-secondary text-sm mt-2">
+              {chosen?.id === 'COD'
+                ? `Pay ₹${total.toFixed(0)} when your order arrives`
+                : `Complete payment in ${chosen?.label}`}
+            </p>
+          </motion.div>
+
+          {/* Amount card */}
+          <motion.div className="w-full max-w-xs bg-green-50 border border-green-100 rounded-2xl px-5 py-4 flex items-center gap-4"
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.65 }}>
+            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+              <span className="material-symbols-outlined text-green-600 text-[22px] icon-filled">receipt_long</span>
+            </div>
+            <div className="text-left">
+              <p className="text-xs text-gray-400 font-medium">Total Amount</p>
+              <p className="font-headline font-black text-2xl text-green-600">₹{total.toFixed(0)}</p>
+              <p className="text-xs text-gray-400 mt-0.5">via {chosen?.label}</p>
+            </div>
+          </motion.div>
+
+          {/* Buttons + countdown */}
+          <motion.div className="flex flex-col gap-3 w-full max-w-xs"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85 }}>
+            <p className="text-xs text-secondary">Redirecting in <strong className="text-gray-800">{countdown}s</strong></p>
+            <button onClick={() => navigate('/orders')}
+              className="w-full py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">
+              View My Orders
+            </button>
+            <button onClick={() => navigate('/home')}
+              className="w-full py-3 border border-outline-variant text-secondary rounded-full font-medium text-sm">
+              Back to Home
+            </button>
+          </motion.div>
+        </div>
+        <BottomNav />
       </div>
-      <BottomNav />
-    </div>
-  )
+    )
+  }
+
+
 
   /* ── Main Cart ─────────────────────────────────────────────────── */
   return (

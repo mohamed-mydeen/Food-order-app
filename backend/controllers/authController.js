@@ -7,39 +7,65 @@ const register = async (req, res) => {
   try {
     const { name, email, password, phone, address, role } = req.body;
 
-    if (!name || !email || !password) {
+    // ── 1. Field presence validation ────────────────────────────────
+    if (!name || !email || !password || !phone) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, and password are required.",
+        message: 'Name, email, phone, and password are required.',
       });
     }
 
-    const existing = await User.findOne({ where: { email } });
-    if (existing) {
-      return res.status(409).json({ success: false, message: "Email already registered." });
+    // ── 2. Field format validation ──────────────────────────────────
+    if (name.trim().length < 3) {
+      return res.status(400).json({ success: false, message: 'Name must be at least 3 characters.' });
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: 'Invalid email format.' });
+    }
+
+    const phoneClean = phone.replace(/\s/g, '');
+    if (!/^\d{10}$/.test(phoneClean)) {
+      return res.status(400).json({ success: false, message: 'Phone number must be exactly 10 digits.' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+    }
+
+    // ── 3. Duplicate check — email AND phone ────────────────────────
+    const existingEmail = await User.findOne({ where: { email: email.toLowerCase() } });
+    if (existingEmail) {
+      return res.status(409).json({ success: false, message: 'An account with this email already exists. Please sign in.' });
+    }
+
+    const existingPhone = await User.findOne({ where: { phone: phoneClean } });
+    if (existingPhone) {
+      return res.status(409).json({ success: false, message: 'An account with this phone number already exists.' });
+    }
+
+    // ── 4. Create user ───────────────────────────────────────────────
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: email.toLowerCase(),
       password: hashedPassword,
-      phone: phone || null,
+      phone: phoneClean,
       address: address || null,
-      // Only allow admin role if explicitly set (for seeding), else default to user
-      role: role === "admin" ? "admin" : "user",
+      role: role === 'admin' ? 'admin' : 'user',
     });
 
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
     return res.status(201).json({
       success: true,
-      message: "Registration successful.",
+      message: 'Registration successful.',
       data: {
         token,
         user: {
@@ -53,10 +79,16 @@ const register = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Register error:", error);
-    return res.status(500).json({ success: false, message: "Server error during registration." });
+    console.error('Register error:', error);
+    // Handle DB-level unique constraint violations gracefully
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      const field = error.errors?.[0]?.path || 'field';
+      return res.status(409).json({ success: false, message: `An account with this ${field} already exists.` });
+    }
+    return res.status(500).json({ success: false, message: 'Server error during registration.' });
   }
 };
+
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 const login = async (req, res) => {
