@@ -224,7 +224,8 @@ function SideDrawer({ open, onClose }) {
 
               {/* Extra links */}
               {[
-                { icon: 'help_outline', label: 'Help & Support', path: '/contact' },
+                { icon: 'settings',      label: 'Settings',      path: '/settings' },
+                { icon: 'help_outline',  label: 'Help & Support', path: '/contact' },
               ].map(({ icon, label, path }) => (
                 <button key={label} onClick={() => go(path)}
                   className="w-full flex items-center gap-4 px-6 py-3.5 text-left text-on-surface hover:bg-surface-container-low transition-colors"
