@@ -7,8 +7,32 @@ const SESSION_KEY   = 'fan_offer_seen'
 
 export default function OfferPopup({ isOpen, onClose }) {
   const timerRef = useRef(null)
-  const [offer, setOffer]     = useState(null)
+  const [offer, setOffer]         = useState(null)
   const [imgLoaded, setImgLoaded] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+
+  /* ── Download poster as image file ───────────────────────────── */
+  const handleDownload = async () => {
+    if (!offer?.image_url || downloading) return
+    setDownloading(true)
+    try {
+      const res  = await fetch(offer.image_url)
+      const blob = await res.blob()
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement('a')
+      a.href     = url
+      a.download = `feast-at-night-offer.${blob.type.split('/')[1] || 'jpg'}`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      // fallback: open in new tab so user can long-press save
+      window.open(offer.image_url, '_blank')
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   /* ── Fetch active offer from backend ──────────────────────────── */
   useEffect(() => {
@@ -72,6 +96,20 @@ export default function OfferPopup({ isOpen, onClose }) {
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
 
+              {/* Download button */}
+              <button
+                onClick={handleDownload}
+                disabled={downloading || !imgLoaded}
+                aria-label="Download offer poster"
+                className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-3 h-9 rounded-full bg-black/50 text-white hover:bg-black/70 disabled:opacity-50 active:scale-90 transition-all shadow-lg text-xs font-bold"
+              >
+                {downloading
+                  ? <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  : <span className="material-symbols-outlined text-[18px]">download</span>
+                }
+                {downloading ? 'Saving…' : 'Save'}
+              </button>
+
               {/* Poster image */}
               <div className="relative" style={{ maxHeight: '72vh' }}>
                 {!imgLoaded && (
@@ -94,16 +132,29 @@ export default function OfferPopup({ isOpen, onClose }) {
               </div>
 
               {/* Bottom label overlay */}
-              <div className="absolute bottom-0 left-0 right-0 px-5 py-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
+              <div className="absolute bottom-0 left-0 right-0 px-5 py-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
                 <span className="inline-block bg-[#a83100] text-white text-[10px] font-black tracking-widest px-3 py-1 rounded-full mb-1.5 shadow">
                   LIMITED OFFER
                 </span>
                 <p className="text-white font-headline font-extrabold text-lg leading-snug drop-shadow">
                   {offer.title || 'View Today Offer For You 🔥'}
                 </p>
-                <p className="text-white/60 text-xs font-medium mt-0.5">
-                  Feast At Night Special · Tap outside or ✕ to close
-                </p>
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-white/60 text-xs font-medium">
+                    Feast At Night Special
+                  </p>
+                  <button
+                    onClick={handleDownload}
+                    disabled={downloading || !imgLoaded}
+                    className="flex items-center gap-1 bg-white/20 hover:bg-white/30 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-all active:scale-95"
+                  >
+                    {downloading
+                      ? <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                      : <span className="material-symbols-outlined text-[14px]">download</span>
+                    }
+                    {downloading ? 'Saving…' : 'Download Poster'}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
