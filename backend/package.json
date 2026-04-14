@@ -1,6 +1,6 @@
 {
   "name": "feast-at-night-backend",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Backend API for Feast At Night food ordering system",
   "main": "server.js",
   "type": "commonjs",
