@@ -318,7 +318,7 @@ export default function TopBar({ showSubtitle = true }) {
     <>
       <div className="flex-shrink-0 z-30 bg-white/90 backdrop-blur-xl shadow-sm border-b border-surface-container">
         <div className="flex justify-between items-center px-5 py-3.5 w-full">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <motion.button
               onClick={() => setDrawerOpen(true)}
               className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors"
@@ -326,6 +326,13 @@ export default function TopBar({ showSubtitle = true }) {
             >
               <span className="material-symbols-outlined text-[22px] text-orange-800">menu</span>
             </motion.button>
+            {/* Brand logo image */}
+            <img
+              src={brandLogo}
+              alt="Feast At Night"
+              onClick={() => navigate('/home')}
+              className="h-9 w-9 rounded-full object-cover cursor-pointer border-2 border-primary/20 shadow-sm"
+            />
             <span
               className="font-headline font-black text-orange-900 tracking-tighter text-lg cursor-pointer"
               onClick={() => navigate('/home')}
