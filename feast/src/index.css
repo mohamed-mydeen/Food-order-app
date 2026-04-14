@@ -8,7 +8,7 @@
     box-sizing: border-box;
   }
 
-  html {
+  html {}
 
   html, body, #root {
     height: 100%;
