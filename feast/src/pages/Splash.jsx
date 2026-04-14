@@ -123,6 +123,7 @@ export default function Splash() {
                   <span className="material-symbols-outlined text-lg">arrow_forward</span>
                 </span>
               </motion.button>
+            </div>
           </div>
 
         </motion.div>
