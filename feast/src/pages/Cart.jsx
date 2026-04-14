@@ -197,7 +197,7 @@ export default function Cart() {
     }))
 
     return (
-      <div className="flex flex-col h-full w-full bg-white overflow-hidden relative">
+      <div className="flex flex-col h-full w-full bg-surface text-on-surface overflow-hidden relative">
         {/* Confetti burst */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {confetti.map(c => (
@@ -235,8 +235,8 @@ export default function Cart() {
 
           {/* Title */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <h2 className="font-headline font-black text-3xl text-gray-900 tracking-tight">Order Placed! 🎉</h2>
-            <p className="text-secondary text-sm mt-2">
+            <h2 className="font-headline font-black text-3xl text-on-surface tracking-tight">Order Placed Successfully</h2>
+              <p className="text-on-surface-variant text-sm mt-2">
               {chosen?.id === 'COD'
                 ? `Pay ₹${total.toFixed(0)} when your order arrives`
                 : `Complete payment in ${chosen?.label}`}
@@ -259,13 +259,13 @@ export default function Cart() {
           {/* Buttons + countdown */}
           <motion.div className="flex flex-col gap-3 w-full max-w-xs"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85 }}>
-            <p className="text-xs text-secondary">Redirecting in <strong className="text-gray-800">{countdown}s</strong></p>
+            <p className="text-xs text-on-surface-variant">Redirecting in <strong className="text-on-surface">{countdown}s</strong></p>
             <button onClick={() => navigate('/orders')}
               className="w-full py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">
               View My Orders
             </button>
             <button onClick={() => navigate('/home')}
-              className="w-full py-3 border border-outline-variant text-secondary rounded-full font-medium text-sm">
+              className="w-full py-3 border border-outline-variant text-on-surface-variant rounded-full font-medium text-sm">
               Back to Home
             </button>
           </motion.div>

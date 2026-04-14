@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { usePWAInstall } from '../hooks/usePWAInstall'
+import mandiSidebar from '../assets/mandi_profile.png'
+import brandLogo from '../assets/brand_logo.png'
 
 // Detect if already running as installed PWA
 const isStandalone = () =>
@@ -144,11 +146,12 @@ function SideDrawer({ open, onClose }) {
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
-            {/* Header */}
-            <div className="bg-gradient-to-br from-[#a83100] via-[#c23a00] to-[#ff784c] px-6 pt-10 pb-8 relative overflow-hidden">
-              <div className="absolute inset-0 opacity-10"
-                style={{ backgroundImage: 'radial-gradient(circle at 30% 50%, #fff 1px, transparent 1px)', backgroundSize: '18px 18px' }}
-              />
+            {/* Header — Mandi image banner */}
+            <div className="relative px-6 pt-10 pb-8 overflow-hidden"
+              style={{ backgroundImage: `url(${mandiSidebar})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+            >
+              {/* Dark overlay */}
+              <div className="absolute inset-0 bg-black/65" />
               <div className="relative z-10">
                 {isLoggedIn ? (
                   <>

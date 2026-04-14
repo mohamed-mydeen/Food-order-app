@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import brandLogo from '../assets/brand_logo.png'
 
 // Mandi Biryani image — Google AIDA public (reliable)
 const MANDI_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDv_61kKf4sSB2_h414yOye8GDqaJZWZOKLGUg3U3CWcU00JOGhw1tVjefdIUHhk96UjVscotstLRm1xkRxibcCJ_BhyxQo_mvTmSPY0NIqYTfAS0GD2ZktyPOrDzCYw61Mg4aEoWsEDsCTVotmamfrEt1d91AG03EHHTcS3MZpxiyWLZyav1eiJ0otoct8_d4YKyAXG0RxCYZZQw-HurGdoJXH6r-cKk4tqr3z8fmy58mJcT9jdH2YWf4Np_Brc1qK9rDbIztpLpU'
@@ -54,14 +55,14 @@ export default function Splash() {
 
             {/* Center */}
             <div className="flex flex-col items-center">
-              {/* Logo badge */}
+              {/* Brand Logo */}
               <motion.div
-                className="w-16 h-16 mb-5 rounded-2xl bg-gradient-to-br from-[#ff784c] to-[#a83100] flex items-center justify-center shadow-2xl"
+                className="w-20 h-20 mb-5 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20"
                 initial={{ scale: 0, rotate: -15 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 14 }}
               >
-                <span className="material-symbols-outlined text-white text-3xl icon-filled">restaurant_menu</span>
+                <img src={brandLogo} alt="Feast At Night" className="w-full h-full object-cover" />
               </motion.div>
 
               <motion.h1
@@ -142,47 +143,6 @@ export default function Splash() {
             </motion.div>
           </div>
 
-          {/* Floating Chef Card */}
-          <motion.div
-            className="absolute bottom-28 left-4 z-20"
-            initial={{ opacity: 0, x: -24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.9, duration: 0.5 }}
-          >
-            <div className="bg-white/10 backdrop-blur-xl p-3 rounded-xl border border-white/10 max-w-[170px]">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#ff784c] animate-pulse" />
-                <span className="text-[9px] uppercase tracking-widest text-white/60 font-bold">Chef's Choice</span>
-              </div>
-              <p className="text-white text-xs font-headline font-semibold">Special Mandi Platter</p>
-              <p className="text-white/40 text-[10px] mt-0.5">Slow-cooked for 8 hours.</p>
-            </div>
-          </motion.div>
-
-          {/* Floating Rating Card */}
-          <motion.div
-            className="absolute top-16 right-4 z-20"
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.75, duration: 0.5 }}
-          >
-            <div className="bg-white/10 backdrop-blur-xl p-3 rounded-xl border border-white/10 flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {[
-                  'https://lh3.googleusercontent.com/aida-public/AB6AXuAYO9ZH2JYES_XOgsY4YXn8MxJyTCZYzQlhDcAWycvVyhdzpytxhsLjfrjOOVSYgs883HWxSyZzIVp1EQG91dFco-nd132z07tlfbwjSgR1NaruVQpCK51GVLzCi68j8-SaHh2eEinaHtFhu0FlXGoj8ZfeHVYFkrXx57kwP4vKm5kKBYly0CF-_Y3zUGCP_rvoIvfL2TrK2mMZldFpUUn3Q-gwTtJ5PeVsDumbqTCurWFf_U-bbTYL--aujCpiasMqUg3GEnLyaUc',
-                  'https://lh3.googleusercontent.com/aida-public/AB6AXuAqhaDHpPWUasHt5gTXbZo6hElMii46NS3_UZdqcFAxVrbx7rkQvP0AcnORodMh5F9TxK8425ee3GEQp7n6tUrvwrBStMeah3kmBrrDEM61UUY8Sidz_l5bpts2Vu_bhVhpiEsNxNB9-kNw63lhadvDLBqrdA8TEfcQAKGPcQSTXBpLKkJywrZd_qi_KhlPmJwOxo_q6l3RnlNpVaFR8s92SVN9vPFOwSBDYMnlwJePH1pWoUoEhKFgu0y6dbNOCduw8PLQu1wEPwY',
-                ].map((src, i) => (
-                  <div key={i} className="w-7 h-7 rounded-full border-2 border-white/30 overflow-hidden">
-                    <img src={src} alt={`User ${i + 1}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-              <div>
-                <p className="text-white text-[10px] font-bold">12+ Orders</p>
-                <div className="flex text-[#ff784c]" style={{ fontSize: 10 }}>{'★★★★½'}</div>
-              </div>
-            </div>
-          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
