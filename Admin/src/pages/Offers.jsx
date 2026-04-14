@@ -1,3 +1,4 @@
+// Admin Offers page — uses AuthContext (not useAuth hook)
 import { useState, useEffect, useRef, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
 
