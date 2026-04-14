@@ -316,7 +316,7 @@ export default function TopBar({ showSubtitle = true }) {
 
   return (
     <>
-      <div className="flex-shrink-0 z-30 bg-white/90 backdrop-blur-xl shadow-sm border-b border-surface-container">
+      <div className="flex-shrink-0 z-30 bg-white/90 backdrop-blur-xl shadow-sm">
         <div className="flex justify-between items-center px-5 py-3.5 w-full">
           <div className="flex items-center gap-2.5">
             <motion.button

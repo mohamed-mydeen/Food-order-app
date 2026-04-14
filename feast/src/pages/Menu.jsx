@@ -242,12 +242,12 @@ export default function Menu() {
       <div className="flex-1 overflow-y-auto hide-scrollbar">
         <main className="px-4 pt-4 max-w-5xl mx-auto">
 
-          {/* Stale Banner */}
+          {/* Silent offline indicator — no banner, just a tiny dot */}
           {stale && !loading && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-amber-100 text-amber-800 text-xs font-bold px-4 py-2 rounded-lg mb-4 flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-sm">cloud_off</span>
-              Offline mode: Showing cached menu
-            </motion.div>
+            <div className="flex items-center gap-1.5 mb-3 px-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-[10px] text-outline">Cached data</span>
+            </div>
           )}
 
           {/* Hero */}
@@ -322,10 +322,21 @@ export default function Menu() {
               </div>
             )}
             {!loading && products.length === 0 && !error && (
-              <div className="text-center py-20">
-                <div className="text-5xl mb-3">🍽️</div>
-                <p className="font-bold text-on-surface-variant">No items yet</p>
-                <p className="text-xs text-outline mt-1">Add products from the admin panel</p>
+              <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-amber-400 text-3xl">wifi_off</span>
+                </div>
+                <div>
+                  <p className="font-headline font-bold text-on-surface text-lg">No connection</p>
+                  <p className="text-on-surface-variant text-sm mt-1">Turn on your data or Wi-Fi to load the menu</p>
+                </div>
+                <button
+                  onClick={() => window.open('app-settings:', '_system') || window.open('App-prefs:root=WIFI', '_system')}
+                  className="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-full font-bold text-sm shadow-md shadow-primary/20 active:scale-95 transition-all"
+                >
+                  <span className="material-symbols-outlined text-[18px]">settings</span>
+                  Open Network Settings
+                </button>
               </div>
             )}
 

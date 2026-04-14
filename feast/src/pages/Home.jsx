@@ -397,10 +397,21 @@ export default function Home() {
 
               {/* Empty state */}
               {!loading && products.length === 0 && (
-                <div className="text-center py-20">
-                  <div className="text-6xl mb-4">🍽️</div>
-                  <h3 className="font-headline font-bold text-lg text-on-surface mb-2">Menu is empty</h3>
-                  <p className="text-on-surface-variant text-sm">Add products from the admin panel to get started</p>
+                <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-amber-400 text-3xl">wifi_off</span>
+                  </div>
+                  <div>
+                    <p className="font-headline font-bold text-on-surface text-lg">No connection</p>
+                    <p className="text-on-surface-variant text-sm mt-1">Turn on your data or Wi‑Fi to load the menu</p>
+                  </div>
+                  <button
+                    onClick={() => { window.open('App-prefs:root=WIFI', '_system') || window.location.reload() }}
+                    className="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-full font-bold text-sm shadow-md shadow-primary/20 active:scale-95 transition-all"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">settings</span>
+                    Open Network Settings
+                  </button>
                 </div>
               )}
             </>
