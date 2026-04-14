@@ -267,10 +267,9 @@ export default function Home() {
                       LIMITED OFFER
                     </div>
                     <h2 className="text-white font-headline font-extrabold text-2xl leading-tight">
-                      60% OFF<br />
-                      <span className="text-primary-container text-xl">mpm hub Special</span>
+                      View Today Offer For You<br />
+                      <span className="text-primary-container text-xl">Feast At Night Special</span>
                     </h2>
-                    <p className="text-on-primary text-xs font-medium opacity-90">Valid on orders above ₹499</p>
                   </div>
                 </motion.div>
               )}

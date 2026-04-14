@@ -58,7 +58,7 @@ function OrderCard({ order, index, onReorder }) {
             {itemNames.length > 0 ? itemNames.join(', ') : 'Order items'}
           </p>
           <p className="text-xs text-gray-400 mt-1 font-medium">
-            {totalItems} item{totalItems !== 1 ? 's' : ''} &nbsp;·&nbsp; mpm hub
+            {totalItems} item{totalItems !== 1 ? 's' : ''} &nbsp;·&nbsp; Feast At Night
           </p>
           <div className="flex items-center gap-2 mt-2">
             <span className="font-black text-[#a83100] text-base">₹{parseFloat(total_amount).toFixed(0)}</span>

@@ -11,10 +11,10 @@ const TAX_RATE     = 0.05
 
 // ── Change to your real UPI ID ──
 const MERCHANT_UPI  = 'mpmhub@upi'
-const MERCHANT_NAME = 'mpm hub'
+const MERCHANT_NAME = 'Feast At Night'
 
 const makeUpiLink  = (amount) =>
-  `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount.toFixed(2)}&cu=INR&tn=${encodeURIComponent('mpm hub Order')}`
+  `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Feast At Night Order')}`
 const makeGPayLink = (amount) =>
   `tez://upi/pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount.toFixed(2)}&cu=INR`
 const makePhonePeLink = (amount) =>
@@ -160,7 +160,7 @@ export default function Cart() {
       <div className="flex-shrink-0 bg-white/90 backdrop-blur-xl shadow-sm border-b border-surface-container">
         <div className="flex items-center px-5 py-4 gap-3">
             <span className="material-symbols-outlined text-orange-900 text-[24px]">restaurant</span>
-          <span className="font-headline font-black text-orange-900 tracking-tighter text-lg">mpm hub</span>
+          <span className="font-headline font-black text-orange-900 tracking-tighter text-lg">Feast At Night</span>
         </div>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8 text-center">

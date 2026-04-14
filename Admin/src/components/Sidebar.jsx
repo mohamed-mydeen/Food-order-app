@@ -91,7 +91,7 @@ export default function Sidebar({ open, onClose }) {
             <span className="text-xl">🍽️</span>
           </div>
           <div>
-            <h1 className="text-white font-bold text-base leading-tight">mpm hub Admin</h1>
+            <h1 className="text-white font-bold text-base leading-tight">Feast At Night Admin</h1>
             <p className="text-slate-400 text-xs">Control Panel</p>
           </div>
         </div>

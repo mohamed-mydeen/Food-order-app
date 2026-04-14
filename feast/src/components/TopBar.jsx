@@ -39,7 +39,7 @@ function InstallGuideModal({ open, onClose }) {
                   <span className="material-symbols-outlined text-white text-[24px]">install_mobile</span>
                 </div>
                 <div>
-                  <p className="font-headline font-black text-gray-900 text-base">Install mpm hub</p>
+                  <p className="font-headline font-black text-gray-900 text-base">Install Feast At Night</p>
                   <p className="text-gray-500 text-xs">Add to Home Screen in 3 easy steps</p>
                 </div>
               </div>
@@ -266,7 +266,7 @@ function SideDrawer({ open, onClose }) {
                   Log Out
                 </button>
               ) : null}
-              <p className="text-center text-[10px] text-outline">© 2026 mpm hub</p>
+              <p className="text-center text-[10px] text-outline">© 2026 Feast At Night</p>
             </div>
           </motion.div>
         </>
@@ -300,7 +300,7 @@ export default function TopBar({ showSubtitle = true }) {
               className="font-headline font-black text-orange-900 tracking-tighter text-lg cursor-pointer"
               onClick={() => navigate('/home')}
             >
-              mpm hub
+              Feast At Night
             </span>
           </div>
 

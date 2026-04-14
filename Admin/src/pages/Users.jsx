@@ -38,7 +38,7 @@ export default function Users() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Users</h2>
-          <p className="text-slate-500 text-sm mt-0.5">All registered customers on mpm hub</p>
+          <p className="text-slate-500 text-sm mt-0.5">All registered customers on Feast At Night</p>
         </div>
         <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm w-full sm:w-72">
           <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

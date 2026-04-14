@@ -48,7 +48,7 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl shadow-2xl shadow-orange-500/40 mb-4">
             <span className="text-3xl">🍽️</span>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">mpm hub Admin</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Feast At Night Admin</h1>
           <p className="text-slate-400 mt-1.5 text-sm">Sign in to manage your restaurant</p>
         </div>
 
@@ -148,7 +148,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-slate-600 text-xs mt-6">
-          mpm hub · Admin Panel v1.0
+          Feast At Night · Admin Panel v1.0
         </p>
       </div>
     </div>

@@ -151,7 +151,7 @@ export default function Contact() {
                 </div>
                 <h2 className="font-headline font-bold text-on-surface">Our Location</h2>
               </div>
-              <p className="text-on-surface font-semibold text-sm mb-0.5">mpm hub</p>
+              <p className="text-on-surface font-semibold text-sm mb-0.5">Feast At Night</p>
               <p className="text-on-surface-variant text-xs leading-relaxed">
                 Melapalayam, Tirunelveli,<br />Tamil Nadu, India.
               </p>

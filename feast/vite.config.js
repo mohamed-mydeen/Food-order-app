@@ -10,8 +10,8 @@ export default defineConfig({
       injectRegister: 'auto',           // ← explicitly auto-inject SW registration
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'mpm hub',
-        short_name: 'mpm hub',
+        name: 'Feast At Night',
+        short_name: 'Feast At Night',
         description: 'Food Ordering App — Authentic Mandi & Fresh Juices delivered to your door.',
         theme_color: '#000000',
         background_color: '#000000',

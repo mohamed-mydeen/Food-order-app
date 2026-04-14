@@ -23,7 +23,7 @@ function Bill({ order }) {
       {/* Restaurant header */}
       <div className="text-center mb-4 pb-4 border-b-2 border-dashed border-slate-300">
         <div className="text-2xl mb-1">🍽️</div>
-        <h2 className="font-bold text-lg tracking-wide">MPM HUB</h2>
+        <h2 className="font-bold text-lg tracking-wide">FEAST AT NIGHT</h2>
         <p className="text-xs text-slate-500">Delicious food, delivered fast</p>
         <p className="text-xs text-slate-400 mt-0.5">GSTIN: 29XXXXXX1234Z5</p>
       </div>
@@ -117,7 +117,7 @@ function BillModal({ order, onClose }) {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Invoice INV-${String(order.id).padStart(5, '0')} – mpm hub</title>
+          <title>Invoice INV-${String(order.id).padStart(5, '0')} – Feast At Night</title>
           <style>
             * { box-sizing: border-box; margin: 0; padding: 0; }
             body { font-family: 'Courier New', monospace; font-size: 13px; padding: 24px; color: #1e293b; background: #fff; }
