@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import TopBar from '../components/TopBar'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
+import mandiBanner from '../assets/mandi_settings.png'
 
 const WHATSAPP_NUMBER = '919876543210' // ← replace with your number
 const SUPPORT_PHONE   = '+91 98765 43210' // ← replace with your number
@@ -125,9 +126,11 @@ export default function Settings() {
       <div className="flex-1 overflow-y-auto hide-scrollbar">
 
         {/* ── Hero banner ─────────────────────────────────────────── */}
-        <div className="relative bg-gradient-to-br from-[#a83100] via-[#c23a00] to-[#ff784c] px-6 pt-8 pb-14 overflow-hidden">
-          <div className="absolute inset-0 opacity-20"
-            style={{ backgroundImage: 'radial-gradient(circle at 30% 50%, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative px-6 pt-8 pb-14 overflow-hidden bg-cover bg-center"
+          style={{ backgroundImage: `url(${mandiBanner})` }}
+        >
+          {/* Dark overlay for readability */}
+          <div className="absolute inset-0 bg-black/60" />
           <motion.div className="flex items-center gap-4 relative z-10"
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/40 flex items-center justify-center shadow-xl">

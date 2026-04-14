@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import BottomNav from '../components/BottomNav'
 import TopBar from '../components/TopBar'
 import { useAuth } from '../context/AuthContext'
+import mandiBanner from '../assets/mandi_profile.png'
 
 const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 
@@ -88,10 +89,11 @@ export default function Profile() {
       <div className="flex-1 overflow-y-auto hide-scrollbar">
 
         {/* Hero Header */}
-        <div className="relative bg-gradient-to-br from-[#a83100] via-[#c23a00] to-[#ff784c] px-6 pt-8 pb-16">
-          <div className="absolute inset-0 opacity-20"
-            style={{ backgroundImage: 'radial-gradient(circle at 30% 50%, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }}
-          />
+        <div className="relative bg-cover bg-center px-6 pt-8 pb-16"
+          style={{ backgroundImage: `url(${mandiBanner})` }}
+        >
+          {/* Dark overlay to make text readable */}
+          <div className="absolute inset-0 bg-black/60" />
           <motion.div className="flex flex-col items-center relative z-10"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
           >
