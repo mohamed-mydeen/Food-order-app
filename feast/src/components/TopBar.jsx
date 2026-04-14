@@ -126,16 +126,24 @@ function SideDrawer({ open, onClose }) {
         <>
           {/* Backdrop */}
           <motion.div
-            className="absolute inset-0 z-40 bg-black/50 backdrop-blur-[1px]"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="absolute inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
             onClick={onClose}
           />
 
           {/* Drawer */}
           <motion.div
             className="absolute top-0 left-0 bottom-0 z-50 w-72 bg-white shadow-2xl flex flex-col"
-            initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
-            transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+            initial={{ x: '-100%', opacity: 0.6 }}
+            animate={{ x: 0,       opacity: 1 }}
+            exit={{    x: '-100%', opacity: 0.6 }}
+            transition={{
+              x:       { type: 'spring', stiffness: 320, damping: 30, mass: 0.9 },
+              opacity: { duration: 0.2, ease: 'easeOut' },
+            }}
           >
             {/* Header */}
             <div className="bg-gradient-to-br from-[#a83100] via-[#c23a00] to-[#ff784c] px-6 pt-10 pb-8 relative overflow-hidden">
@@ -184,6 +192,12 @@ function SideDrawer({ open, onClose }) {
 
             {/* Nav Links */}
             <div className="flex-1 overflow-y-auto py-3">
+              {/* Nav Links — staggered entrance */}
+              <motion.div
+                variants={{ show: { transition: { staggerChildren: 0.055, delayChildren: 0.06 } } }}
+                initial="hidden"
+                animate="show"
+              >
               {navLinks.map(({ icon, label, path }, i) => {
                 const isActive = pathname === path
                 const isCart   = label === 'Cart'
@@ -194,12 +208,15 @@ function SideDrawer({ open, onClose }) {
                     className={`w-full flex items-center gap-4 px-6 py-3.5 text-left transition-colors ${
                       isActive ? 'bg-primary/8 text-primary' : 'text-on-surface hover:bg-surface-container-low'
                     }`}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    variants={{
+                      hidden: { opacity: 0, x: -18 },
+                      show:   { opacity: 1, x: 0, transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] } },
+                    }}
+                    whileHover={{ x: 4, backgroundColor: isActive ? undefined : 'rgba(0,0,0,0.03)' }}
                     whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
                   >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                       isActive ? 'bg-primary/10' : 'bg-surface-container'
                     }`}>
                       <span className={`material-symbols-outlined text-[20px] ${isActive ? 'icon-filled text-primary' : 'text-on-surface-variant'}`}>
@@ -208,39 +225,50 @@ function SideDrawer({ open, onClose }) {
                     </div>
                     <span className={`font-headline font-bold text-sm flex-1 ${isActive ? 'text-primary' : ''}`}>{label}</span>
                     {isCart && cartCount > 0 && (
-                      <span className="w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      <motion.span
+                        initial={{ scale: 0 }} animate={{ scale: 1 }}
+                        className="w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center"
+                      >
                         {cartCount > 9 ? '9+' : cartCount}
-                      </span>
+                      </motion.span>
                     )}
                     {isActive && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      <motion.div layoutId="drawer-active" className="w-1.5 h-1.5 rounded-full bg-primary"
+                        transition={{ type: 'spring', stiffness: 380, damping: 28 }} />
                     )}
                   </motion.button>
                 )
               })}
+              </motion.div>
 
               {/* Divider */}
-              <div className="mx-6 my-3 h-px bg-surface-container" />
+              <div className="mx-6 my-2 h-px bg-surface-container" />
 
               {/* Extra links */}
               {[
                 { icon: 'settings',      label: 'Settings',      path: '/settings' },
                 { icon: 'help_outline',  label: 'Help & Support', path: '/contact' },
               ].map(({ icon, label, path }) => (
-                <button key={label} onClick={() => go(path)}
-                  className="w-full flex items-center gap-4 px-6 py-3.5 text-left text-on-surface hover:bg-surface-container-low transition-colors"
+                <motion.button key={label} onClick={() => go(path)}
+                  className="w-full flex items-center gap-4 px-6 py-3.5 text-left text-on-surface transition-colors"
+                  whileHover={{ x: 4, backgroundColor: 'rgba(0,0,0,0.03)' }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
                 >
                   <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
                     <span className="material-symbols-outlined text-[20px] text-on-surface-variant">{icon}</span>
                   </div>
                   <span className="font-headline font-bold text-sm">{label}</span>
-                </button>
+                </motion.button>
               ))}
 
-              {/* Install App button — always visible if not already installed */}
+              {/* Install App button */}
               {!installed && (
-                <button onClick={handleInstallClick}
+                <motion.button onClick={handleInstallClick}
                   className="w-full flex items-center gap-4 px-6 py-3.5 text-left hover:bg-orange-50 transition-colors"
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
                 >
                   <div className="w-10 h-10 rounded-full flex items-center justify-center"
                     style={{ background: 'linear-gradient(135deg,#c23a00,#ff784c)' }}>
@@ -253,7 +281,7 @@ function SideDrawer({ open, onClose }) {
                   <span className="text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full">
                     {canInstall ? 'Ready' : 'How?'}
                   </span>
-                </button>
+                </motion.button>
               )}
             </div>
 
