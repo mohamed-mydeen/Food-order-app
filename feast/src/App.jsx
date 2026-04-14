@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Splash from './pages/Splash'
 import Home from './pages/Home'
@@ -12,6 +13,19 @@ import Settings from './pages/Settings'
 import InstallBanner from './components/InstallBanner'
 
 export default function App() {
+  // Transfer dark class from <html> (set before render) to .app-shell
+  useEffect(() => {
+    const shell = document.querySelector('.app-shell')
+    if (!shell) return
+    const t = localStorage.getItem('fan_theme') || 'System'
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    if (t === 'Dark' || (t === 'System' && prefersDark)) {
+      shell.classList.add('dark')
+    } else {
+      shell.classList.remove('dark')
+    }
+    document.documentElement.classList.remove('fan-dark-pending')
+  }, [])
   return (
     <BrowserRouter>
       <div className="app-shell">

@@ -9,6 +9,16 @@ import { registerSW } from 'virtual:pwa-register'
 // Register service worker — required for PWA install prompt to fire
 registerSW({ immediate: true })
 
+// ── Apply saved theme before first render (no flash) ─────────────────────────
+;(function initTheme() {
+  const t = localStorage.getItem('fan_theme') || 'System'
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  if (t === 'Dark' || (t === 'System' && prefersDark)) {
+    // app-shell doesn't exist yet — apply to html temporarily then move after mount
+    document.documentElement.classList.add('fan-dark-pending')
+  }
+})()
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>

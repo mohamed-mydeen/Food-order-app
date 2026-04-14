@@ -11,13 +11,18 @@ const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onre
 
 // ── Theme helpers ─────────────────────────────────────────────────────────────
 const THEMES = ['Light', 'System', 'Dark']
+const THEME_ICONS = { Light: 'light_mode', System: 'settings_brightness', Dark: 'dark_mode' }
+
 function getTheme() { return localStorage.getItem('fan_theme') || 'System' }
+
 function applyTheme(t) {
-  const root = document.documentElement
-  if (t === 'Dark' || (t === 'System' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    root.classList.add('dark')
+  // Apply to the app-shell div (max-width container) so it scopes correctly
+  const shell = document.querySelector('.app-shell') || document.documentElement
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  if (t === 'Dark' || (t === 'System' && prefersDark)) {
+    shell.classList.add('dark')
   } else {
-    root.classList.remove('dark')
+    shell.classList.remove('dark')
   }
   localStorage.setItem('fan_theme', t)
 }
@@ -74,6 +79,9 @@ export default function Settings() {
   const [address, setAddress]       = useState(user?.address || '')
   const [savingAddr, setSavingAddr] = useState(false)
   const [addrMsg, setAddrMsg]       = useState('')
+
+  // Apply saved theme on mount
+  useEffect(() => { applyTheme(getTheme()) }, [])
 
   // Redirect if not logged in
   useEffect(() => { if (!isLoggedIn) navigate('/login') }, [isLoggedIn])
@@ -165,11 +173,14 @@ export default function Settings() {
               <div className="flex gap-2 mt-2">
                 {THEMES.map(t => (
                   <button key={t} onClick={() => handleTheme(t)}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all flex flex-col items-center gap-1
                       ${theme === t
                         ? 'bg-primary text-on-primary border-primary shadow'
-                        : 'bg-surface-container text-on-surface-variant border-transparent'}`}>
-                    {t === 'Light' ? '☀️' : t === 'Dark' ? '🌙' : '🔄'} {t}
+                        : 'bg-surface-container text-on-surface-variant border-transparent hover:border-outline-variant'}`}>
+                    <span className={`material-symbols-outlined text-[18px] ${theme === t ? 'text-on-primary icon-filled' : 'text-on-surface-variant'}`}>
+                      {THEME_ICONS[t]}
+                    </span>
+                    {t}
                   </button>
                 ))}
               </div>
