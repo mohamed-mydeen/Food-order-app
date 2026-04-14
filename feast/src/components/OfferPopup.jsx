@@ -70,8 +70,8 @@ export default function OfferPopup({ isOpen, onClose }) {
           {/* ── Popup card ───────────────────────────────────────── */}
           <div className="fixed inset-0 z-[999] flex items-center justify-center px-5 pointer-events-none">
             <motion.div
-              className="pointer-events-auto relative rounded-2xl overflow-hidden shadow-2xl bg-white"
-              style={{ width: '100%', maxWidth: '460px', maxHeight: '72vh' }}
+              className="pointer-events-auto relative rounded-2xl overflow-hidden shadow-2xl bg-black"
+              style={{ width: '100%', maxWidth: '400px', maxHeight: '80vh' }}
               initial={{ opacity: 0, scale: 0.82, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.88, y: 16 }}
@@ -110,10 +110,10 @@ export default function OfferPopup({ isOpen, onClose }) {
                 {downloading ? 'Saving…' : 'Save'}
               </button>
 
-              {/* Poster image */}
-              <div className="relative" style={{ maxHeight: '72vh' }}>
+              {/* Poster image — fits fully inside popup */}
+              <div className="relative flex items-center justify-center" style={{ maxHeight: '80vh', minHeight: '200px' }}>
                 {!imgLoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-100 min-h-[240px]">
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-900 min-h-[240px]">
                     <svg className="animate-spin w-8 h-8 text-orange-400" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -123,8 +123,8 @@ export default function OfferPopup({ isOpen, onClose }) {
                 <img
                   src={offer.image_url}
                   alt={offer.title || "Today's Special Offer"}
-                  className={`w-full object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
-                  style={{ maxHeight: '72vh' }}
+                  className={`w-full h-auto object-contain transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  style={{ maxHeight: '80vh', display: 'block' }}
                   onLoad={() => setImgLoaded(true)}
                   loading="eager"
                   draggable="false"
