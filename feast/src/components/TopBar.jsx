@@ -123,27 +123,26 @@ function SideDrawer({ open, onClose }) {
   return (
     <AnimatePresence>
       {open && (
-        <>
-          {/* Backdrop */}
-          <motion.div
+        <motion.div
+            key="drawer-backdrop"
             className="absolute inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
+            transition={{ duration: 0.28, ease: 'easeInOut' }}
             onClick={onClose}
           />
+      )}
 
-          {/* Drawer */}
-          <motion.div
+      {/* Drawer */}
+      {open && (
+        <motion.div
+            key="drawer-panel"
             className="absolute top-0 left-0 bottom-0 z-50 w-72 bg-white shadow-2xl flex flex-col"
-            initial={{ x: '-100%', opacity: 0.6 }}
-            animate={{ x: 0,       opacity: 1 }}
-            exit={{    x: '-100%', opacity: 0.6 }}
-            transition={{
-              x:       { type: 'spring', stiffness: 320, damping: 30, mass: 0.9 },
-              opacity: { duration: 0.2, ease: 'easeOut' },
-            }}
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'tween', duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
             {/* Header */}
             <div className="bg-gradient-to-br from-[#a83100] via-[#c23a00] to-[#ff784c] px-6 pt-10 pb-8 relative overflow-hidden">
@@ -298,7 +297,6 @@ function SideDrawer({ open, onClose }) {
               <p className="text-center text-[10px] text-outline">© 2026 Feast At Night</p>
             </div>
           </motion.div>
-        </>
       )}
 
       {/* Install guide modal */}
