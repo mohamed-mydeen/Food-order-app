@@ -6,8 +6,8 @@ import BottomNav from '../components/BottomNav'
 import { SkeletonCard } from '../components/SkeletonCard'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import { useProducts } from '../hooks/useProducts'
 
-const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com';
 
 /* ── Product Detail Bottom Sheet ─────────────────────────────────── */
 function ProductSheet({ product, onClose }) {
@@ -162,8 +162,13 @@ function MenuItemCard({ item, index, onSelect }) {
       <div className="relative h-52 overflow-hidden bg-gray-100">
         {item.image ? (
           <img
-            src={item.image}
+            src={item.image && item.image.includes('cloudinary')
+              ? item.image.replace('/upload/', '/upload/w_600,q_auto,f_auto/')
+              : item.image}
             alt={item.name}
+            loading="lazy"
+            width="400"
+            height="208"
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           />
         ) : (
@@ -207,36 +212,25 @@ function MenuItemCard({ item, index, onSelect }) {
 
 /* ── Menu Page ───────────────────────────────────────────────────── */
 export default function Menu() {
-  const [loading, setLoading]               = useState(true)
-  const [products, setProducts]             = useState([])
-  const [categories, setCategories]         = useState([])
+  const { products, loading, reloading, error, stale } = useProducts()
+  const [categories, setCategories]         = useState(() => {
+    const raw = localStorage.getItem('fan_products_v1')
+    if (raw) {
+      try {
+        const { data } = JSON.parse(raw)
+        return ['All', ...new Set(data.map(p => p.category))]
+      } catch { return ['All'] }
+    }
+    return ['All']
+  })
   const [activeCategory, setActiveCategory] = useState('All')
-  const [error, setError]                   = useState(false)
   const [selected, setSelected]             = useState(null)
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        console.log("Fetching menu from API:", API);
-        const res  = await fetch(`${API}/api/products`);
-        const data = await res.json();
-        console.log("Response menu data:", data);
-        
-        if (data.success && data.data) {
-          setProducts(data.data);
-          setCategories(['All', ...new Set(data.data.map(p => p.category))]);
-        } else {
-          setError(true);
-        }
-      } catch (err) {
-        console.error("Failed to fetch menu:", err);
-        setError(true);
-      } finally {
-        setTimeout(() => setLoading(false), 700);
-      }
-    };
-    fetchProducts();
-  }, []);
+    if (products.length) {
+      setCategories(['All', ...new Set(products.map(p => p.category))])
+    }
+  }, [products])
 
   const displayItems = activeCategory === 'All'
     ? products
@@ -247,6 +241,14 @@ export default function Menu() {
       <TopBar />
       <div className="flex-1 overflow-y-auto hide-scrollbar">
         <main className="px-4 pt-4 max-w-5xl mx-auto">
+
+          {/* Stale Banner */}
+          {stale && !loading && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-amber-100 text-amber-800 text-xs font-bold px-4 py-2 rounded-lg mb-4 flex items-center justify-center gap-2">
+              <span className="material-symbols-outlined text-sm">cloud_off</span>
+              Offline mode: Showing cached menu
+            </motion.div>
+          )}
 
           {/* Hero */}
           <motion.section
@@ -277,7 +279,7 @@ export default function Menu() {
                       : 'bg-white text-on-surface-variant shadow-sm'
                   }`}
                   initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.06 }}
+                  transition={{ delay: i * 0.05 }}
                   whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}
                 >
                   {cat}
@@ -298,31 +300,45 @@ export default function Menu() {
               </div>
             )}
 
+            {/* Shimmer — only shown when no cache at all */}
             {loading && (
               <div className="grid grid-cols-1 gap-4">
                 {[1,2,3].map(i => <SkeletonCard key={i} tall />)}
               </div>
             )}
-            {!loading && error && (
+
+            {/* API error with no cache fallback */}
+            {!loading && error && products.length === 0 && (
               <div className="text-center py-20">
                 <div className="text-5xl mb-3">⚠️</div>
                 <p className="font-bold text-on-surface-variant">Could not connect to server</p>
-                <p className="text-xs text-outline mt-1">Make sure the backend is running</p>
+                <p className="text-xs text-outline mt-1">Check your internet connection and try again</p>
               </div>
             )}
-            {!loading && !error && displayItems.length === 0 && (
+            {!loading && !error && displayItems.length === 0 && products.length > 0 && (
+              <div className="text-center py-20">
+                <div className="text-5xl mb-3">🍽️</div>
+                <p className="font-bold text-on-surface-variant">No items in this category</p>
+              </div>
+            )}
+            {!loading && products.length === 0 && !error && (
               <div className="text-center py-20">
                 <div className="text-5xl mb-3">🍽️</div>
                 <p className="font-bold text-on-surface-variant">No items yet</p>
                 <p className="text-xs text-outline mt-1">Add products from the admin panel</p>
               </div>
             )}
-            {!loading && !error && displayItems.length > 0 && (
-              <div className="grid grid-cols-1 gap-5">
+
+            {/* Product grid — fades in smoothly */}
+            {displayItems.length > 0 && (
+              <motion.div
+                className="grid grid-cols-1 gap-5"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}
+              >
                 {displayItems.map((item, i) => (
                   <MenuItemCard key={item.id} item={item} index={i} onSelect={setSelected} />
                 ))}
-              </div>
+              </motion.div>
             )}
           </section>
         </main>
