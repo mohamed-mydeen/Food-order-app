@@ -123,7 +123,7 @@ export default function Settings() {
   return (
     <div className="relative flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-16">
 
         {/* ── Hero banner ─────────────────────────────────────────── */}
         <div className="relative px-6 pt-8 pb-14 overflow-hidden bg-cover bg-center"
@@ -221,7 +221,7 @@ export default function Settings() {
           </Section>
 
           {/* Developer credit */}
-          <div className="pt-6 pb-2 text-center text-[10.5px] text-outline tracking-wide font-medium">
+          <div className="pt-2 pb-6 text-center text-[10.5px] text-outline tracking-wide font-medium">
             Developed by <span className="font-bold text-secondary">InnoVeld Labs</span>
           </div>
 
