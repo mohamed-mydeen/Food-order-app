@@ -31,15 +31,16 @@ function ProductSheet({ product, onClose }) {
 
   return (
     <>
-      <motion.div className="absolute inset-0 bg-black/50 z-40"
+      <motion.div className="fixed inset-0 bg-black/50 z-40"
+        style={{ willChange: 'opacity' }}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
-      <motion.div className="absolute left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl overflow-hidden flex flex-col"
-        style={{ bottom: '68px', maxHeight: 'calc(90% - 68px)' }}
+      <motion.div className="fixed left-0 right-0 bottom-0 z-50 bg-surface rounded-t-3xl shadow-2xl overflow-hidden flex flex-col"
+        style={{ maxHeight: '88vh', willChange: 'transform' }}
         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+        transition={{ type: 'spring', damping: 32, stiffness: 300, mass: 0.8 }}
       >
         <div className="flex justify-center pt-3 pb-1"><div className="w-10 h-1 bg-gray-200 rounded-full" /></div>
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1" style={{ overscrollBehavior: 'contain' }}>
           <div className="relative h-56 bg-gray-100 mx-4 mt-2 rounded-2xl overflow-hidden">
             {product.image
               ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
@@ -69,7 +70,7 @@ function ProductSheet({ product, onClose }) {
             </div>
           </div>
         </div>
-        <div className="flex-shrink-0 px-5 pt-3 pb-6 bg-white border-t border-surface-container space-y-3">
+        <div className="flex-shrink-0 px-5 pt-3 pb-8 bg-surface border-t border-surface-container space-y-3">
           {added
             ? <div className="w-full py-4 bg-green-500 text-white rounded-full font-bold text-base flex items-center justify-center gap-2"><span className="material-symbols-outlined">check_circle</span>Added to Cart!</div>
             : <button onClick={handleAdd} disabled={adding} className="w-full py-4 bg-primary text-on-primary rounded-full font-headline font-bold text-base shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70">
