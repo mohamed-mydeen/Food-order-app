@@ -222,7 +222,10 @@ export default function Settings() {
 
           {/* Developer credit */}
           <div className="pt-2 pb-6 text-center text-[10.5px] text-outline tracking-wide font-medium">
-            Developed by <span className="font-bold text-secondary">InnoVeld Labs</span>
+            Developed by{' '}
+            <a href="https://innoveldlabs-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer" className="font-bold text-secondary hover:text-primary transition-colors cursor-pointer">
+              InnoVeld Labs
+            </a>
           </div>
 
         </div>
