@@ -210,8 +210,8 @@ export default function Settings() {
           <Section title="About">
             <SettingRow icon="restaurant" label="Feast At Night" sub="Version 1.0 · Authentic food & juices"
               right={<span className="text-xs text-secondary font-medium">v1.0</span>} />
-            <SettingRow icon="privacy_tip" label="Privacy Policy" sub="How we handle your data"
-              onClick={() => window.open('https://feast-at-night.com/privacy', '_blank')} />
+            <SettingRow icon="info" label="About Us" sub="Our story and mission"
+              onClick={() => navigate('/about')} />
           </Section>
 
           {/* ── Danger zone ──────────────────────────────────────── */}

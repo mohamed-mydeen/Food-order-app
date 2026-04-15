@@ -14,6 +14,7 @@ const Cart     = lazy(() => import('./pages/Cart'))
 const Profile  = lazy(() => import('./pages/Profile'))
 const Orders   = lazy(() => import('./pages/Orders'))
 const Contact  = lazy(() => import('./pages/Contact'))
+const About    = lazy(() => import('./pages/About'))
 const Settings = lazy(() => import('./pages/Settings'))
 
 import InstallBanner from './components/InstallBanner'
@@ -60,6 +61,7 @@ export default function App() {
             <Route path="/profile"  element={<Profile />} />
             <Route path="/orders"   element={<Orders />} />
             <Route path="/contact"  element={<Contact />} />
+            <Route path="/about"    element={<About />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*"         element={<Navigate to="/" replace />} />
           </Routes>
