@@ -222,13 +222,18 @@ export default function Profile() {
             Log Out
           </motion.button>
         </div>
+
+        {/* Developer credit */}
+        <div className="pt-2 pb-6 text-center text-[10.5px] text-outline tracking-wide font-medium">
+          Developed by <span className="font-bold text-secondary">InnoVeld Labs</span>
+        </div>
       </div>
 
       {/* Edit Profile Modal */}
       {editOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-4">
           <motion.div
-            className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl"
+            className="bg-surface rounded-3xl w-full max-w-md p-6 shadow-2xl mb-[85px] sm:mb-0"
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
           >
             <div className="flex justify-between mb-5">
