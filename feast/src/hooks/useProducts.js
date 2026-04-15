@@ -11,7 +11,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 const CACHE_KEY    = 'fan_products_v1'
-const CACHE_TTL_MS = 5 * 60 * 1000   // 5 minutes — re-fetch if stale
+const CACHE_TTL_MS = 10 * 60 * 1000   // 10 minutes
 const API_URL      = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api/products`
 
 function readCache() {
@@ -91,10 +91,16 @@ export function useProducts() {
 }
 
 /**
- * Warm up the Render backend as early as possible.
- * Call once on app start — fire-and-forget.
+ * Warm up the Render backend AND pre-populate the localStorage cache.
+ * Call during Splash so the menu is instant when the user arrives.
  */
-export function warmupBackend() {
-  const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'
-  fetch(`${API}/api/products`, { method: 'GET', priority: 'low' }).catch(() => {})
+export async function warmupBackend() {
+  try {
+    const res  = await fetch(API_URL, { cache: 'no-store' })
+    const json = await res.json()
+    if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+      // Pre-populate cache so Menu page renders instantly
+      writeCache(json.data)
+    }
+  } catch { /* server still waking — ignore */ }
 }

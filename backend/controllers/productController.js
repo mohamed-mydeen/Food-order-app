@@ -2,6 +2,17 @@ const { Product } = require("../models");
 const cloudinary = require("../config/cloudinary");
 const streamifier = require("streamifier");
 
+// ─── In-memory product cache (survives across requests, resets on mutation) ────
+let _cache = null;          // { data: [...], ts: timestamp }
+const CACHE_TTL = 5 * 60 * 1000;  // 5 minutes
+
+function getCached() {
+  if (_cache && Date.now() - _cache.ts < CACHE_TTL) return _cache.data;
+  return null;
+}
+function setCache(data) { _cache = { data, ts: Date.now() }; }
+function clearCache()   { _cache = null; }
+
 // ─── Helper: stream buffer to Cloudinary ─────────────────────────────────────
 const uploadToCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {
@@ -20,9 +31,24 @@ const uploadToCloudinary = (fileBuffer) => {
 const getProducts = async (req, res) => {
   try {
     const { category } = req.query;
-    const where = category ? { category } : {};
+
+    // Serve from memory cache if available (instant, no DB hit)
+    const cached = getCached();
+    if (cached && !category) {
+      return res
+        .set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300')
+        .json({ success: true, data: cached, fromCache: true });
+    }
+
+    const where    = category ? { category } : {};
     const products = await Product.findAll({ where, order: [["createdAt", "DESC"]] });
-    return res.json({ success: true, data: products });
+
+    // Populate cache on full fetch
+    if (!category) setCache(products);
+
+    return res
+      .set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300')
+      .json({ success: true, data: products });
   } catch (error) {
     console.error("getProducts:", error);
     return res.status(500).json({ success: false, message: "Failed to fetch products." });
@@ -57,6 +83,7 @@ const createProduct = async (req, res) => {
     }
 
     const product = await Product.create({ name, price, category, description, image: imageUrl });
+    clearCache();  // invalidate so next GET fetches fresh data
 
     return res.status(201).json({
       success: true,
@@ -84,6 +111,7 @@ const updateProduct = async (req, res) => {
     }
 
     await product.update({ name, price, category, description, image: imageUrl });
+    clearCache();  // invalidate cache
 
     return res.json({
       success: true,
@@ -103,6 +131,7 @@ const deleteProduct = async (req, res) => {
     if (!product) return res.status(404).json({ success: false, message: "Product not found." });
 
     await product.destroy();
+    clearCache();  // invalidate cache
     return res.json({ success: true, message: "Product deleted successfully." });
   } catch (error) {
     console.error("deleteProduct:", error);

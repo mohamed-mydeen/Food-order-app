@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import brandLogo from '../assets/brand_logo.png'
+import { warmupBackend } from '../hooks/useProducts'
 
 // Mandi Biryani image — Google AIDA public (reliable)
 const MANDI_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDv_61kKf4sSB2_h414yOye8GDqaJZWZOKLGUg3U3CWcU00JOGhw1tVjefdIUHhk96UjVscotstLRm1xkRxibcCJ_BhyxQo_mvTmSPY0NIqYTfAS0GD2ZktyPOrDzCYw61Mg4aEoWsEDsCTVotmamfrEt1d91AG03EHHTcS3MZpxiyWLZyav1eiJ0otoct8_d4YKyAXG0RxCYZZQw-HurGdoJXH6r-cKk4tqr3z8fmy58mJcT9jdH2YWf4Np_Brc1qK9rDbIztpLpU'
@@ -11,6 +12,9 @@ export default function Splash() {
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
+    // Fire backend warm-up immediately — gives Render ~5s to wake before user hits menu
+    warmupBackend()
+
     const timer = setTimeout(() => {
       setVisible(false)
       setTimeout(() => navigate('/home'), 600)
