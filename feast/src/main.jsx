@@ -11,7 +11,7 @@ registerSW({ immediate: true })
 
 // ── Apply saved theme before first render (no flash) ─────────────────────────
 ;(function initTheme() {
-  const t = localStorage.getItem('fan_theme') || 'System'
+  const t = localStorage.getItem('fan_theme') || 'Dark'
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
   if (t === 'Dark' || (t === 'System' && prefersDark)) {
     // app-shell doesn't exist yet — apply to html temporarily then move after mount

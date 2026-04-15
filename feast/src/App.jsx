@@ -35,7 +35,7 @@ export default function App() {
     // ── 1. Move dark class from <html> to .app-shell post-mount ───────────────
     const shell = document.querySelector('.app-shell')
     if (shell) {
-      const t = localStorage.getItem('fan_theme') || 'System'
+      const t = localStorage.getItem('fan_theme') || 'Dark'
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       if (t === 'Dark' || (t === 'System' && prefersDark)) shell.classList.add('dark')
       else shell.classList.remove('dark')

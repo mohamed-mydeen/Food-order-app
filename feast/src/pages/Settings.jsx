@@ -14,7 +14,7 @@ const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onre
 const THEMES = ['Light', 'System', 'Dark']
 const THEME_ICONS = { Light: 'light_mode', System: 'settings_brightness', Dark: 'dark_mode' }
 
-function getTheme() { return localStorage.getItem('fan_theme') || 'System' }
+function getTheme() { return localStorage.getItem('fan_theme') || 'Dark' }
 
 function applyTheme(t) {
   // Apply to the app-shell div (max-width container) so it scopes correctly

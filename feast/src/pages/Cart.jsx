@@ -82,7 +82,7 @@ export default function Cart() {
   const [placing, setPlacing]           = useState(false)
   const [address, setAddress]           = useState(user?.address || '')
   const [showCheckout, setShowCheckout] = useState(false)
-  const [selectedPayment, setPayment]   = useState('GPAY')
+  const [selectedPayment, setPayment]   = useState(null)
   const [orderSuccess, setOrderSuccess] = useState(false)
   const [error, setError]               = useState('')
   const [countdown, setCountdown]       = useState(5)
@@ -104,6 +104,7 @@ export default function Cart() {
 
   const handlePay = async () => {
     if (!address.trim()) { setError('Please enter a delivery address.'); return }
+    if (!chosen) { setError('Please select a payment method.'); return }
     setPlacing(true); setError('')
     try {
       const res  = await fetch(`${API}/orders`, {
@@ -251,7 +252,7 @@ export default function Cart() {
     <div className="flex flex-col h-full w-full bg-surface-container text-on-surface font-body">
       <TopBar />
 
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
+      <div className="flex-1 overflow-y-auto hide-scrollbar">
 
         {/* ── Header strip ──────────────────────────────────────── */}
         <div className="bg-surface px-5 py-4 flex items-center justify-between border-b border-surface-container">
@@ -264,7 +265,7 @@ export default function Cart() {
           </div>
         </div>
 
-        <div className="space-y-2 pb-36">
+        <div className="space-y-2 pb-6">
 
           {/* ── Delivery info bar ─────────────────────────────────── */}
           <div className="bg-surface px-5 py-3 flex items-center gap-3">
@@ -335,19 +336,17 @@ export default function Cart() {
               <span className="material-symbols-outlined text-primary text-[18px]">location_on</span>
               <p className="font-bold text-sm text-on-surface">Delivery Address</p>
             </div>
-            {user?.address && (
-              <button onClick={() => setAddress(user.address)}
-                className={`w-full flex items-center gap-2 px-3 py-2.5 mb-2.5 rounded-xl border text-left text-sm transition-all ${
-                  address === user.address ? 'border-primary bg-primary/5' : 'border-surface-container bg-surface-container hover:border-primary/30'
-                }`}>
-                <span className="material-symbols-outlined text-[14px] text-on-surface-variant flex-shrink-0">home</span>
-                <span className="text-on-surface text-xs truncate flex-1">{user.address}</span>
-                {address === user.address && <span className="material-symbols-outlined text-primary text-[14px] flex-shrink-0">check_circle</span>}
-              </button>
+            {user?.address ? (
+              <div className="w-full flex items-center gap-2 px-3 py-3 rounded-xl border border-primary bg-primary/5 text-left text-sm">
+                <span className="material-symbols-outlined text-[16px] text-primary flex-shrink-0">home</span>
+                <span className="text-on-surface text-sm flex-1">{user.address}</span>
+                <span className="material-symbols-outlined text-primary text-[16px] flex-shrink-0">check_circle</span>
+              </div>
+            ) : (
+              <textarea value={address} onChange={e => setAddress(e.target.value)}
+                placeholder="Enter delivery address..." rows={2}
+                className="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-3 py-2.5 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none" />
             )}
-            <textarea value={address} onChange={e => setAddress(e.target.value)}
-              placeholder="Enter delivery address..." rows={2}
-              className="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-3 py-2.5 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none" />
           </div>
 
           <Divider />
@@ -417,7 +416,9 @@ export default function Cart() {
 
         <div className="flex items-center justify-between mb-3 px-1">
           <div>
-            <p className="text-xs text-on-surface-variant">Paying via <strong className="text-on-surface">{chosen?.label}</strong></p>
+            <p className="text-xs text-on-surface-variant">
+              {chosen ? <>Paying via <strong className="text-on-surface">{chosen.label}</strong></> : 'Select a payment method'}
+            </p>
           </div>
           <p className="font-headline font-black text-primary text-lg">₹{total.toFixed(2)}</p>
         </div>
