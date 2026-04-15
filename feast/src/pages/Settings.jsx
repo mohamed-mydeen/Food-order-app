@@ -221,8 +221,8 @@ export default function Settings() {
           </Section>
 
           {/* Developer credit */}
-          <div className="pt-6 pb-2 text-center text-[10px] text-outline tracking-wider uppercase font-semibold">
-            developed by InnoVeld Labs.
+          <div className="pt-6 pb-2 text-center text-[10.5px] text-outline tracking-wide font-medium">
+            Developed by <span className="font-bold text-secondary">InnoVeld Labs</span>
           </div>
 
         </div>
