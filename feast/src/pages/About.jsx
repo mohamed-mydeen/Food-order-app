@@ -54,7 +54,7 @@ export default function About() {
               Our journey started with a simple idea: late-night hunger should never be compromised with mediocre food. Every dish we serve is prepared with carefully sourced spices, premium ingredients, and the warmth of home-style cooking.
             </p>
             <p className="text-[13px] leading-relaxed text-on-surface-variant font-medium">
-              We are proudly based in Tirunelveli, and our mission is to deliver not just food, but an unforgettable dining experience straight to your doorstep.
+              We are based in Tirunelveli, and our mission is to deliver not just food, but an unforgettable dining experience straight to your doorstep.
             </p>
 
             <div className="mt-8 pt-6 border-t border-black/[0.04]">
@@ -62,6 +62,11 @@ export default function About() {
             </div>
           </motion.div>
         </main>
+
+        {/* Developer credit */}
+        <div className="pt-2 pb-6 text-center text-[10.5px] text-outline tracking-wide font-medium">
+          Developed by <span className="font-bold text-secondary">InnoVeld Labs</span>
+        </div>
       </div>
 
       <BottomNav />
