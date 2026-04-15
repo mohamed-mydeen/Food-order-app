@@ -86,6 +86,8 @@ export default function Cart() {
   const [orderSuccess, setOrderSuccess] = useState(false)
   const [error, setError]               = useState('')
   const [countdown, setCountdown]       = useState(5)
+  const [recentOrders, setRecentOrders] = useState([])
+  const [ordersLoading, setOrdersLoading] = useState(false)
 
   /* auto-redirect countdown after success */
   useEffect(() => {
@@ -94,6 +96,17 @@ export default function Cart() {
     const t = setTimeout(() => setCountdown(c => c - 1), 1000)
     return () => clearTimeout(t)
   }, [orderSuccess, countdown])
+
+  /* fetch recent orders for empty cart screen */
+  useEffect(() => {
+    if (!token || cartItems.length > 0) return
+    setOrdersLoading(true)
+    fetch(`${API}/orders/user`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => { if (d.success) setRecentOrders(d.data.slice(0, 3)) })
+      .catch(() => {})
+      .finally(() => setOrdersLoading(false))
+  }, [token, cartItems.length])
 
   const subtotal       = cartItems.reduce((s, it) => s + parseFloat(it.product?.price || 0) * it.quantity, 0)
   const taxes          = subtotal * TAX_RATE
@@ -228,20 +241,108 @@ export default function Cart() {
 
   /* ── Empty cart ─────────────────────────────────────────────── */
   if (cartItems.length === 0) return (
-    <div className="flex flex-col h-full w-full bg-surface text-on-surface">
+    <div className="flex flex-col h-full w-full bg-surface-container text-on-surface">
       <TopBar />
-      <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8 text-center">
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}
-          className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center text-5xl">
-          🛒
-        </motion.div>
-        <div>
-          <h2 className="font-headline font-black text-2xl text-on-surface mb-2">Your cart is empty</h2>
-          <p className="text-on-surface-variant text-sm">Add delicious items from our menu</p>
+      <div className="flex-1 overflow-y-auto hide-scrollbar">
+
+        {/* Hero empty state */}
+        <div className="flex flex-col items-center gap-4 pt-10 pb-6 px-8 text-center bg-surface">
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}
+            className="w-24 h-24 bg-orange-500/10 rounded-full flex items-center justify-center text-5xl">
+            🛒
+          </motion.div>
+          <div>
+            <h2 className="font-headline font-black text-2xl text-on-surface mb-1">Your cart is empty</h2>
+            <p className="text-on-surface-variant text-sm">Add delicious items from our menu</p>
+          </div>
+          <button onClick={() => navigate('/menu')}
+            className="px-8 py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">restaurant_menu</span>Browse Menu
+          </button>
         </div>
-        <button onClick={() => navigate('/menu')} className="px-8 py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">restaurant_menu</span>Browse Menu
-        </button>
+
+        {/* Recent orders */}
+        <div className="px-4 pt-5 pb-28">
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-headline font-black text-base text-on-surface">Recent Orders</p>
+            {recentOrders.length > 0 && (
+              <button onClick={() => navigate('/orders')} className="text-xs text-primary font-bold">View all</button>
+            )}
+          </div>
+
+          {/* Skeleton */}
+          {ordersLoading && (
+            <div className="space-y-3">
+              {[1,2].map(i => (
+                <div key={i} className="bg-surface rounded-2xl p-4 flex gap-3 animate-pulse border border-surface-container">
+                  <div className="w-14 h-14 rounded-xl bg-surface-container flex-shrink-0" />
+                  <div className="flex-1 space-y-2 py-1">
+                    <div className="h-3 bg-surface-container rounded w-3/4" />
+                    <div className="h-2.5 bg-surface-container rounded w-1/2" />
+                    <div className="h-3 bg-surface-container rounded w-1/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* No orders yet */}
+          {!ordersLoading && recentOrders.length === 0 && (
+            <div className="flex flex-col items-center py-8 text-center">
+              <span className="text-4xl mb-3">🛍️</span>
+              <p className="text-on-surface-variant text-sm">No orders placed yet</p>
+            </div>
+          )}
+
+          {/* Order mini-cards */}
+          {!ordersLoading && recentOrders.map((order, i) => {
+            const itemNames  = order.items?.map(it => it.product?.name).filter(Boolean) || []
+            const firstImage = order.items?.find(it => it.product?.image)?.product?.image
+            const totalQty   = order.items?.reduce((s, it) => s + (it.quantity || 1), 0) || 0
+            const STATUS_COLORS = {
+              Pending: 'text-amber-500', Preparing: 'text-blue-400',
+              'Out for Delivery': 'text-violet-400', Delivered: 'text-green-400', Cancelled: 'text-red-400'
+            }
+            const statusColor = STATUS_COLORS[order.status] || 'text-on-surface-variant'
+            return (
+              <motion.div key={order.id}
+                initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07 }}
+                className="bg-surface rounded-2xl border border-surface-container mb-3 overflow-hidden shadow-sm"
+              >
+                <div className="flex gap-3 p-4">
+                  {/* Thumb */}
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-surface-container flex-shrink-0">
+                    {firstImage
+                      ? <img src={firstImage} alt="" className="w-full h-full object-cover" />
+                      : <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>}
+                  </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-on-surface text-sm line-clamp-1">
+                      {itemNames.length > 0 ? itemNames.join(', ') : 'Order items'}
+                    </p>
+                    <p className="text-xs text-on-surface-variant mt-0.5">
+                      {totalQty} item{totalQty !== 1 ? 's' : ''} · ₹{parseFloat(order.total_amount).toFixed(0)}
+                    </p>
+                    <span className={`text-[11px] font-black uppercase tracking-wide ${statusColor}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  {/* Reorder */}
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => navigate('/menu')}
+                    className="self-center flex-shrink-0 flex items-center gap-1 px-3 py-2 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20"
+                  >
+                    <span className="material-symbols-outlined text-[13px]">refresh</span>
+                    Reorder
+                  </motion.button>
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
       </div>
       <BottomNav />
     </div>
