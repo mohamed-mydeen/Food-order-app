@@ -207,7 +207,7 @@ function SideDrawer({ open, onClose }) {
                   <motion.button
                     key={label}
                     onClick={() => go(path)}
-                    className={`w-full flex items-center gap-4 px-6 py-3.5 text-left transition-colors ${
+                    className={`w-full flex items-center gap-4 px-6 py-3.5 text-left transition-colors border-b border-surface-container/50 last:border-0 ${
                       isActive ? 'bg-primary/8 text-primary' : 'text-on-surface hover:bg-surface-container-low'
                     }`}
                     variants={{
@@ -252,7 +252,7 @@ function SideDrawer({ open, onClose }) {
                 { icon: 'help_outline',  label: 'Help & Support', path: '/contact' },
               ].map(({ icon, label, path }) => (
                 <motion.button key={label} onClick={() => go(path)}
-                  className="w-full flex items-center gap-4 px-6 py-3.5 text-left text-on-surface transition-colors"
+                  className="w-full flex items-center gap-4 px-6 py-3.5 text-left text-on-surface transition-colors border-b border-surface-container/50 last:border-0"
                   whileHover={{ x: 4, backgroundColor: 'rgba(0,0,0,0.03)' }}
                   whileTap={{ scale: 0.97 }}
                   transition={{ duration: 0.15 }}
@@ -289,14 +289,6 @@ function SideDrawer({ open, onClose }) {
 
             {/* Footer */}
             <div className="flex-shrink-0 border-t border-surface-container px-4 py-4 space-y-2">
-              {isLoggedIn ? (
-                <button onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-colors font-bold text-sm"
-                >
-                  <span className="material-symbols-outlined text-[20px]">logout</span>
-                  Log Out
-                </button>
-              ) : null}
               <p className="text-center text-[10px] text-outline">© 2026 Feast At Night</p>
             </div>
           </motion.div>

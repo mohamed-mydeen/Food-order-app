@@ -3,11 +3,11 @@ import { motion } from 'framer-motion'
 import { useCart } from '../context/CartContext'
 
 const navItems = [
-  { label: 'Home',    icon: 'home',             path: '/home' },
-  { label: 'Menu',    icon: 'restaurant_menu',  path: '/menu' },
-  { label: 'Cart',    icon: 'shopping_cart',    path: '/cart' },
-  { label: 'Contact', icon: 'contact_page',     path: '/contact' },
-  { label: 'Profile', icon: 'person',           path: '/profile' },
+  { label: 'Home',    icon: 'home',           path: '/home' },
+  { label: 'Menu',    icon: 'restaurant',     path: '/menu' },
+  { label: 'Cart',    icon: 'shopping_bag',   path: '/cart' },
+  { label: 'Contact', icon: 'support_agent',  path: '/contact' },
+  { label: 'Profile', icon: 'person',         path: '/profile' },
 ]
 
 export default function BottomNav() {
@@ -16,7 +16,7 @@ export default function BottomNav() {
   const { cartCount } = useCart()
 
   return (
-    <div className="flex-shrink-0 z-50 rounded-t-[28px] bg-white/95 backdrop-blur-lg shadow-[0_-4px_24px_rgba(0,0,0,0.08)] border-t border-neutral-100 flex justify-around items-center px-1 pb-4 pt-2">
+    <div className="absolute bottom-5 inset-x-0 mx-auto w-[88%] max-w-[340px] z-50 rounded-full bg-white/30 supports-[backdrop-filter]:bg-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] border border-white/20 flex justify-around items-center p-2">
       {navItems.map(({ label, icon, path }) => {
         const isActive = pathname === path
         const isCart   = label === 'Cart'
@@ -24,8 +24,8 @@ export default function BottomNav() {
           <motion.button
             key={label}
             onClick={() => navigate(path)}
-            className={`relative flex flex-col items-center justify-center px-3 py-1.5 rounded-2xl transition-colors duration-200 ${
-              isActive ? 'bg-orange-100 text-orange-900' : 'text-neutral-400'
+            className={`relative flex flex-col items-center justify-center w-[60px] h-[52px] rounded-[20px] transition-colors duration-200 ${
+              isActive ? 'text-white' : 'text-white/60 hover:text-white/80'
             }`}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.88 }}
@@ -33,7 +33,7 @@ export default function BottomNav() {
             {isActive && (
               <motion.div
                 layoutId="nav-bubble"
-                className="absolute inset-0 rounded-2xl bg-orange-100"
+                className="absolute inset-0 rounded-[20px] bg-white/20 border border-white/20 shadow-sm"
                 transition={{ type: 'spring', stiffness: 380, damping: 32 }}
               />
             )}

@@ -239,7 +239,7 @@ export default function Menu() {
   return (
     <div className="relative flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
-      <div className="flex-1 overflow-y-auto hide-scrollbar">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
         <main className="px-4 pt-4 max-w-5xl mx-auto">
 
           {/* Silent offline indicator — no banner, just a tiny dot */}
@@ -309,33 +309,48 @@ export default function Menu() {
 
             {/* API error with no cache fallback */}
             {!loading && error && products.length === 0 && (
-              <div className="text-center py-20">
-                <div className="text-5xl mb-3">⚠️</div>
-                <p className="font-bold text-on-surface-variant">Could not connect to server</p>
-                <p className="text-xs text-outline mt-1">Check your internet connection and try again</p>
+              <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-red-500 text-3xl">wifi_off</span>
+                </div>
+                <div>
+                  <p className="font-headline font-bold text-on-surface text-lg">No Connection</p>
+                  <p className="text-on-surface-variant text-sm mt-1">Could not connect to the server.</p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-full font-bold text-sm shadow-md shadow-primary/20 hover:bg-orange-700 active:scale-95 transition-all"
+                >
+                  <span className="material-symbols-outlined text-[18px]">refresh</span>
+                  Try Again
+                </button>
               </div>
             )}
+
+            {/* Empty category (but products exist) */}
             {!loading && !error && displayItems.length === 0 && products.length > 0 && (
               <div className="text-center py-20">
                 <div className="text-5xl mb-3">🍽️</div>
                 <p className="font-bold text-on-surface-variant">No items in this category</p>
               </div>
             )}
-            {!loading && products.length === 0 && !error && (
+
+            {/* Menu is completely empty (no info in backend) */}
+            {!loading && !error && products.length === 0 && (
               <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-amber-400 text-3xl">wifi_off</span>
+                <div className="w-16 h-16 rounded-full bg-orange-50 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary text-3xl">restaurant</span>
                 </div>
                 <div>
-                  <p className="font-headline font-bold text-on-surface text-lg">No connection</p>
-                  <p className="text-on-surface-variant text-sm mt-1">Turn on your data or Wi-Fi to load the menu</p>
+                  <p className="font-headline font-bold text-on-surface text-lg">Menu is empty</p>
+                  <p className="text-on-surface-variant text-sm mt-1">There are currently no items available.</p>
                 </div>
                 <button
-                  onClick={() => window.open('app-settings:', '_system') || window.open('App-prefs:root=WIFI', '_system')}
-                  className="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-full font-bold text-sm shadow-md shadow-primary/20 active:scale-95 transition-all"
+                  onClick={() => window.location.reload()}
+                  className="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-full font-bold text-sm shadow-md shadow-primary/20 hover:bg-orange-700 active:scale-95 transition-all"
                 >
-                  <span className="material-symbols-outlined text-[18px]">settings</span>
-                  Open Network Settings
+                  <span className="material-symbols-outlined text-[18px]">refresh</span>
+                  Refresh
                 </button>
               </div>
             )}

@@ -86,7 +86,7 @@ export default function Profile() {
   return (
     <div className="flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
-      <div className="flex-1 overflow-y-auto hide-scrollbar">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
 
         {/* Hero Header */}
         <div className="relative bg-cover bg-center px-6 pt-8 pb-16"

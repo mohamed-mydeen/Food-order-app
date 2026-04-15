@@ -123,7 +123,7 @@ export default function Settings() {
   return (
     <div className="relative flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
-      <div className="flex-1 overflow-y-auto hide-scrollbar">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
 
         {/* ── Hero banner ─────────────────────────────────────────── */}
         <div className="relative px-6 pt-8 pb-14 overflow-hidden bg-cover bg-center"

@@ -35,7 +35,7 @@ export default function Contact() {
     <div className="flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
 
-      <div className="flex-1 overflow-y-auto hide-scrollbar">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
 
         {/* Hero Header */}
         <div className="relative bg-gradient-to-br from-[#0c0f10] to-[#1c1c1c] px-6 pt-8 pb-10">
@@ -66,111 +66,103 @@ export default function Contact() {
         <main className="px-4 pt-5 pb-8 space-y-4">
 
           {/* Contact Cards */}
-          {contacts.map(({ label, icon, number, tel, whatsapp }, i) => (
-            <motion.div
-              key={label}
-              custom={i}
-              variants={itemVariants}
-              initial="hidden"
-              animate="show"
-              className="bg-white rounded-xl p-4 shadow-sm"
-              whileHover={{ y: -2, boxShadow: '0 12px 28px rgba(0,0,0,0.1)' }}
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined icon-filled">{icon}</span>
+          <div className="bg-white rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-black/5 overflow-hidden relative z-20 -mt-6">
+            {contacts.map(({ label, icon, number, tel, whatsapp }, i) => (
+              <motion.div
+                key={label}
+                custom={i}
+                variants={itemVariants}
+                initial="hidden"
+                animate="show"
+                className={`p-4 flex items-center justify-between ${i !== contacts.length - 1 ? 'border-b border-black/[0.04]' : ''}`}
+                whileHover={{ backgroundColor: '#fafafa' }}
+              >
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 bg-orange-50/80 rounded-full flex items-center justify-center border border-orange-100/50">
+                    <span className="material-symbols-outlined text-primary text-[22px] icon-filled">{icon}</span>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-0.5">{label}</p>
+                    <p className="text-[17px] font-black text-gray-800 font-headline tracking-tight">{number}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-secondary uppercase tracking-wider">{label}</p>
-                  <p className="text-xl font-bold text-on-surface font-headline">{number}</p>
+                
+                <div className="flex gap-2">
+                  <motion.a
+                    href={tel}
+                    className="w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-600 flex items-center justify-center shadow-sm hover:text-primary transition-colors duration-200"
+                    whileHover={{ scale: 1.05, borderColor: '#f97316' }}
+                    whileTap={{ scale: 0.92 }}
+                  >
+                    <span className="material-symbols-outlined text-[19px] icon-filled">call</span>
+                  </motion.a>
+                  <motion.a
+                    href={whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-[#25D366]/5 border border-[#25D366]/30 text-[#1da851] flex items-center justify-center shadow-sm transition-colors duration-200 hover:bg-[#25D366]/10"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.92 }}
+                  >
+                    <span className="material-symbols-outlined text-[19px] icon-filled">chat</span>
+                  </motion.a>
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <motion.a
-                  href={tel}
-                  className="flex-1 px-4 py-3 bg-primary text-on-primary rounded-full text-sm font-bold flex items-center justify-center gap-2 shadow-md"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="material-symbols-outlined text-sm">call</span> Call Now
-                </motion.a>
-                <motion.a
-                  href={whatsapp}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 px-4 py-3 bg-[#25D366] text-white rounded-full text-sm font-bold flex items-center justify-center gap-2 shadow-md"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="material-symbols-outlined text-sm">chat</span> WhatsApp
-                </motion.a>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </div>
 
           {/* Opening Hours */}
           <motion.div
-            className="bg-white rounded-xl p-5 shadow-sm"
+            className="bg-white rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-black/5 overflow-hidden relative z-20 mb-6 p-4"
             custom={2}
             variants={itemVariants}
             initial="hidden"
             animate="show"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <span className="material-symbols-outlined text-primary text-[20px] icon-filled">schedule</span>
               </div>
-              <h2 className="font-headline font-bold text-on-surface">Opening Hours</h2>
-            </div>
-            <div className="space-y-0">
-              {[
-                { day: 'Monday – Friday', time: '8:00 PM – 2:00 AM' },
-                { day: 'Saturday',        time: '7:00 PM – 3:00 AM' },
-                { day: 'Sunday',          time: '7:00 PM – 2:00 AM' },
-              ].map(({ day, time }) => (
-                <div key={day} className="flex justify-between items-center py-2.5 border-b border-surface-container last:border-0">
-                  <span className="text-sm font-medium text-on-surface-variant">{day}</span>
-                  <span className="text-sm font-bold text-on-surface">{time}</span>
-                </div>
-              ))}
+              <div className="flex-1 w-full">
+                 <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-3">Opening Hours</p>
+                 <div className="space-y-2.5">
+                   {[
+                     { day: 'Mon – Fri', time: '8 PM – 2 AM' },
+                     { day: 'Saturday',  time: '7 PM – 3 AM' },
+                     { day: 'Sunday',    time: '7 PM – 2 AM' },
+                   ].map(({ day, time }) => (
+                     <div key={day} className="flex justify-between items-center w-full">
+                       <span className="text-[13px] font-medium text-on-surface-variant">{day}</span>
+                       <span className="text-[13px] font-bold text-on-surface">{time}</span>
+                     </div>
+                   ))}
+                 </div>
+              </div>
             </div>
           </motion.div>
 
           {/* Location */}
           <motion.div
-            className="bg-white rounded-xl overflow-hidden shadow-sm"
+            className="bg-white rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-black/5 overflow-hidden relative z-20"
             custom={3}
             variants={itemVariants}
             initial="hidden"
             animate="show"
           >
-            <div className="p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center">
+            <div className="p-5 flex items-start justify-between gap-4">
+              <div className="flex gap-3.5">
+                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="material-symbols-outlined text-primary text-[20px] icon-filled">location_on</span>
                 </div>
-                <h2 className="font-headline font-bold text-on-surface">Our Location</h2>
+                <div>
+                  <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-0.5">Visit Us</p>
+                  <h2 className="font-headline font-black text-on-surface text-lg leading-tight tracking-tight">Feast At Night</h2>
+                  <p className="text-[12px] font-medium text-on-surface-variant mt-1.5 leading-relaxed max-w-[180px]">
+                    Melapalayam, Tirunelveli,<br />Tamil Nadu, India.
+                  </p>
+                </div>
               </div>
-              <p className="text-on-surface font-semibold text-sm mb-0.5">Feast At Night</p>
-              <p className="text-on-surface-variant text-xs leading-relaxed">
-                Melapalayam, Tirunelveli,<br />Tamil Nadu, India.
-              </p>
             </div>
-
-            {/* Map placeholder */}
-            <motion.a
-              href="https://maps.google.com/?q=Melapalayam,+Tirunelveli"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-36 bg-gradient-to-br from-orange-50 to-surface-container-high flex items-center justify-center block"
-              whileHover={{ opacity: 0.85 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="text-center">
-                <span className="material-symbols-outlined text-primary text-4xl icon-filled">map</span>
-                <p className="text-xs text-secondary font-bold mt-1 uppercase tracking-wider">Open in Google Maps</p>
-              </div>
-            </motion.a>
           </motion.div>
 
         </main>

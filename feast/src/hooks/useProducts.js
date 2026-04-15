@@ -46,7 +46,8 @@ export function useProducts() {
 
     // If cache is fresh (<5 min) skip early fetch; still revalidate if > 1 min old
     const cacheAge = cached?.age ?? Infinity
-    const isFresh  = cacheAge < 60_000   // 1 minute
+    // Only consider cache fresh if it actually has items
+    const isFresh  = cacheAge < 60_000 && cached?.data?.length > 0
 
     if (isFresh) return   // cache is very fresh, no need to hit API yet
 
@@ -56,8 +57,10 @@ export function useProducts() {
       if (cached) setReloading(true)   // silent refresh indicator
 
       try {
+        console.log("Fetching fresh products from:", API_URL);
         const res  = await fetch(API_URL, { signal: controller.signal })
         const json = await res.json()
+        console.log("API Response:", json);
 
         if (json.success && Array.isArray(json.data)) {
           setProducts(json.data)
@@ -65,11 +68,13 @@ export function useProducts() {
           setError(false)
           setStale(false)
         } else {
+          console.warn("API returned unsuccessful or malformed data:", json);
           if (!cached) setError(true)
           else setStale(true)
         }
       } catch (err) {
         if (err.name === 'AbortError') return
+        console.error("Error fetching products:", err);
         if (!cached) setError(true)
         else setStale(true)   // show cached data + warning banner
       } finally {

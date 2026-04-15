@@ -251,7 +251,7 @@ export default function Cart() {
     <div className="flex flex-col h-full w-full bg-surface-container text-on-surface font-body">
       <TopBar />
 
-      <div className="flex-1 overflow-y-auto hide-scrollbar">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
 
         {/* ── Header strip ──────────────────────────────────────── */}
         <div className="bg-surface px-5 py-4 flex items-center justify-between border-b border-surface-container">
