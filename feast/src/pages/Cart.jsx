@@ -405,7 +405,7 @@ export default function Cart() {
       </div>
 
       {/* ── Sticky bottom CTA ─────────────────────────────────────── */}
-      <div className="flex-shrink-0 bg-surface border-t border-surface-container px-5 pt-3 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+      <div className="flex-shrink-0 bg-surface border-t border-surface-container px-5 pt-3 pb-28 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] relative z-40">
         <AnimatePresence>
           {error && (
             <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
