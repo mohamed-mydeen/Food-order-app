@@ -113,30 +113,48 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         console.log("Fetching from API:", API);
         const res  = await fetch(`${API}/api/products`);
         const data = await res.json();
         console.log("Response data:", data);
         
-        if (data.success && data.data) {
+        if (data.success && data.data && isMounted) {
           setProducts(data.data);
           setCategories([...new Set(data.data.map(p => p.category))]);
         }
       } catch (err) {
         console.error("Failed to fetch products:", err);
       } finally {
-        setTimeout(() => {
-          setLoading(false)
-          // Auto-show offer once per session after content loads
-          if (shouldShowOffer()) {
-            setTimeout(() => setOfferOpen(true), 600)
-          }
-        }, 1000);
+        if (isMounted) {
+          setTimeout(() => {
+            setLoading(false)
+            // Auto-show offer once per session after content loads
+            if (shouldShowOffer()) {
+              setTimeout(() => setOfferOpen(true), 600)
+            }
+          }, 1000);
+        }
       }
     };
+    
     fetchProducts();
+
+    const handleOnline = () => {
+      console.log("Network restored, fetching products again...");
+      fetchProducts();
+    };
+
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('online', handleOnline);
+    };
   }, []);
 
   // Search filter
