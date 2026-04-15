@@ -404,13 +404,6 @@ export default function Home() {
                     <p className="font-headline font-bold text-on-surface text-lg">No connection</p>
                     <p className="text-on-surface-variant text-sm mt-1">Turn on your data or Wi‑Fi to load the menu</p>
                   </div>
-                  <button
-                    onClick={() => { window.open('App-prefs:root=WIFI', '_system') || window.location.reload() }}
-                    className="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-full font-bold text-sm shadow-md shadow-primary/20 active:scale-95 transition-all"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">settings</span>
-                    Open Network Settings
-                  </button>
                 </div>
               )}
             </>
