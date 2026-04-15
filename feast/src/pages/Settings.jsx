@@ -220,6 +220,11 @@ export default function Settings() {
               onClick={handleLogout} danger right={null} />
           </Section>
 
+          {/* Developer credit */}
+          <div className="pt-6 pb-2 text-center text-[10px] text-outline tracking-wider uppercase font-semibold">
+            developed by InnoVeld Labs.
+          </div>
+
         </div>
       </div>
 
