@@ -128,41 +128,70 @@ export default function Cart() {
     if (!address.trim()) { setError('Please enter a delivery address.'); return }
     if (!chosen) { setError('Please select a payment method.'); return }
     setPlacing(true); setError('')
-    try {
-      const res  = await fetch(`${API}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          address,
-          payment_method:    chosen.method,
-          payment_reference: chosen.id !== 'COD' ? chosen.id : null,
-        }),
-      })
-      const data = await res.json()
-      if (!data.success) throw new Error(data.message)
 
-      if (address.trim() !== (user?.address || '').trim()) {
-        fetch(`${API}/users/profile`, {
-          method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ address }),
-        }).then(r => r.json()).then(d => { if (d.success) updateUser({ address }) }).catch(() => {})
-      }
+    const executeOrder = async () => {
+      try {
+        const res  = await fetch(`${API}/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            address,
+            payment_method:    chosen.method,
+            payment_reference: chosen.id !== 'COD' ? chosen.id : null,
+          }),
+        })
+        const data = await res.json()
+        if (!data.success) throw new Error(data.message)
 
-      await fetchCart()
-      playSuccessChime()   // 🔔 Play chime!
+        if (address.trim() !== (user?.address || '').trim()) {
+          fetch(`${API}/users/profile`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ address }),
+          }).then(r => r.json()).then(d => { if (d.success) updateUser({ address }) }).catch(() => {})
+        }
 
-      if (chosen.deepLink) {
-        window.location.href = chosen.deepLink
-        setTimeout(() => setOrderSuccess(true), 800)
-      } else {
+        await fetchCart()
+        playSuccessChime()   // 🔔 Play chime!
         setOrderSuccess(true)
+        setShowCheckout(false)
+      } catch (err) {
+        setError(err.message || 'Order failed. Please try again.')
+      } finally {
+        setPlacing(false)
       }
-      setShowCheckout(false)
-    } catch (err) {
-      setError(err.message || 'Order failed. Please try again.')
-    } finally {
-      setPlacing(false)
     }
+
+    if (!chosen.deepLink) {
+      await executeOrder()
+      return
+    }
+
+    // For UPI, attempt to open the app first before creating the order in the backend
+    let appOpened = false
+    let fallbackTimer = null
+
+    const onVisibilityChange = () => {
+      if (document.hidden && !appOpened) {
+        appOpened = true
+        clearTimeout(fallbackTimer)
+        document.removeEventListener('visibilitychange', onVisibilityChange)
+        executeOrder() // The app opened! Now safely place the order behind the scenes
+      }
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    
+    // Trigger the deep link
+    window.location.href = chosen.deepLink
+
+    // Check after 2.5 seconds. If document didn't hide, app is likely not installed
+    fallbackTimer = setTimeout(() => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      if (!appOpened && !document.hidden) {
+        setPlacing(false)
+        setError(`${chosen.label} is not installed or could not be opened. Please try another method.`)
+      }
+    }, 2500)
   }
 
   /* ── Not logged in ──────────────────────────────────────────── */
