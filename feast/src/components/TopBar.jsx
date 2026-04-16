@@ -193,7 +193,7 @@ function SideDrawer({ open, onClose }) {
             </div>
 
             {/* Nav Links */}
-            <div className="flex-1 overflow-y-auto py-3">
+            <div className="flex-1 overflow-y-auto pt-3 pb-24">
               {/* Nav Links — staggered entrance */}
               <motion.div
                 variants={{ show: { transition: { staggerChildren: 0.055, delayChildren: 0.06 } } }}
@@ -207,7 +207,7 @@ function SideDrawer({ open, onClose }) {
                   <motion.button
                     key={label}
                     onClick={() => go(path)}
-                    className={`w-full flex items-center gap-4 px-6 py-3.5 text-left transition-colors border-b border-surface-container/50 last:border-0 ${
+                    className={`w-full flex items-center gap-4 px-6 py-2.5 text-left transition-colors border-b border-surface-container/50 last:border-0 ${
                       isActive ? 'bg-primary/8 text-primary' : 'text-on-surface hover:bg-surface-container-low'
                     }`}
                     variants={{
@@ -260,7 +260,7 @@ function SideDrawer({ open, onClose }) {
                 } },
               ].map(({ icon, label, action }) => (
                 <motion.button key={label} onClick={action}
-                  className="w-full flex items-center gap-4 px-6 py-3.5 text-left text-on-surface transition-colors border-b border-surface-container/50 last:border-0"
+                  className="w-full flex items-center gap-4 px-6 py-2.5 text-left text-on-surface transition-colors border-b border-surface-container/50 last:border-0"
                   whileHover={{ x: 4, backgroundColor: 'rgba(0,0,0,0.03)' }}
                   whileTap={{ scale: 0.97 }}
                   transition={{ duration: 0.15 }}
@@ -275,7 +275,7 @@ function SideDrawer({ open, onClose }) {
               {/* Install App button */}
               {!installed && (
                 <motion.button onClick={handleInstallClick}
-                  className="w-full flex items-center gap-4 px-6 py-3.5 text-left hover:bg-orange-50 transition-colors"
+                  className="w-full flex items-center gap-4 px-6 py-2.5 text-left hover:bg-orange-50 transition-colors"
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.97 }}
                   transition={{ duration: 0.15 }}
