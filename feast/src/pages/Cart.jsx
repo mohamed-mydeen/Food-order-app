@@ -11,8 +11,8 @@ const DELIVERY_FEE = 45
 const MERCHANT_UPI  = 'mkaubathulla@oksbi'
 const MERCHANT_NAME = 'Feast At Night'
 
-const makeGPayLink    = (amt) => `tez://upi/pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR`
-const makePhonePeLink = (amt) => `phonepe://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR`
+const makeGPayLink    = (amt, note="Order") => `tez://upi/pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR&tn=${encodeURIComponent(note)}`
+const makePhonePeLink = (amt, note="Order") => `phonepe://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR&tn=${encodeURIComponent(note)}`
 
 /* ── Web Audio success chime (no file needed) ───────────────────── */
 function playSuccessChime() {
@@ -35,10 +35,10 @@ function playSuccessChime() {
 }
 
 /* ── Payment options ────────────────────────────────────────────── */
-const getPaymentOptions = (amount) => [
+const getPaymentOptions = (amount, note="Feast At Night Order") => [
   {
     id: 'GPAY', method: 'UPI', label: 'Google Pay',
-    sub: 'Pay via Google Pay UPI', deepLink: makeGPayLink(amount),
+    sub: 'Pay via Google Pay UPI', deepLink: makeGPayLink(amount, note),
     badge: 'Recommended', badgeCls: 'bg-blue-50 text-blue-600',
     logo: (
       <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-white border border-gray-100 shadow-sm">
@@ -49,7 +49,7 @@ const getPaymentOptions = (amount) => [
   },
   {
     id: 'PHONEPE', method: 'UPI', label: 'PhonePe',
-    sub: 'Pay via PhonePe UPI', deepLink: makePhonePeLink(amount),
+    sub: 'Pay via PhonePe UPI', deepLink: makePhonePeLink(amount, note),
     badge: null, badgeCls: '',
     logo: (
       <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#5f259f] shadow-sm">
@@ -117,7 +117,7 @@ export default function Cart() {
   const subtotal       = cartItems.reduce((s, it) => s + parseFloat(it.product?.price || 0) * it.quantity, 0)
   const total          = subtotal + DELIVERY_FEE
   const totalItems     = cartItems.reduce((s, it) => s + it.quantity, 0)
-  const PAYMENT_OPTIONS = getPaymentOptions(total)
+  const PAYMENT_OPTIONS = getPaymentOptions(total, `Order by ${user?.name || 'Customer'}`)
   const chosen          = PAYMENT_OPTIONS.find(p => p.id === selectedPayment)
 
   const handlePay = async () => {
