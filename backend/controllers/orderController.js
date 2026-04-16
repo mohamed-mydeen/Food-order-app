@@ -23,11 +23,11 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: "Cart is empty." });
     }
 
-    // Calculate total
+    const DELIVERY_FEE = 45;
     const total_amount = cartItems.reduce(
       (sum, item) => sum + parseFloat(item.product.price) * item.quantity,
       0
-    );
+    ) + DELIVERY_FEE;
 
     // Create order
     const order = await Order.create({
@@ -37,7 +37,7 @@ const placeOrder = async (req, res) => {
       status: "Pending",
       payment_method,
       payment_reference: payment_reference || null,
-      payment_status: payment_method === 'UPI' ? 'Paid' : 'Pending',
+      payment_status: "Pending", // Always Pending until admin verifies payment manually
     });
 
     // Create order items (snapshot price at time of order)
@@ -174,7 +174,13 @@ const updateOrderStatus = async (req, res) => {
     const order = await Order.findByPk(req.params.id);
     if (!order) return res.status(404).json({ success: false, message: "Order not found." });
 
-    await order.update({ status });
+    const updateData = { status };
+    // Automatically mark payment as Paid if the admin accepts the order (e.g. Preparing)
+    if (order.payment_method === 'UPI' && status !== 'Pending' && status !== 'Cancelled') {
+      updateData.payment_status = 'Paid';
+    }
+
+    await order.update(updateData);
     return res.json({ success: true, message: "Order status updated.", data: order });
   } catch (error) {
     console.error("updateOrderStatus:", error);
