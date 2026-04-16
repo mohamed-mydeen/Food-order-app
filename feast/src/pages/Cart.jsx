@@ -88,6 +88,7 @@ export default function Cart() {
   const [countdown, setCountdown]       = useState(5)
   const [recentOrders, setRecentOrders] = useState([])
   const [ordersLoading, setOrdersLoading] = useState(false)
+  const [updatingItem, setUpdatingItem] = useState(null)
 
   /* auto-redirect countdown after success */
   useEffect(() => {
@@ -107,6 +108,12 @@ export default function Cart() {
       .catch(() => {})
       .finally(() => setOrdersLoading(false))
   }, [token, cartItems.length])
+
+  const handleUpdateQty = async (productId, newQty, action) => {
+    setUpdatingItem({ id: productId, action })
+    await updateQty(productId, newQty)
+    setUpdatingItem(null)
+  }
 
   const subtotal       = cartItems.reduce((s, it) => s + parseFloat(it.product?.price || 0) * it.quantity, 0)
   const taxes          = subtotal * TAX_RATE
@@ -413,14 +420,24 @@ export default function Cart() {
 
                     {/* Qty controls */}
                     <div className="flex items-center bg-surface-container-low border border-outline-variant/20 rounded-lg overflow-hidden flex-shrink-0">
-                      <button onClick={() => updateQty(item.product_id, item.quantity - 1)}
-                        className="w-8 h-8 flex items-center justify-center text-primary active:bg-primary/10 transition-colors">
-                        <span className="material-symbols-outlined text-[16px]">remove</span>
+                      <button onClick={() => handleUpdateQty(item.product_id, item.quantity - 1, 'dec')}
+                        disabled={updatingItem?.id === item.product_id}
+                        className="w-8 h-8 flex items-center justify-center text-primary active:bg-primary/10 transition-colors disabled:opacity-50">
+                        {updatingItem?.id === item.product_id && updatingItem?.action === 'dec' ? (
+                          <svg className="animate-spin w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        ) : (
+                          <span className="material-symbols-outlined text-[16px]">remove</span>
+                        )}
                       </button>
                       <span className="w-7 text-center font-black text-sm text-on-surface">{item.quantity}</span>
-                      <button onClick={() => updateQty(item.product_id, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center bg-primary text-on-primary active:opacity-80 transition-opacity">
-                        <span className="material-symbols-outlined text-[16px]">add</span>
+                      <button onClick={() => handleUpdateQty(item.product_id, item.quantity + 1, 'inc')}
+                        disabled={updatingItem?.id === item.product_id}
+                        className="w-8 h-8 flex items-center justify-center bg-primary text-on-primary active:opacity-80 transition-opacity disabled:opacity-50">
+                        {updatingItem?.id === item.product_id && updatingItem?.action === 'inc' ? (
+                          <svg className="animate-spin w-4 h-4 text-on-primary" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        ) : (
+                          <span className="material-symbols-outlined text-[16px]">add</span>
+                        )}
                       </button>
                     </div>
                   </motion.div>
