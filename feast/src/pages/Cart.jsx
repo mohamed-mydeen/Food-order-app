@@ -8,7 +8,7 @@ import { useCart } from '../context/CartContext'
 
 const API          = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 const DELIVERY_FEE = 45
-const MERCHANT_UPI  = '7094331888@ybl' // Note: This assumes PhonePe (@ybl), adjust to @okicici or @paytm if registered elsewhere.
+const MERCHANT_UPI  = 'mkaubathulla@oksbi'
 const MERCHANT_NAME = 'Feast At Night'
 
 const makeGPayLink    = (amt) => `tez://upi/pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR`
