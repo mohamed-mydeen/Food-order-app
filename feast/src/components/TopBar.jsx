@@ -248,10 +248,18 @@ function SideDrawer({ open, onClose }) {
 
               {/* Extra links */}
               {[
-                { icon: 'settings',      label: 'Settings',      path: '/settings' },
-                { icon: 'help_outline',  label: 'Help & Support', path: '/contact' },
-              ].map(({ icon, label, path }) => (
-                <motion.button key={label} onClick={() => go(path)}
+                { icon: 'settings',      label: 'Settings',      action: () => go('/settings') },
+                { icon: 'help_outline',  label: 'Help & Support', action: () => go('/contact') },
+                { icon: 'share',         label: 'Share App',     action: async () => {
+                    const url = window.location.origin;
+                    if (navigator.share) {
+                      try { await navigator.share({ title: 'Feast At Night', text: 'Order delicious food from Feast At Night!', url }); } catch(e){}
+                    } else {
+                      try { await navigator.clipboard.writeText(url); alert('App link copied!'); } catch(e){}
+                    }
+                } },
+              ].map(({ icon, label, action }) => (
+                <motion.button key={label} onClick={action}
                   className="w-full flex items-center gap-4 px-6 py-3.5 text-left text-on-surface transition-colors border-b border-surface-container/50 last:border-0"
                   whileHover={{ x: 4, backgroundColor: 'rgba(0,0,0,0.03)' }}
                   whileTap={{ scale: 0.97 }}

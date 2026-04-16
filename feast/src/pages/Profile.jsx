@@ -139,6 +139,14 @@ export default function Profile() {
             { icon: 'location_on',  label: 'Delivery Address',  sub: user?.address || 'Add your address', action: openEdit },
             { icon: 'settings',     label: 'Settings',          sub: 'Theme, address, support & more', action: () => navigate('/settings') },
             { icon: 'help',         label: 'Help & Support',    sub: 'Chat with us anytime', action: () => navigate('/contact') },
+            { icon: 'share',        label: 'Share App',         sub: 'Share with friends & family', action: async () => {
+              const url = window.location.origin;
+              if (navigator.share) {
+                try { await navigator.share({ title: 'Feast At Night', text: 'Order delicious food from Feast At Night!', url }); } catch(e){}
+              } else {
+                try { await navigator.clipboard.writeText(url); alert('App link copied!'); } catch(e){}
+              }
+            } },
           ].map(({ icon, label, sub, action, badge }, i) => (
             <motion.div
               key={label}
