@@ -117,8 +117,8 @@ export default function Cart() {
   const subtotal       = cartItems.reduce((s, it) => s + parseFloat(it.product?.price || 0) * it.quantity, 0)
   const total          = subtotal + DELIVERY_FEE
   const totalItems     = cartItems.reduce((s, it) => s + it.quantity, 0)
-  const itemSummary = cartItems.map(it => `${it.quantity}x ${it.product?.name}`).join(', ')
-  let upiNote = `${user?.name || 'Order'}: ${itemSummary}`
+  let upiNote = `${user?.name || 'Customer'} : Paid`
+  // We keep the truncation logic just in case the name is extremely long
   if (upiNote.length > 50) upiNote = upiNote.substring(0, 47) + '...'
   
   const PAYMENT_OPTIONS = getPaymentOptions(total, upiNote)
