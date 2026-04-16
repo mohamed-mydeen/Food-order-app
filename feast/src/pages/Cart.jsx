@@ -8,7 +8,6 @@ import { useCart } from '../context/CartContext'
 
 const API          = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 const DELIVERY_FEE = 45
-const TAX_RATE     = 0.05
 const MERCHANT_UPI  = 'mpmhub@upi'
 const MERCHANT_NAME = 'Feast At Night'
 
@@ -116,8 +115,7 @@ export default function Cart() {
   }
 
   const subtotal       = cartItems.reduce((s, it) => s + parseFloat(it.product?.price || 0) * it.quantity, 0)
-  const taxes          = subtotal * TAX_RATE
-  const total          = subtotal + DELIVERY_FEE + taxes
+  const total          = subtotal + DELIVERY_FEE
   const totalItems     = cartItems.reduce((s, it) => s + it.quantity, 0)
   const PAYMENT_OPTIONS = getPaymentOptions(total)
   const chosen          = PAYMENT_OPTIONS.find(p => p.id === selectedPayment)
@@ -478,9 +476,6 @@ export default function Cart() {
               </div>
               <div className="flex justify-between text-on-surface-variant">
                 <span>Delivery Fee</span><span className="text-on-surface font-medium">₹{DELIVERY_FEE.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-on-surface-variant">
-                <span>GST (5%)</span><span className="text-on-surface font-medium">₹{taxes.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-black text-on-surface border-t border-dashed border-surface-container pt-2.5 mt-1 text-base">
                 <span>To Pay</span><span className="text-primary">₹{total.toFixed(2)}</span>

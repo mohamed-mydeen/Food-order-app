@@ -14,7 +14,6 @@ const STATUS_CFG = {
 function Bill({ order }) {
   const items     = order.items || []
   const subtotal  = items.reduce((s, it) => s + it.quantity * parseFloat(it.price), 0)
-  const gst       = subtotal * 0.05           // 5 % GST
   const total     = parseFloat(order.total_amount)
   const date      = new Date(order.created_at)
 
@@ -25,7 +24,6 @@ function Bill({ order }) {
         <div className="text-2xl mb-1">🍽️</div>
         <h2 className="font-bold text-lg tracking-wide">FEAST AT NIGHT</h2>
         <p className="text-xs text-slate-500">Delicious food, delivered fast</p>
-        <p className="text-xs text-slate-400 mt-0.5">GSTIN: 29XXXXXX1234Z5</p>
       </div>
 
       {/* Bill meta */}
@@ -76,7 +74,6 @@ function Bill({ order }) {
       {/* Totals */}
       <div className="border-t border-slate-200 pt-2 space-y-1 text-xs">
         <div className="flex justify-between"><span className="text-slate-500">Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
-        <div className="flex justify-between"><span className="text-slate-500">GST (5%)</span><span>₹{gst.toFixed(2)}</span></div>
         <div className="flex justify-between font-bold text-sm border-t border-slate-300 pt-2 mt-1">
           <span>TOTAL</span>
           <span className="text-orange-600">₹{total.toFixed(2)}</span>
