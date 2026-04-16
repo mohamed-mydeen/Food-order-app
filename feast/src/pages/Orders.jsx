@@ -58,6 +58,66 @@ function OrderCard({ order, index, onReorder }) {
   const totalItems = items.reduce((s, it) => s + (it.quantity || 1), 0)
   const isActive   = status !== 'Delivered' && status !== 'Cancelled'
 
+  const handlePrint = (e) => {
+    e.stopPropagation()
+    const subtotal = items.reduce((s, it) => s + (it.quantity * parseFloat(it.price || 0)), 0)
+    const total = parseFloat(total_amount).toFixed(2)
+    const dateStrFull = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+    const timeStrFull = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+
+    const printContent = `
+      <div style="font-family: 'Courier New', monospace; font-size: 13px; color: #1e293b;">
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px dashed #cbd5e1;">
+          <h2 style="font-size: 18px;">FEAST AT NIGHT</h2>
+          <p style="font-size: 11px; color: #64748b; margin-top:2px;">Delicious food, delivered fast</p>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 16px;">
+          <div>
+            <p>Bill No: <strong>INV-${String(order.id).padStart(5, '0')}</strong></p>
+            <p>Date: ${dateStrFull}</p>
+            <p>Time: ${timeStrFull}</p>
+          </div>
+          <div style="text-align: right;">
+            <p>Status: <strong>${status}</strong></p>
+            <p>Payment: <strong>${order.payment_method || 'COD'}</strong></p>
+          </div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 16px;">
+          <tr style="border-bottom: 1px solid #e2e8f0; text-align: left;">
+            <th style="padding: 4px 0;">Item</th>
+            <th style="padding: 4px 0; text-align: center;">Qty</th>
+            <th style="padding: 4px 0; text-align: right;">Amt</th>
+          </tr>
+          ${items.map(it => `
+            <tr style="border-bottom: 1px dashed #f1f5f9;">
+              <td style="padding: 6px 0;">${it.product?.name || 'Item'}</td>
+              <td style="padding: 6px 0; text-align: center;">${it.quantity}</td>
+              <td style="padding: 6px 0; text-align: right;">₹${(it.quantity * parseFloat(it.price||0)).toFixed(2)}</td>
+            </tr>
+          `).join('')}
+        </table>
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 8px; font-size: 11px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Delivery Fee</span><span>₹45.00</span></div>
+          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; border-top: 1px solid #cbd5e1; padding-top: 8px; margin-top: 4px;">
+            <span>TOTAL</span><span>₹${total}</span>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px dashed #cbd5e1; font-size: 11px; color: #64748b;">
+          <p>Thank you for your order! 🙏</p>
+          <p style="margin-top: 4px; font-size: 9px;">This is a computer-generated invoice.</p>
+        </div>
+      </div>
+    `
+    const win = window.open('', '_blank', 'width=400,height=600')
+    if (win) {
+      win.document.write(`<html><head><title>Invoice INV-${String(order.id).padStart(5, '0')}</title></head><body style="padding:20px; margin:0;">${printContent}</body></html>`)
+      win.document.close()
+      win.focus()
+      setTimeout(() => { win.print(); win.close() }, 400)
+    }
+  }
+
   return (
     <motion.div
       className="bg-surface rounded-2xl overflow-hidden border border-surface-container shadow-sm"
@@ -133,21 +193,32 @@ function OrderCard({ order, index, onReorder }) {
       <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className={`w-2 h-2 rounded-full ${cfg.dot} ${isActive ? 'animate-pulse' : ''}`} />
-          <span className="text-xs text-on-surface-variant font-medium">
+          <span className="text-xs text-on-surface-variant font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">
             {status === 'Delivered' ? 'Order completed' :
              status === 'Cancelled' ? 'Order cancelled' :
-             'Tracking your order'}
+             'Tracking order'}
           </span>
         </div>
-        <motion.button
-          className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#a83100] text-white text-xs font-bold shadow-sm"
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.93 }}
-          onClick={() => onReorder(items)}
-        >
-          <span className="material-symbols-outlined text-[13px]">refresh</span>
-          Reorder
-        </motion.button>
+        <div className="flex items-center gap-2">
+          <motion.button
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold transition-colors"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.93 }}
+            onClick={handlePrint}
+          >
+            <span className="material-symbols-outlined text-[13px]">receipt_long</span>
+            Bill
+          </motion.button>
+          <motion.button
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#a83100] text-white text-xs font-bold shadow-sm"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.93 }}
+            onClick={() => onReorder(items)}
+          >
+            <span className="material-symbols-outlined text-[13px]">refresh</span>
+            Reorder
+          </motion.button>
+        </div>
       </div>
     </motion.div>
   )
