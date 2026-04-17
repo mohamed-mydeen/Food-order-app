@@ -18,7 +18,8 @@ try {
       project_id: process.env.FIREBASE_PROJECT_ID,
       client_email: process.env.FIREBASE_CLIENT_EMAIL,
       // Render/Vercel escape newlines as \\n string, so we must unescape them to \n
-      private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      // We also strip out any accidental leading/trailing double-quotes copied from the json file.
+      private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/"/g, ''),
     };
   } 
   // 2. Try falling back to local file
