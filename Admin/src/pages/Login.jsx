@@ -21,12 +21,15 @@ export default function Login() {
       const res = await api.post('/auth/login', form)
       const { token, user } = res.data.data
 
-      if (user.role !== 'admin') {
-        setError('Access denied. This panel is for admins only.')
+      const allowedRoles = ['admin', 'delivery', 'developer']
+      if (!allowedRoles.includes(user.role)) {
+        setError('Access denied. This panel is for staff only.')
         return
       }
       login(token, user)
-      navigate('/dashboard', { replace: true })
+      // Delivery staff go directly to orders; everyone else to dashboard
+      const redirect = user.role === 'delivery' ? '/orders' : '/dashboard'
+      navigate(redirect, { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.')
     } finally {

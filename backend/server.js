@@ -11,6 +11,9 @@ const orderRoutes = require("./routes/orderRoutes");
 const userRoutes = require("./routes/userRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const offerRoutes = require("./routes/offerRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
+const bugRoutes = require("./routes/bugRoutes");
+const { incrementViews } = require("./controllers/analyticsController");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,12 +36,16 @@ app.use(express.urlencoded({ extended: true }));
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
+// Track page views on every product fetch (public endpoint visited by frontend)
+app.use("/api/products", (req, res, next) => { if (req.method === "GET") incrementViews(); next(); });
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/offers", offerRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/bugs", bugRoutes);
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {

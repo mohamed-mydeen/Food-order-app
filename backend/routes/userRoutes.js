@@ -6,15 +6,17 @@ const {
   updateAddress,
   updateProfile,
   changePassword,
+  assignRole,
 } = require("../controllers/userController");
 const authMiddleware = require("../middleware/authMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
+const requireRole = require("../middleware/roleMiddleware");
 
 // All user routes require authentication
 router.use(authMiddleware);
 
-// GET /api/users               (admin only)
-router.get("/", adminMiddleware, getAllUsers);
+// GET /api/users               (admin + developer)
+router.get("/", requireRole("admin", "developer"), getAllUsers);
 
 // PUT /api/users/address       (logged-in user)
 router.put("/address", updateAddress);
@@ -25,7 +27,11 @@ router.put("/profile", updateProfile);
 // PUT /api/users/password      (logged-in user)
 router.put("/password", changePassword);
 
-// GET /api/users/:id           (admin or own profile)
+// PUT /api/users/:id/role      (developer only)
+router.put("/:id/role", requireRole("developer"), assignRole);
+
+// GET /api/users/:id           (admin, developer, or own profile)
 router.get("/:id", getUserById);
 
 module.exports = router;
+

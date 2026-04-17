@@ -102,4 +102,39 @@ const changePassword = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, getUserById, updateAddress, updateProfile, changePassword };
+// ─── PUT /api/users/:id/role (developer only) ─────────────────────────────────
+const assignRole = async (req, res) => {
+  try {
+    const targetId = parseInt(req.params.id);
+    const { role } = req.body;
+    const validRoles = ["user", "admin", "delivery", "developer"];
+
+    if (!role || !validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
+      });
+    }
+
+    // Prevent developer from changing their own role
+    if (req.user.userId === targetId) {
+      return res.status(403).json({ success: false, message: "You cannot change your own role." });
+    }
+
+    const user = await User.findByPk(targetId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+    await user.update({ role });
+    return res.json({
+      success: true,
+      message: `Role updated to "${role}" for ${user.name}.`,
+      data: { id: user.id, name: user.name, role: user.role },
+    });
+  } catch (error) {
+    console.error("assignRole:", error);
+    return res.status(500).json({ success: false, message: "Failed to update role." });
+  }
+};
+
+module.exports = { getAllUsers, getUserById, updateAddress, updateProfile, changePassword, assignRole };
+

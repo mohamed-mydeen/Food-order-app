@@ -1,16 +1,29 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import api from '../api/axios'
+import { AuthContext } from '../context/AuthContext'
+
+const ROLES = ['user', 'admin', 'delivery', 'developer']
 
 const roleColors = {
-  admin: 'bg-orange-50 text-orange-700 border-orange-200',
-  user:  'bg-blue-50 text-blue-700 border-blue-200',
+  admin:     'bg-orange-50 text-orange-700 border-orange-200',
+  user:      'bg-blue-50 text-blue-700 border-blue-200',
+  delivery:  'bg-cyan-50 text-cyan-700 border-cyan-200',
+  developer: 'bg-red-50 text-red-700 border-red-200',
+}
+
+const roleEmoji = {
+  admin: '🟠', user: '👤', delivery: '🚚', developer: '🔴'
 }
 
 export default function Users() {
-  const [users, setUsers]     = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState('')
-  const [search, setSearch]   = useState('')
+  const { user: me, hasRole } = useContext(AuthContext)
+  const isDeveloper = hasRole('developer')
+
+  const [users, setUsers]           = useState([])
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState('')
+  const [search, setSearch]         = useState('')
+  const [updatingRole, setUpdatingRole] = useState(null) // userId being updated
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -26,11 +39,27 @@ export default function Users() {
     fetchUsers()
   }, [])
 
+  const handleRoleChange = async (userId, newRole) => {
+    if (!window.confirm(`Change role to "${newRole}"?`)) return
+    setUpdatingRole(userId)
+    try {
+      await api.put(`/users/${userId}/role`, { role: newRole })
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update role.')
+    } finally {
+      setUpdatingRole(null)
+    }
+  }
+
   const filtered = users.filter(u =>
     u.name?.toLowerCase().includes(search.toLowerCase()) ||
     u.email?.toLowerCase().includes(search.toLowerCase()) ||
     u.phone?.includes(search)
   )
+
+  // Stats by role
+  const countByRole = role => users.filter(u => u.role === role).length
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -38,7 +67,10 @@ export default function Users() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Users</h2>
-          <p className="text-slate-500 text-sm mt-0.5">All registered customers on Feast At Night</p>
+          <p className="text-slate-500 text-sm mt-0.5">
+            All registered users on Feast At Night
+            {isDeveloper && <span className="ml-2 inline-flex items-center gap-1 text-red-500 text-xs font-semibold">🔴 Role management enabled</span>}
+          </p>
         </div>
         <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm w-full sm:w-72">
           <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,11 +87,12 @@ export default function Users() {
 
       {/* Stats strip */}
       {!loading && !error && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total Users',  value: users.filter(u => u.role === 'user').length,  color: 'from-blue-400 to-blue-600' },
-            { label: 'Admins',       value: users.filter(u => u.role === 'admin').length, color: 'from-orange-400 to-orange-600' },
-            { label: 'With Address', value: users.filter(u => u.address).length,          color: 'from-green-400 to-green-600' },
+            { label: 'Customers',  value: countByRole('user'),      color: 'from-blue-400 to-blue-600' },
+            { label: 'Admins',     value: countByRole('admin'),     color: 'from-orange-400 to-orange-600' },
+            { label: 'Delivery',   value: countByRole('delivery'),  color: 'from-cyan-400 to-cyan-600' },
+            { label: 'Developers', value: countByRole('developer'), color: 'from-red-500 to-rose-600' },
           ].map(({ label, value, color }) => (
             <div key={label} className={`bg-gradient-to-br ${color} rounded-2xl p-5 text-white shadow-lg`}>
               <p className="text-white/75 text-xs font-medium mb-1">{label}</p>
@@ -79,10 +112,7 @@ export default function Users() {
         </div>
       )}
 
-      {/* Error */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 rounded-2xl p-6 text-sm">{error}</div>
-      )}
+      {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-2xl p-6 text-sm">{error}</div>}
 
       {/* Table */}
       {!loading && !error && (
@@ -136,11 +166,36 @@ export default function Users() {
                           : <span className="text-slate-300">—</span>
                         }
                       </td>
+
+                      {/* Role — dropdown for developer, badge for others */}
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${roleColors[u.role] || 'bg-slate-100 text-slate-600'}`}>
-                          {u.role}
-                        </span>
+                        {isDeveloper && u.id !== me?.id ? (
+                          <div className="relative">
+                            {updatingRole === u.id ? (
+                              <div className="flex items-center gap-2 text-slate-400 text-xs">
+                                <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+                                Updating...
+                              </div>
+                            ) : (
+                              <select
+                                value={u.role}
+                                onChange={e => handleRoleChange(u.id, e.target.value)}
+                                className={`text-xs font-semibold border rounded-full px-3 py-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-300 transition-all ${roleColors[u.role] || 'bg-slate-100 text-slate-600'}`}
+                              >
+                                {ROLES.map(r => (
+                                  <option key={r} value={r}>{roleEmoji[r]} {r}</option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${roleColors[u.role] || 'bg-slate-100 text-slate-600'}`}>
+                            {roleEmoji[u.role]} {u.role}
+                            {u.id === me?.id && <span className="opacity-60">(you)</span>}
+                          </span>
+                        )}
                       </td>
+
                       <td className="px-6 py-4 text-slate-400 text-xs">
                         {u.createdAt
                           ? new Date(u.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
