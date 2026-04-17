@@ -12,9 +12,14 @@ let messaging = null;
 try {
   let serviceAccount = null;
 
-  // 1. Try reading from Render/Vercel environment variable
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  // 1. Try reading individual environment variables (Robust for Render/Vercel)
+  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+    serviceAccount = {
+      project_id: process.env.FIREBASE_PROJECT_ID,
+      client_email: process.env.FIREBASE_CLIENT_EMAIL,
+      // Render/Vercel escape newlines as \\n string, so we must unescape them to \n
+      private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    };
   } 
   // 2. Try falling back to local file
   else if (fs.existsSync(serviceAccountPath)) {
@@ -30,7 +35,7 @@ try {
     console.log("🔥 Firebase Admin SDK initialized successfully.");
   } else {
     console.warn("⚠️ Firebase Admin SDK not initialized.");
-    console.warn("⚠️ Missing 'firebase-service-account.json' file OR 'FIREBASE_SERVICE_ACCOUNT_JSON' env var.");
+    console.warn("⚠️ Missing 'firebase-service-account.json' file OR missing individual FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY Env vars.");
   }
 } catch (error) {
   console.error("❌ Failed to initialize Firebase Admin SDK:", error);
