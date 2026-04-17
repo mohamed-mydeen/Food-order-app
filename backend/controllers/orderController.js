@@ -97,17 +97,25 @@ const getUserOrders = async (req, res) => {
   }
 };
 
-// ─── GET /api/orders (admin) ───────────────────────────────────────────────────
+// ─── GET /api/orders (admin + developer + delivery) ───────────────────────────
 const getAllOrders = async (req, res) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
-    const where = status ? { status } : {};
     const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    // Support comma-separated statuses (e.g. "Pending,Preparing,Out for Delivery")
+    let where = {}
+    if (status) {
+      const statuses = status.split(',').map(s => s.trim()).filter(Boolean)
+      where = statuses.length === 1
+        ? { status: statuses[0] }
+        : { status: { [Op.in]: statuses } }
+    }
 
     const { count, rows } = await Order.findAndCountAll({
       where,
       include: [
-        { model: User, as: "user", attributes: ["id", "name", "email", "phone"] },
+        { model: User, as: "user", attributes: ["id", "name", "email", "phone", "address"] },
         {
           model: OrderItem,
           as: "items",
