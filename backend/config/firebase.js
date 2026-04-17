@@ -10,9 +10,18 @@ const serviceAccountPath = path.join(__dirname, '../firebase-service-account.jso
 let messaging = null;
 
 try {
-  if (fs.existsSync(serviceAccountPath)) {
-    const serviceAccount = require(serviceAccountPath);
-    
+  let serviceAccount = null;
+
+  // 1. Try reading from Render/Vercel environment variable
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  } 
+  // 2. Try falling back to local file
+  else if (fs.existsSync(serviceAccountPath)) {
+    serviceAccount = require(serviceAccountPath);
+  }
+
+  if (serviceAccount) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
@@ -20,8 +29,8 @@ try {
     messaging = admin.messaging();
     console.log("🔥 Firebase Admin SDK initialized successfully.");
   } else {
-    console.warn("⚠️ Firebase Admin SDK not initialized: 'firebase-service-account.json' missing.");
-    console.warn("⚠️ Push notifications will not work until you add your service account key.");
+    console.warn("⚠️ Firebase Admin SDK not initialized.");
+    console.warn("⚠️ Missing 'firebase-service-account.json' file OR 'FIREBASE_SERVICE_ACCOUNT_JSON' env var.");
   }
 } catch (error) {
   console.error("❌ Failed to initialize Firebase Admin SDK:", error);
