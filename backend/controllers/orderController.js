@@ -1,4 +1,5 @@
-const { Order, OrderItem, Cart, Product, User } = require("../models");
+const { Order, OrderItem, Cart, Product, User, NotificationToken } = require("../models");
+const { messaging } = require("../config/firebase");
 const { Op } = require("sequelize");
 
 // ─── POST /api/orders ──────────────────────────────────────────────────────────
@@ -189,6 +190,33 @@ const updateOrderStatus = async (req, res) => {
     }
 
     await order.update(updateData);
+
+    // ─── Trigger Push Notification ──────────────────────────────────
+    if (messaging) {
+      try {
+        const tokens = await NotificationToken.findAll({ where: { user_id: order.user_id }, attributes: ['token'] });
+        if (tokens.length > 0) {
+          const statusMessages = {
+            'Preparing': '👨‍🍳 Your food is being prepared!',
+            'Out for Delivery': '🚚 Your order is on the way!',
+            'Delivered': '✅ Your order has been delivered. Enjoy your meal!',
+            'Cancelled': '❌ Your order was cancelled.'
+          };
+          const msgBody = statusMessages[status] || `Order #${order.id} status updated to ${status}.`;
+          
+          await messaging.sendEachForMulticast({
+            notification: {
+              title: `Order Update #${order.id}`,
+              body: msgBody
+            },
+            tokens: tokens.map(t => t.token)
+          });
+        }
+      } catch (err) {
+        console.error("Failed to send push notification for order update:", err);
+      }
+    }
+
     return res.json({ success: true, message: "Order status updated.", data: order });
   } catch (error) {
     console.error("updateOrderStatus:", error);

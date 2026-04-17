@@ -6,12 +6,17 @@ const Order = require("./Order");
 const OrderItem = require("./OrderItem");
 const Offer = require("./Offer");
 const BugReport = require("./BugReport");
+const NotificationToken = require("./NotificationToken");
 
 // ─── Associations ─────────────────────────────────────────────────────────────
 
 // User → Orders (one-to-many)
 User.hasMany(Order, { foreignKey: "user_id", as: "orders", onDelete: "CASCADE" });
 Order.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+// User → NotificationTokens (one-to-many)
+User.hasMany(NotificationToken, { foreignKey: "user_id", as: "notificationTokens", onDelete: "CASCADE" });
+NotificationToken.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
 // Order → OrderItems (one-to-many)
 Order.hasMany(OrderItem, { foreignKey: "order_id", as: "items", onDelete: "CASCADE" });
@@ -29,5 +34,5 @@ Cart.belongsTo(User, { foreignKey: "user_id", as: "user" });
 Product.hasMany(Cart, { foreignKey: "product_id", as: "cartEntries", onDelete: "CASCADE" });
 Cart.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 
-module.exports = { sequelize, User, Product, Cart, Order, OrderItem, Offer, BugReport };
+module.exports = { sequelize, User, Product, Cart, Order, OrderItem, Offer, BugReport, NotificationToken };
 

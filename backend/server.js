@@ -13,6 +13,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const offerRoutes = require("./routes/offerRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const bugRoutes = require("./routes/bugRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 const { incrementViews } = require("./controllers/analyticsController");
 
 const app = express();
@@ -46,6 +47,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/offers", offerRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/bugs", bugRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {

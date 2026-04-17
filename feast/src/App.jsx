@@ -18,6 +18,7 @@ const About    = lazy(() => import('./pages/About'))
 const Settings = lazy(() => import('./pages/Settings'))
 
 import InstallBanner from './components/InstallBanner'
+import { useFirebaseNotifications } from './hooks/useFirebaseNotifications'
 
 // Minimal inline fallback — keeps app-shell visible while chunk loads
 function PageLoader() {
@@ -32,6 +33,8 @@ function PageLoader() {
 }
 
 export default function App() {
+  useFirebaseNotifications()
+
   useEffect(() => {
     // ── 1. Move dark class from <html> to .app-shell post-mount ───────────────
     const shell = document.querySelector('.app-shell')

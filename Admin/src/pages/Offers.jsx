@@ -12,6 +12,9 @@ export default function Offers() {
   const [preview, setPreview]     = useState(null)
   const [file, setFile]           = useState(null)
   const [title, setTitle]         = useState("Today's Special Offer")
+  const [pushTitle, setPushTitle] = useState("")
+  const [pushBody, setPushBody]   = useState("")
+  const [sendingPush, setSendingPush] = useState(false)
   const [toast, setToast]         = useState(null)
   const fileRef = useRef()
 
@@ -85,6 +88,30 @@ export default function Offers() {
       if (data.success) { showToast('Offer deleted'); await fetchOffers() }
       else showToast(data.message || 'Failed', 'error')
     } catch { showToast('Delete failed', 'error') }
+  }
+
+  /* ── Send Push Notification ────────────────────────────────────── */
+  const handleSendPush = async () => {
+    if (!pushTitle.trim() || !pushBody.trim()) return showToast('Title and body are required', 'error')
+    if (!window.confirm('Send this notification to all connected devices globally?')) return
+    
+    setSendingPush(true)
+    try {
+      const res = await fetch(`${API}/api/notifications/send`, {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: pushTitle, body: pushBody })
+      })
+      const data = await res.json()
+      if (data.success) {
+        showToast(`✅ ${data.message}`)
+        setPushTitle('')
+        setPushBody('')
+      } else {
+        showToast(data.message || 'Broadcast failed', 'error')
+      }
+    } catch { showToast('Broadcast failed', 'error') }
+    finally { setSendingPush(false) }
   }
 
   /* ── UI ──────────────────────────────────────────────────────────── */
@@ -163,6 +190,49 @@ export default function Offers() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Global Push Notification Configurator */}
+      <div className="bg-indigo-50/50 rounded-2xl shadow-sm border border-indigo-100 p-6 space-y-5">
+        <h3 className="font-semibold text-indigo-900 text-base flex items-center gap-2">
+          <span className="text-xl">🔔</span> Send Global Push Notification
+        </h3>
+        <p className="text-indigo-600/80 text-sm -mt-2">
+          Instantly broadcast a notification to all devices that have allowed permissions. Perfect for flash sales.
+        </p>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-indigo-800 mb-1.5">Notification Title</label>
+            <input
+              type="text"
+              value={pushTitle}
+              onChange={e => setPushTitle(e.target.value)}
+              className="w-full border border-indigo-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+              placeholder="e.g. 🍔 Flash Sale is LIVE!"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-indigo-800 mb-1.5">Notification Body</label>
+            <textarea
+              value={pushBody}
+              onChange={e => setPushBody(e.target.value)}
+              rows="3"
+              className="w-full border border-indigo-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white placeholder-slate-400"
+              placeholder="e.g. Get 50% off on all burgers for the next 2 hours only. Tap to order now!"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={handleSendPush}
+          disabled={sendingPush || !pushTitle.trim() || !pushBody.trim()}
+          className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-200 disabled:text-indigo-400 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2"
+        >
+          {sendingPush
+            ? <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Broadcasting…</>
+            : '📡 Broadcast to All Devices'}
+        </button>
       </div>
 
       {/* Offer list */}
