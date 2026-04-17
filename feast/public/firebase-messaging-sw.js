@@ -4,14 +4,12 @@ importScripts("https://www.gstatic.com/firebasejs/10.9.0/firebase-messaging-comp
 // Initialize the Firebase app in the service worker by passing in the
 // messagingSenderId.
 const firebaseConfig = {
-  // You will need to hardcode test config here or use URL params if bundled
-  // For production, the user MUST put their config here
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID" // Placeholder
+  apiKey: "AIzaSyB6iFUSevmqKA9RB_H53R5c2RQ5Dypi9Vs",
+  authDomain: "feast-790b4.firebaseapp.com",
+  projectId: "feast-790b4",
+  storageBucket: "feast-790b4.firebasestorage.app",
+  messagingSenderId: "238045088917",
+  appId: "1:238045088917:web:e48057aac007d92e271f9c"
 };
 
 try {
