@@ -12,8 +12,8 @@ export default function Offers() {
   const [preview, setPreview]     = useState(null)
   const [file, setFile]           = useState(null)
   const [title, setTitle]         = useState("Today's Special Offer")
-  const [pushTitle, setPushTitle] = useState("")
-  const [pushBody, setPushBody]   = useState("")
+  const [pushTitle, setPushTitle] = useState("🔥 Inniku special offer 🔥")
+  const [pushBody, setPushBody]   = useState("Chicken Mandi just ₹199 😱\nMiss pannadhe!")
   const [sendingPush, setSendingPush] = useState(false)
   const [toast, setToast]         = useState(null)
   const fileRef = useRef()
@@ -209,7 +209,7 @@ export default function Offers() {
               value={pushTitle}
               onChange={e => setPushTitle(e.target.value)}
               className="w-full border border-indigo-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-              placeholder="e.g. 🍔 Flash Sale is LIVE!"
+              placeholder="e.g. 🔥 Inniku special offer 🔥"
             />
           </div>
           <div>
@@ -219,7 +219,7 @@ export default function Offers() {
               onChange={e => setPushBody(e.target.value)}
               rows="3"
               className="w-full border border-indigo-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white placeholder-slate-400"
-              placeholder="e.g. Get 50% off on all burgers for the next 2 hours only. Tap to order now!"
+              placeholder="e.g. Chicken Mandi just ₹199 😱 Miss pannadhe!"
             />
           </div>
         </div>

@@ -18,16 +18,32 @@ router.post('/register', authMiddleware, async (req, res) => {
 
     // Upsert logic: if token exists, update user_id (in case of re-login), else create
     const existing = await NotificationToken.findOne({ where: { token } });
+    let isNewToken = false;
     if (existing) {
       existing.user_id = userId;
       if (device_info) existing.device_info = device_info;
       await existing.save();
     } else {
+      isNewToken = true;
       await NotificationToken.create({
         user_id: userId,
         token,
         device_info: device_info || 'web'
       });
+    }
+
+    if (isNewToken && messaging) {
+      try {
+        await messaging.send({
+          token,
+          notification: {
+            title: 'Welcome 🎉',
+            body: 'Feast At Night ku welcome!\nInniku special offer iruku 🔥 check pannunga!'
+          }
+        });
+      } catch (e) {
+        console.error('Failed to send welcome push:', e);
+      }
     }
 
     return res.json({ success: true, message: 'Push notification token registered.' });

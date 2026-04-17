@@ -64,6 +64,24 @@ const placeOrder = async (req, res) => {
       ],
     });
 
+    // Trigger Order Confirmed Notification
+    if (messaging) {
+      try {
+        const tokens = await NotificationToken.findAll({ where: { user_id: userId }, attributes: ['token'] });
+        if (tokens.length > 0) {
+          await messaging.sendEachForMulticast({
+            notification: {
+              title: `Order Placed! 🍽️`,
+              body: `Order confirm aagiduchu ✅\nUngal order ready aaguthu 🍗`
+            },
+            tokens: tokens.map(t => t.token)
+          });
+        }
+      } catch (err) {
+        console.error("Failed to send order placement push:", err);
+      }
+    }
+
     return res.status(201).json({
       success: true,
       message: "Order placed successfully.",
@@ -197,10 +215,10 @@ const updateOrderStatus = async (req, res) => {
         const tokens = await NotificationToken.findAll({ where: { user_id: order.user_id }, attributes: ['token'] });
         if (tokens.length > 0) {
           const statusMessages = {
-            'Preparing': '👨‍🍳 Your food is being prepared!',
-            'Out for Delivery': '🚚 Your order is on the way!',
-            'Delivered': '✅ Your order has been delivered. Enjoy your meal!',
-            'Cancelled': '❌ Your order was cancelled.'
+            'Preparing': 'Ungal food prepare aaguthu 👨‍🍳🔥\nSuper taste ready aagudhu 😋',
+            'Out for Delivery': 'Delivery partner vandhutaru 🚚\nKonjam nerathula reach aagum 😎',
+            'Delivered': 'Order deliver aagiduchu 🎉\nEnjoy pannunga 😋\nFeedback kudunga 🙌',
+            'Cancelled': '❌ Order cancel aagiduchu.'
           };
           const msgBody = statusMessages[status] || `Order #${order.id} status updated to ${status}.`;
           
