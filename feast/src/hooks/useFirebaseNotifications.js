@@ -19,8 +19,19 @@ export function useFirebaseNotifications() {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
           console.log('Notification permission granted.');
+          // Manually register the service worker to avoid Vite dev server 10000ms timeouts
+          let swRegistration = null;
+          try {
+            swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+          } catch (swErr) {
+            console.error('Failed to register service worker manually:', swErr);
+          }
+
           // Get Firebase token
-          const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+          const currentToken = await getToken(messaging, { 
+            vapidKey: VAPID_KEY,
+            serviceWorkerRegistration: swRegistration
+          });
           if (currentToken) {
             // Send to backend
             await fetch(`${API}/api/notifications/register`, {
@@ -51,8 +62,17 @@ export function useFirebaseNotifications() {
     // Listen for foreground messages
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log('Received foreground message:', payload);
-      // Optional: You could show an in-app toast here if desired,
-      // though the OS might not show a native notification if the app is focused.
+      
+      // Force the browser to spawn a native OS notification even if the tab is focused!
+      if (payload.notification && Notification.permission === 'granted') {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification(payload.notification.title, {
+            body: payload.notification.body,
+            icon: '/icon-192.png',
+            badge: '/badge.png'
+          });
+        });
+      }
     });
 
     return () => unsubscribe();
