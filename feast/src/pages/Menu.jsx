@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TopBar from '../components/TopBar'
@@ -149,13 +149,13 @@ function ProductSheet({ product, onClose }) {
 }
 
 /* ── Menu Item Card ──────────────────────────────────────────────── */
-function MenuItemCard({ item, index, onSelect }) {
+const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
   return (
     <motion.div
       className="group bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer"
       initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.4, ease: 'easeOut' }}
+      transition={{ delay: index * 0.04, duration: 0.4, ease: 'easeOut' }}
       whileHover={{ scale: 1.02, y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.12)' }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onSelect(item)}
@@ -209,7 +209,7 @@ function MenuItemCard({ item, index, onSelect }) {
       </div>
     </motion.div>
   )
-}
+})
 
 /* ── Menu Page ───────────────────────────────────────────────────── */
 export default function Menu() {

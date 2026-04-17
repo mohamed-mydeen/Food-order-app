@@ -7,8 +7,7 @@ import { SkeletonCard, SkeletonCircle, SkeletonBanner } from '../components/Skel
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import OfferPopup, { shouldShowOffer, markOfferSeen } from '../components/OfferPopup'
-
-const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com';
+import { useProducts } from '../hooks/useProducts'
 
 /* ── Inline Product Sheet (same as Menu.jsx) ────────────────────── */
 function ProductSheet({ product, onClose }) {
@@ -87,7 +86,7 @@ function ProductSheet({ product, onClose }) {
 
 const containerVariants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.09 } },
+  show: { transition: { staggerChildren: 0.04 } },
 }
 const itemVariants = {
   hidden: { opacity: 0, y: 22 },
@@ -96,9 +95,8 @@ const itemVariants = {
 
 export default function Home() {
   const navigate = useNavigate()
-  const [loading, setLoading]       = useState(true)
+  const { products, loading }       = useProducts()
   const [query, setQuery]           = useState('')
-  const [products, setProducts]     = useState([])
   const [categories, setCategories] = useState([])
   const [selected, setSelected]     = useState(null)
   const [offerOpen, setOfferOpen]   = useState(false)
@@ -112,50 +110,20 @@ export default function Home() {
     setOfferOpen(true)
   }, [])
 
+  // Derive categories from cached products
   useEffect(() => {
-    let isMounted = true;
+    if (products.length > 0) {
+      setCategories([...new Set(products.map(p => p.category))]);
+    }
+  }, [products]);
 
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        console.log("Fetching from API:", API);
-        const res  = await fetch(`${API}/api/products`);
-        const data = await res.json();
-        console.log("Response data:", data);
-        
-        if (data.success && data.data && isMounted) {
-          setProducts(data.data);
-          setCategories([...new Set(data.data.map(p => p.category))]);
-        }
-      } catch (err) {
-        console.error("Failed to fetch products:", err);
-      } finally {
-        if (isMounted) {
-          setTimeout(() => {
-            setLoading(false)
-            // Auto-show offer once per session after content loads
-            if (shouldShowOffer()) {
-              setTimeout(() => setOfferOpen(true), 600)
-            }
-          }, 1000);
-        }
-      }
-    };
-    
-    fetchProducts();
-
-    const handleOnline = () => {
-      console.log("Network restored, fetching products again...");
-      fetchProducts();
-    };
-
-    window.addEventListener('online', handleOnline);
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener('online', handleOnline);
-    };
-  }, []);
+  // Handle Offer Popup Auto-Show
+  useEffect(() => {
+    if (!loading && shouldShowOffer()) {
+      const timer = setTimeout(() => setOfferOpen(true), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   // Search filter
   const q = query.toLowerCase().trim()

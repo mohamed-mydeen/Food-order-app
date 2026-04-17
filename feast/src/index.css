@@ -6,9 +6,19 @@
   * {
     -webkit-tap-highlight-color: transparent;
     box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
-  html {}
+  input, textarea, [contenteditable] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
 
   html, body, #root {
     height: 100%;
@@ -33,6 +43,14 @@
     align-items: center;
     /* dvh = dynamic viewport height — accounts for mobile browser chrome */
     height: 100dvh;
+  }
+
+  button:active, a:active {
+    transform: scale(0.96);
+  }
+
+  button, a, [role="button"] {
+    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.2s ease;
   }
 }
 
