@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const { getDashboard } = require("../controllers/dashboardController");
 const authMiddleware = require("../middleware/authMiddleware");
-const adminMiddleware = require("../middleware/adminMiddleware");
+const requireRole = require("../middleware/roleMiddleware");
 
-// GET /api/dashboard  (admin only)
-router.get("/", authMiddleware, adminMiddleware, getDashboard);
+// GET /api/dashboard  (admin + developer)
+router.get("/", authMiddleware, requireRole("admin", "developer"), getDashboard);
 
 module.exports = router;
