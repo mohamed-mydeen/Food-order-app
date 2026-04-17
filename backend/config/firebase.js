@@ -12,9 +12,12 @@ let messaging = null;
 try {
   let serviceAccount = null;
 
-  // 1. Bulletproof Base64 parsing (Fixes all PaaS newline and formatting crashes)
   if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-    serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('ascii'));
+    const decodedJSON = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+    serviceAccount = JSON.parse(decodedJSON);
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
   }
   // 2. Try falling back to local file
   else if (fs.existsSync(serviceAccountPath)) {
