@@ -17,6 +17,11 @@ try {
     serviceAccount = JSON.parse(decodedJSON);
     if (serviceAccount.private_key) {
       serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      console.log('Firebase Private Key Length:', serviceAccount.private_key.length);
+      console.log('Firebase Private Key starts with:', serviceAccount.private_key.substring(0, 30));
+      console.log('Firebase Private Key ends with:', serviceAccount.private_key.substring(serviceAccount.private_key.length - 30));
+    } else {
+      console.log('Firebase Private Key is MISSING in JSON');
     }
   }
   // 2. Try falling back to local file
