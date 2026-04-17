@@ -4,7 +4,7 @@ importScripts("https://www.gstatic.com/firebasejs/10.9.0/firebase-messaging-comp
 // Initialize the Firebase app in the service worker by passing in the
 // messagingSenderId.
 const firebaseConfig = {
-  apiKey: "AIzaSyB6iFUSevmqKA9RB_H53R5c2RQ5Dypi9Vs",
+  apiKey: "AIzaSyB6iFUSevmgKA9RB_H53R5c2RQ5Dypi9Vs",
   authDomain: "feast-790b4.firebaseapp.com",
   projectId: "feast-790b4",
   storageBucket: "feast-790b4.firebasestorage.app",
