@@ -54,12 +54,6 @@ export default function Login() {
       const data = await res.json()
       if (!data.success) throw new Error(data.message)
       login(data.data.token, data.data.user)
-      
-      // Request Notification Permission immediately after user logs in (valid user gesture)
-      import('../hooks/useFirebaseNotifications').then(({ registerForPushNotifications }) => {
-        registerForPushNotifications(data.data.token);
-      }).catch(err => console.warn('Push registration error:', err));
-
       navigate('/home', { replace: true })
     } catch (err) {
       setApiE(err.message || 'Login failed. Please try again.')

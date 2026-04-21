@@ -89,12 +89,6 @@ export default function SignUp() {
       const data = await res.json()
       if (!data.success) throw new Error(data.message)
       login(data.data.token, data.data.user)
-      
-      // Request Notification Permission immediately after user signs up
-      import('../hooks/useFirebaseNotifications').then(({ registerForPushNotifications }) => {
-        registerForPushNotifications(data.data.token);
-      }).catch(err => console.warn('Push registration error:', err));
-
       setSucc(true)
       setTimeout(() => navigate('/home', { replace: true }), 1800)
     } catch (err) {
