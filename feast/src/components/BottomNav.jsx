@@ -28,33 +28,53 @@ export default function BottomNav() {
           const isActive = pathname === path
           const isCart   = label === 'Cart'
           return (
-            <button
+            <motion.button
               key={label}
               onClick={() => navigate(path)}
               className={`relative flex flex-col items-center justify-center w-[60px] h-[52px] rounded-[20px] transition-colors duration-150 ${
                 isActive ? 'text-white' : 'text-white/55'
               }`}
               style={{ WebkitTapHighlightColor: 'transparent' }}
+              whileTap={{ scale: 0.9 }}
             >
-              {/* Active indicator — CSS transition only, no layoutId to prevent flicker */}
+              {/* Active indicator */}
               <span
-                className={`absolute inset-0 rounded-[20px] transition-opacity duration-200 bg-white/20 border border-white/20 shadow-sm ${
-                  isActive ? 'opacity-100' : 'opacity-0'
+                className={`absolute inset-0 rounded-[20px] transition-all duration-300 bg-white/20 border border-white/20 shadow-sm ${
+                  isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
                 }`}
               />
-              <span className={`material-symbols-outlined text-[22px] relative z-10 ${isActive ? 'icon-filled' : ''}`}>
+              <motion.span 
+                className={`material-symbols-outlined text-[22px] relative z-10 ${isActive ? 'icon-filled' : ''}`}
+                animate={{ 
+                  y: isActive ? -2 : 0,
+                  scale: isActive ? 1.1 : 1,
+                  color: isActive ? '#ffffff' : 'rgba(255,255,255,0.55)'
+                }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+              >
                 {icon}
-              </span>
-              <span className="font-headline text-[9px] font-semibold uppercase tracking-widest mt-0.5 relative z-10 leading-none">
+              </motion.span>
+              <motion.span 
+                className="font-headline text-[9px] font-semibold uppercase tracking-widest mt-0.5 relative z-10 leading-none"
+                animate={{
+                  opacity: isActive ? 1 : 0.8,
+                  scale: isActive ? 1.05 : 1
+                }}
+              >
                 {label}
-              </span>
+              </motion.span>
               {/* Cart badge */}
               {isCart && cartCount > 0 && (
-                <span className="absolute -top-0.5 right-1 w-4 h-4 bg-[#a83100] text-white text-[8px] flex items-center justify-center rounded-full font-bold leading-none z-20">
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  key={cartCount} // Re-animate if count changes
+                  className="absolute -top-0.5 right-1 w-4 h-4 bg-[#a83100] text-white text-[8px] flex items-center justify-center rounded-full font-bold leading-none z-20"
+                >
                   {cartCount > 9 ? '9+' : cartCount}
-                </span>
+                </motion.span>
               )}
-            </button>
+            </motion.button>
           )
         })}
       </div>
