@@ -203,9 +203,11 @@ export default function Cart() {
             </motion.div>
           </div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <h2 className="font-headline font-black text-3xl text-on-surface tracking-tight">Order Placed!</h2>
+            <h2 className="font-headline font-black text-3xl text-on-surface tracking-tight">
+              {chosen?.method === 'UPI' ? 'Payment Pending ⌛' : 'Order Placed!'}
+            </h2>
             <p className="text-on-surface-variant text-sm mt-2">
-              {chosen?.method === 'UPI' ? `Redirecting to payment...` : `Pay ₹${total.toFixed(0)} when your order arrives`}
+              {chosen?.method === 'UPI' ? `Your order will be confirmed after a successful transaction.` : `Pay ₹${total.toFixed(0)} when your order arrives`}
             </p>
           </motion.div>
           <motion.div className="w-full max-w-xs bg-green-50 border border-green-100 rounded-2xl px-5 py-4 flex items-center gap-4"
@@ -215,7 +217,7 @@ export default function Cart() {
             </div>
             <div className="text-left">
               <p className="text-xs text-on-surface-variant font-medium">Total Amount</p>
-              <p className="text-xs text-on-surface-variant mt-0.5">{chosen?.method === 'UPI' ? 'Paid via UPI' : 'Cash on Delivery'}</p>
+              <p className="text-xs text-on-surface-variant mt-0.5">{chosen?.method === 'UPI' ? 'Pending UPI Payment' : 'Cash on Delivery'}</p>
             </div>
           </motion.div>
           <motion.div className="flex flex-col gap-3 w-full max-w-xs"
