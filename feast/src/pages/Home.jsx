@@ -185,9 +185,6 @@ export default function Home() {
 
   // Recommendations fetch
   const { token } = useAuth()
-  const [recs, setRecs]               = useState([])
-  const [recsMsg, setRecsMsg]         = useState('')
-  const [recsLoading, setRecsLoading] = useState(true)
   
   useEffect(() => {
     if (!token) {
