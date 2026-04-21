@@ -70,7 +70,7 @@ const getProductById = async (req, res) => {
 // ─── POST /api/products (admin) ───────────────────────────────────────────────
 const createProduct = async (req, res) => {
   try {
-    const { name, price, category, description } = req.body;
+    const { name, price, category, description, in_stock } = req.body;
 
     if (!name || !price || !category) {
       return res.status(400).json({ success: false, message: "Name, price, and category are required." });
@@ -82,7 +82,10 @@ const createProduct = async (req, res) => {
       imageUrl = result.secure_url;
     }
 
-    const product = await Product.create({ name, price, category, description, image: imageUrl });
+    // Parse boolean from form-data string if provided
+    const isInstock = in_stock === undefined ? true : (in_stock === 'true' || in_stock === true);
+
+    const product = await Product.create({ name, price, category, description, image: imageUrl, in_stock: isInstock });
     clearCache();  // invalidate so next GET fetches fresh data
 
     return res.status(201).json({
@@ -102,7 +105,7 @@ const updateProduct = async (req, res) => {
     const product = await Product.findByPk(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: "Product not found." });
 
-    const { name, price, category, description } = req.body;
+    const { name, price, category, description, in_stock } = req.body;
     let imageUrl = product.image;
 
     if (req.file) {
@@ -110,7 +113,9 @@ const updateProduct = async (req, res) => {
       imageUrl = result.secure_url;
     }
 
-    await product.update({ name, price, category, description, image: imageUrl });
+    const isInstock = in_stock === undefined ? product.in_stock : (in_stock === 'true' || in_stock === true);
+
+    await product.update({ name, price, category, description, image: imageUrl, in_stock: isInstock });
     clearCache();  // invalidate cache
 
     return res.json({

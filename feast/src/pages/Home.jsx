@@ -575,33 +575,43 @@ export default function Home() {
                           key={`rec-${p.id}`}
                           onClick={() => setSelected(p)}
                           onKeyDown={(e) => e.key === 'Enter' && setSelected(p)}
-                          className="flex-none w-36 bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-container text-left cursor-pointer"
+                          className={`flex-none w-36 bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-container text-left cursor-pointer relative ${p.in_stock === false ? 'opacity-80 grayscale-[0.5]' : ''}`}
                           initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
+                          animate={{ opacity: p.in_stock === false ? 0.8 : 1, x: 0 }}
                           transition={{ delay: i * 0.06 }}
                           whileTap={{ scale: 0.96 }}
                         >
-                          <div className="relative h-24 bg-gray-100 overflow-hidden">
+                          <div className="relative h-24 bg-gray-100 overflow-hidden text-center">
                             {p.image
                               ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                               : <div className="w-full h-full flex items-center justify-center text-3xl">🍽️</div>
                             }
+                            
+                            {/* Sold Out badge */}
+                            {p.in_stock === false && (
+                              <div className="absolute inset-x-0 bottom-0 top-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-20">
+                                <span className="bg-surface-container-highest text-on-surface-variant font-headline font-black uppercase tracking-widest text-[9px] px-2 py-1 rounded-sm shadow-sm ring-1 ring-black/5 block">
+                                  Sold Out
+                                </span>
+                              </div>
+                            )}
+
                             {p.tag && (
-                              <span className="absolute top-1.5 left-1.5 bg-primary/90 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">
+                              <span className="absolute top-1.5 left-1.5 bg-primary/90 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full z-10">
                                 {p.tag}
                               </span>
                             )}
                             {/* Wishlist Button */}
                             <button
                               onClick={(e) => handleWishlistClick(e, p.id)}
-                              className="absolute top-1.5 right-1.5 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white"
+                              className="absolute top-1.5 right-1.5 z-30 w-6 h-6 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white"
                             >
                               <span className={`material-symbols-outlined text-[13px] ${wishlist.includes(p.id) ? 'text-red-500 font-variation-fill' : ''}`}>favorite</span>
                             </button>
                           </div>
-                          <div className="p-2.5">
-                            <p className="font-bold text-xs text-on-surface line-clamp-1">{p.name}</p>
-                            <p className="font-black text-primary text-sm mt-0.5">₹{parseFloat(p.price).toFixed(0)}</p>
+                          <div className="p-2.5 relative z-30">
+                            <p className={`font-bold text-xs line-clamp-1 ${p.in_stock === false ? 'text-on-surface-variant line-through' : 'text-on-surface'}`}>{p.name}</p>
+                            <p className={`font-black text-sm mt-0.5 ${p.in_stock === false ? 'text-on-surface-variant' : 'text-primary'}`}>₹{parseFloat(p.price).toFixed(0)}</p>
                           </div>
                         </motion.div>
                       ))

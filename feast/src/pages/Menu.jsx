@@ -410,7 +410,11 @@ function ProductSheet({ product, onClose }) {
 
         {/* Action Buttons */}
         <div className="flex-shrink-0 px-5 pt-3 pb-8 bg-surface border-t border-surface-container space-y-3">
-          {added ? (
+          {product?.in_stock === false ? (
+            <div className="w-full py-4 bg-surface-container-highest text-on-surface-variant rounded-full font-headline font-bold text-base shadow-sm flex items-center justify-center gap-2 cursor-not-allowed">
+              <span className="material-symbols-outlined">block</span>Currently Out of Stock
+            </div>
+          ) : added ? (
             <div className="w-full py-4 bg-green-500 text-white rounded-full font-bold text-base flex items-center justify-center gap-2">
               <span className="material-symbols-outlined">check_circle</span>Added to Cart!
             </div>
@@ -460,9 +464,9 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
 
   return (
     <motion.div
-      className="group bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer"
+      className={`group bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer relative ${item.in_stock === false ? 'opacity-75 grayscale-[0.6]' : ''}`}
       initial={{ opacity: 0, y: 28 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: item.in_stock === false ? 0.75 : 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.4, ease: 'easeOut' }}
       whileHover={{ scale: 1.02, y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.12)' }}
       whileTap={{ scale: 0.98 }}
@@ -483,6 +487,15 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        
+        {/* Out of Stock Overlay */}
+        {item.in_stock === false && (
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-20">
+            <span className="bg-surface-container-highest text-on-surface-variant font-headline font-black uppercase tracking-widest text-[11px] px-3 py-1.5 rounded-sm shadow-sm ring-1 ring-black/5">
+              Sold Out
+            </span>
+          </div>
+        )}
 
         {/* Wishlist Heart Button */}
         <button 

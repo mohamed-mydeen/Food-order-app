@@ -30,6 +30,10 @@ const Product = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    in_stock: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
   },
   {
     tableName: "products",

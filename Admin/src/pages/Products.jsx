@@ -3,9 +3,10 @@ import api from '../api/axios'
 
 const CATEGORIES = ['All', 'Mandi', 'Burgers', 'Pizza', 'Biryani', 'Shawarma', 'Desserts', 'Drinks', 'Snacks']
 
-const emptyForm = { name: '', price: '', category: '', description: '', image: null }
+const emptyForm = { name: '', price: '', category: '', description: '', in_stock: true, image: null }
 
 function Modal({ title, onClose, children }) {
+  // ... unchanged modal ...
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
@@ -103,7 +104,7 @@ export default function Products() {
 
   const openEdit = (p) => {
     setEditProduct(p)
-    setForm({ name: p.name, price: p.price, category: p.category, description: p.description || '', image: null })
+    setForm({ name: p.name, price: p.price, category: p.category, description: p.description || '', in_stock: p.in_stock !== false, image: null })
     setPreview(p.image || null)
     setFormError('')
     setShowModal(true)
@@ -126,6 +127,7 @@ export default function Products() {
       fd.append('price', form.price)
       fd.append('category', form.category)
       fd.append('description', form.description)
+      fd.append('in_stock', form.in_stock)
       if (form.image) fd.append('image', form.image)
 
       const config = { headers: { 'Content-Type': 'multipart/form-data' } }
@@ -225,31 +227,39 @@ export default function Products() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filtered.map(product => (
-            <div key={product.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 overflow-hidden group">
+            <div key={product.id} className={`bg-white rounded-2xl shadow-sm border ${product.in_stock === false ? 'border-red-100 ring-1 ring-red-100 opacity-80' : 'border-slate-100 hover:shadow-md'} transition-all duration-200 hover:-translate-y-0.5 overflow-hidden group`}>
               {/* Image */}
               <div className="relative h-44 img-placeholder overflow-hidden">
                 {product.image ? (
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center bg-slate-50">
                     <span className="text-4xl opacity-30">🍽️</span>
                   </div>
                 )}
-                <div className="absolute top-3 right-3">
-                  <span className="bg-white/90 backdrop-blur-sm text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
+                <div className="absolute top-3 right-3 z-10">
+                  <span className="bg-white/95 backdrop-blur-md text-slate-700 text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded shadow-sm">
                     {product.category}
                   </span>
                 </div>
+                {/* Out of Stock visual badge overlay */}
+                {product.in_stock === false && (
+                  <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center z-10">
+                    <span className="bg-red-500 text-white font-black uppercase text-sm tracking-widest px-3 py-1.5 rounded shadow-lg transform -rotate-12 outline outline-1 outline-offset-2 outline-red-500/50">
+                      Out of Stock
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Info */}
               <div className="p-4">
-                <h4 className="font-semibold text-slate-800 truncate">{product.name}</h4>
+                <h4 className={`font-bold truncate ${product.in_stock === false ? 'text-slate-500 line-through' : 'text-slate-800'}`}>{product.name}</h4>
                 {product.description && (
                   <p className="text-slate-400 text-xs mt-0.5 line-clamp-1">{product.description}</p>
                 )}
                 <div className="flex items-center justify-between mt-3">
-                  <span className="text-orange-500 font-bold text-lg">₹{parseFloat(product.price).toFixed(0)}</span>
+                  <span className={`font-black text-lg ${product.in_stock === false ? 'text-slate-400' : 'text-orange-500'}`}>₹{parseFloat(product.price).toFixed(0)}</span>
                   <div className="flex gap-2">
                     <button
                       onClick={() => openEdit(product)}
@@ -284,6 +294,20 @@ export default function Products() {
             {formError && (
               <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">{formError}</div>
             )}
+
+            {/* In Stock Toggle */}
+            <label className="flex items-center gap-3 cursor-pointer p-4 bg-orange-50 border border-orange-100 rounded-2xl hover:bg-orange-100/50 transition-colors mb-2">
+              <input
+                type="checkbox"
+                checked={form.in_stock}
+                onChange={e => setForm({ ...form, in_stock: e.target.checked })}
+                className="w-5 h-5 accent-orange-600 rounded bg-white border-2 border-orange-600 cursor-pointer"
+              />
+              <div className="flex flex-col">
+                <span className="font-bold text-slate-800 text-sm">Currently In Stock</span>
+                <span className="text-orange-900/60 text-xs font-medium">Uncheck to mark as sold out (removes order button).</span>
+              </div>
+            </label>
 
             {/* Image Upload */}
             <div>
