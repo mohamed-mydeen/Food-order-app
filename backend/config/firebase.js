@@ -37,6 +37,12 @@ try {
     console.log('🔑 Firebase key loaded from local service-account.json');
   }
 
+  if (serviceAccount?.private_key) {
+    serviceAccount.private_key = serviceAccount.private_key
+      .replace(/\\n/g, '\n')   // literal backslash-n → real newline
+      .replace(/\r/g, '');     // strip carriage returns
+  }
+
   // ── Initialize ────────────────────────────────────────────────────────────
   if (serviceAccount) {
     if (!admin.apps.length) {
