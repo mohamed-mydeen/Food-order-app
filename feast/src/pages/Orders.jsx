@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import brandLogo from '../assets/brand_logo.png'
 
@@ -538,7 +537,6 @@ export default function Orders() {
         )}
       </AnimatePresence>
 
-      <BottomNav />
     </div>
   )
 }

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import BottomNav from '../components/BottomNav'
 import TopBar from '../components/TopBar'
 import { useAuth } from '../context/AuthContext'
 import mandiBanner from '../assets/mandi_profile.png'
@@ -291,7 +290,6 @@ export default function Profile() {
         </div>
       )}
 
-      <BottomNav />
     </div>
   )
 }

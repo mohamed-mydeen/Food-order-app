@@ -1,8 +1,6 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import TopBar from '../components/TopBar'
-import BottomNav from '../components/BottomNav'
-
 const contacts = [
   {
     label: 'Primary Line',
@@ -169,7 +167,6 @@ export default function Contact() {
         </main>
       </div>
 
-      <BottomNav />
     </div>
   )
 }

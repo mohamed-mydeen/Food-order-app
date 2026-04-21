@@ -2,7 +2,6 @@ import { useState, useEffect, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TopBar from '../components/TopBar'
-import BottomNav from '../components/BottomNav'
 import { SkeletonCard } from '../components/SkeletonCard'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
@@ -379,7 +378,6 @@ export default function Menu() {
         )}
       </AnimatePresence>
 
-      <BottomNav />
     </div>
   )
 }

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TopBar from '../components/TopBar'
-import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 
@@ -238,7 +237,6 @@ export default function Cart() {
         <button onClick={() => navigate('/login')} className="px-8 py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">Sign In</button>
         <button onClick={() => navigate('/signup')} className="text-primary font-bold text-sm hover:underline">New here? Create account</button>
       </div>
-      <BottomNav />
     </div>
   )
 
@@ -311,7 +309,6 @@ export default function Cart() {
           </button>
         </motion.div>
       </div>
-      <BottomNav />
     </div>
   )
 
@@ -362,7 +359,6 @@ export default function Cart() {
             <button onClick={() => navigate('/home')} className="w-full py-3 border border-outline-variant text-on-surface-variant rounded-full font-medium text-sm">Back to Home</button>
           </motion.div>
         </div>
-        <BottomNav />
       </div>
     )
   }
@@ -435,7 +431,6 @@ export default function Cart() {
           })}
         </div>
       </div>
-      <BottomNav />
     </div>
   )
 
@@ -610,7 +605,6 @@ export default function Cart() {
         </button>
       </div>
 
-      <BottomNav />
     </div>
   )
 }

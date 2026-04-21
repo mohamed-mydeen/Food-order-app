@@ -18,6 +18,7 @@ const About    = lazy(() => import('./pages/About'))
 const Settings = lazy(() => import('./pages/Settings'))
 
 import InstallBanner from './components/InstallBanner'
+import BottomNav from './components/BottomNav'
 import { useFirebaseNotifications } from './hooks/useFirebaseNotifications'
 
 // Overlay loader — preserves app shell during lazy-chunk load
@@ -75,6 +76,9 @@ export default function App() {
 
         {/* Global floating PWA install prompt */}
         <InstallBanner />
+
+        {/* Global Bottom Navigation (handles its own hiding per-route) */}
+        <BottomNav />
       </div>
     </BrowserRouter>
   )
