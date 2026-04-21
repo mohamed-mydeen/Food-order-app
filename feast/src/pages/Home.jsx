@@ -214,6 +214,32 @@ export default function Home() {
            style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
         <main className="px-4 pt-4 pb-4 space-y-6">
 
+          {/* Timing Banner */}
+          <motion.div
+            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+            className="bg-gradient-to-br from-[#1e1b4b] to-[#312e81] rounded-[18px] p-3.5 flex items-center gap-3 shadow-lg shadow-indigo-900/20 relative overflow-hidden"
+          >
+            {/* Background design */}
+            <div className="absolute -right-4 top-1/2 -translate-y-1/2 opacity-10 blur-[1px]">
+              <span className="material-symbols-outlined text-[80px] font-variation-fill text-white">clear_night</span>
+            </div>
+            
+            <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 relative z-10 text-indigo-200">
+              <span className="material-symbols-outlined text-[24px]">schedule</span>
+            </div>
+            <div className="relative z-10 flex-1">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="material-symbols-outlined text-yellow-400 text-[14px] font-variation-fill">stars</span>
+                <span className="font-headline font-black text-white text-[12px] tracking-wide uppercase bg-black/30 px-2 py-0.5 rounded-full border border-white/10 outline outline-1 outline-offset-1 outline-yellow-400/20 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
+                  Book Order Before 8 PM
+                </span>
+              </div>
+              <p className="text-indigo-200 text-[12px] font-medium leading-snug">
+                Exclusive night service from <span className="font-bold text-white">10:30 PM</span> to <span className="font-bold text-white">1:00 AM</span>
+              </p>
+            </div>
+          </motion.div>
+
           {/* Separated Instamart/Zomato Search */}
           <div className="relative z-30 flex items-center gap-2.5">
             <motion.div
