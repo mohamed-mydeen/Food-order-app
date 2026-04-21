@@ -8,6 +8,7 @@ const Offer = require("./Offer");
 const BugReport = require("./BugReport");
 const NotificationToken = require("./NotificationToken");
 const Review = require("./Review");
+const Wishlist = require("./Wishlist");
 
 // ─── Associations ─────────────────────────────────────────────────────────────
 
@@ -45,5 +46,12 @@ Review.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 Order.hasMany(Review, { foreignKey: "order_id", as: "reviews" });
 Review.belongsTo(Order, { foreignKey: "order_id", as: "order" });
 
-module.exports = { sequelize, User, Product, Cart, Order, OrderItem, Offer, BugReport, NotificationToken, Review };
+// Wishlist
+User.hasMany(Wishlist, { foreignKey: "user_id", as: "wishlistItems", onDelete: "CASCADE" });
+Wishlist.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+Product.hasMany(Wishlist, { foreignKey: "product_id", as: "wishlistEntries", onDelete: "CASCADE" });
+Wishlist.belongsTo(Product, { foreignKey: "product_id", as: "product" });
+
+module.exports = { sequelize, User, Product, Cart, Order, OrderItem, Offer, BugReport, NotificationToken, Review, Wishlist };
 

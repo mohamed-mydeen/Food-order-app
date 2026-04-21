@@ -5,6 +5,7 @@ import './index.css'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import { registerSW } from 'virtual:pwa-register'
+import { WishlistProvider } from './context/WishlistContext.jsx'
 
 // Register service worker — required for PWA install prompt to fire
 registerSW({ immediate: true })
@@ -22,7 +23,9 @@ registerSW({ immediate: true })
 ReactDOM.createRoot(document.getElementById('root')).render(
   <AuthProvider>
     <CartProvider>
-      <App />
+      <WishlistProvider>
+        <App />
+      </WishlistProvider>
     </CartProvider>
   </AuthProvider>
 )

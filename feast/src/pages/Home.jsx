@@ -5,6 +5,7 @@ import TopBar from '../components/TopBar'
 import { SkeletonCard, SkeletonCircle, SkeletonBanner } from '../components/SkeletonCard'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import { useWishlist } from '../context/WishlistContext'
 import OfferPopup, { shouldShowOffer, markOfferSeen } from '../components/OfferPopup'
 import { useProducts } from '../hooks/useProducts'
 
@@ -15,6 +16,7 @@ function ProductSheet({ product, onClose }) {
   const navigate = useNavigate()
   const { isLoggedIn } = useAuth()
   const { addToCart, cartItems } = useCart()
+  const { wishlist, toggleWishlist } = useWishlist()
   const [qty, setQty]       = useState(1)
   const [adding, setAdding] = useState(false)
   const [added, setAdded]   = useState(false)
@@ -46,6 +48,12 @@ function ProductSheet({ product, onClose }) {
               ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
               : <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">🍽️</div>}
             {inCart && <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">{currentQty} in cart</div>}
+            <button 
+              onClick={() => toggleWishlist(product.id)}
+              className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white"
+            >
+              <span className={`material-symbols-outlined ${wishlist.includes(product.id) ? 'text-red-500 font-variation-fill' : ''}`}>favorite</span>
+            </button>
           </div>
           <div className="px-5 pt-4 pb-2">
             <h2 className="font-headline font-black text-2xl text-on-surface">{product.name}</h2>
@@ -96,11 +104,22 @@ const itemVariants = {
 
 export default function Home() {
   const navigate = useNavigate()
+  const { isLoggedIn } = useAuth()
+  const { wishlist, toggleWishlist } = useWishlist()
   const { products, loading }       = useProducts()
   const [query, setQuery]           = useState('')
   const [categories, setCategories] = useState([])
   const [selected, setSelected]     = useState(null)
   const [offerOpen, setOfferOpen]   = useState(false)
+
+  const handleWishlistClick = (e, productId) => {
+    e.stopPropagation()
+    if (!isLoggedIn) {
+      alert("Please login to add to wishlist")
+      return
+    }
+    toggleWishlist(productId)
+  }
 
   const closeOffer = useCallback(() => {
     setOfferOpen(false)
@@ -453,6 +472,13 @@ export default function Home() {
                                 {p.tag}
                               </span>
                             )}
+                            {/* Wishlist Button */}
+                            <button
+                              onClick={(e) => handleWishlistClick(e, p.id)}
+                              className="absolute top-1.5 right-1.5 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white"
+                            >
+                              <span className={`material-symbols-outlined text-[13px] ${wishlist.includes(p.id) ? 'text-red-500 font-variation-fill' : ''}`}>favorite</span>
+                            </button>
                           </div>
                           <div className="p-2.5">
                             <p className="font-bold text-xs text-on-surface line-clamp-1">{p.name}</p>

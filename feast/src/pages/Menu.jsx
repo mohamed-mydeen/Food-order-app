@@ -5,6 +5,7 @@ import TopBar from '../components/TopBar'
 import { SkeletonCard } from '../components/SkeletonCard'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import { useWishlist } from '../context/WishlistContext'
 import { useProducts } from '../hooks/useProducts'
 
 const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'
@@ -433,9 +434,22 @@ function ProductSheet({ product, onClose }) {
   )
 }
 
-/* ── Menu Item Card (with rating) ────────────────────────────────── */
+/* ── Menu Item Card (with rating & wishlist) ────────────────────────────────── */
 const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
   const [stats, setStats] = useState(null)
+  const { wishlist, toggleWishlist } = useWishlist()
+  const { isLoggedIn } = useAuth()
+  
+  const isWishlisted = wishlist.includes(item.id)
+
+  const handleWishlistClick = (e) => {
+    e.stopPropagation() // Prevent opening product sheet
+    if (!isLoggedIn) {
+      alert("Please login to add to wishlist") // Ideally a toast, but this serves MVP
+      return
+    }
+    toggleWishlist(item.id)
+  }
 
   useEffect(() => {
     fetch(`${API}/api/reviews/product/${item.id}`)
@@ -469,6 +483,16 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+        {/* Wishlist Heart Button */}
+        <button 
+          onClick={handleWishlistClick}
+          className="absolute top-2 left-2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 transition-colors"
+        >
+          <span className={`material-symbols-outlined text-xl transition-colors ${isWishlisted ? 'text-red-500 font-variation-fill' : 'text-white'}`}>
+            favorite
+          </span>
+        </button>
 
         {/* Category pill */}
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-slate-700">
