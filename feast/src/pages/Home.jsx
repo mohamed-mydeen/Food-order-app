@@ -8,6 +8,8 @@ import { useCart } from '../context/CartContext'
 import OfferPopup, { shouldShowOffer, markOfferSeen } from '../components/OfferPopup'
 import { useProducts } from '../hooks/useProducts'
 
+const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'
+
 /* ── Inline Product Sheet (same as Menu.jsx) ────────────────────── */
 function ProductSheet({ product, onClose }) {
   const navigate = useNavigate()
