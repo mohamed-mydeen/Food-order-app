@@ -334,13 +334,14 @@ export default function TopBar({ showSubtitle = true }) {
               onClick={() => isLoggedIn ? setDrawerOpen(true) : navigate('/login')}
             >
               <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-1">
-                <span className="font-headline font-black text-on-surface text-base tracking-tight">Delivery Address</span>
-                <span className="material-symbols-outlined text-[16px] text-primary">keyboard_arrow_down</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-headline font-black text-on-surface text-base tracking-tight">Delivery Address</span>
+                  <span className="material-symbols-outlined text-[16px] text-primary">keyboard_arrow_down</span>
+                </div>
+                <span className="text-on-surface-variant text-[11px] font-medium truncate w-full">
+                  {isLoggedIn ? (user?.address || 'Tap to add your delivery address') : 'Please sign in to set location'}
+                </span>
               </div>
-              <span className="text-on-surface-variant text-[11px] font-medium truncate w-full">
-                {isLoggedIn ? (user?.address || 'Tap to add your delivery address') : 'Please sign in to set location'}
-              </span>
             </div>
           </div>
 
