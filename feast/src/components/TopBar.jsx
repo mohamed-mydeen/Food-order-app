@@ -318,15 +318,22 @@ export default function TopBar({ showSubtitle = true }) {
     <>
       <div className="flex-shrink-0 z-30 bg-surface shadow-sm sticky top-0">
         <div className="flex justify-between items-center px-4 py-3 w-full">
-          {/* Swiggy-style Location Context */}
-          <div 
-            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" 
-            onClick={() => isLoggedIn ? setDrawerOpen(true) : navigate('/login')}
-          >
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <span className="material-symbols-outlined text-primary text-[22px] font-variation-fill">near_me</span>
-            </div>
-            <div className="flex flex-col min-w-0 pr-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {/* Hamburger Icon */}
+            <motion.button
+              onClick={() => setDrawerOpen(true)}
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors flex-shrink-0 -ml-1"
+              whileTap={{ scale: 0.88 }}
+            >
+              <span className="material-symbols-outlined text-[24px] text-primary">menu</span>
+            </motion.button>
+
+            {/* Swiggy-style Location Context */}
+            <div 
+              className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer pl-1" 
+              onClick={() => isLoggedIn ? setDrawerOpen(true) : navigate('/login')}
+            >
+              <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1">
                 <span className="font-headline font-black text-on-surface text-base tracking-tight">Delivery Address</span>
                 <span className="material-symbols-outlined text-[16px] text-primary">keyboard_arrow_down</span>
