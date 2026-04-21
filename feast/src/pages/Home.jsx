@@ -453,10 +453,13 @@ export default function Home() {
                       ))
                     ) : (
                       recs.map((p, i) => (
-                        <motion.button
+                        <motion.div
+                          role="button"
+                          tabIndex={0}
                           key={`rec-${p.id}`}
                           onClick={() => setSelected(p)}
-                          className="flex-none w-36 bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-container text-left"
+                          onKeyDown={(e) => e.key === 'Enter' && setSelected(p)}
+                          className="flex-none w-36 bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-container text-left cursor-pointer"
                           initial={{ opacity: 0, x: 20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.06 }}
@@ -484,7 +487,7 @@ export default function Home() {
                             <p className="font-bold text-xs text-on-surface line-clamp-1">{p.name}</p>
                             <p className="font-black text-primary text-sm mt-0.5">₹{parseFloat(p.price).toFixed(0)}</p>
                           </div>
-                        </motion.button>
+                        </motion.div>
                       ))
                     )}
                   </div>
