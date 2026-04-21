@@ -79,6 +79,7 @@ export default function Cart() {
   const [recentOrders, setRecentOrders] = useState([])
   const [ordersLoading, setOrdersLoading] = useState(false)
   const [updatingItem, setUpdatingItem] = useState(null)
+  const [placedOrderId, setPlacedOrderId] = useState(null)
 
   /* auto-redirect countdown after success */
   useEffect(() => {
@@ -140,11 +141,9 @@ export default function Cart() {
       await fetchCart()
       playSuccessChime()   // 🔔 Play chime!
       
+      setPlacedOrderId(data.data?.id)
       if (chosen.method === 'UPI' && data.data?.id) {
-        const upiLink = makeGPayLink(total, data.data.id)
-        setTimeout(() => {
-          window.location.href = upiLink
-        }, 800) // Small delay to let user see "Order Placed" state
+        window.location.href = makeGPayLink(total, data.data.id);
       }
       
       setOrderSuccess(true)
@@ -230,6 +229,15 @@ export default function Cart() {
           </motion.div>
           <motion.div className="flex flex-col gap-3 w-full max-w-xs"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85 }}>
+            {chosen?.method === 'UPI' && (
+              <button 
+                onClick={() => window.location.href = makeGPayLink(total, placedOrderId)}
+                className="w-full py-3.5 bg-emerald-600 text-white rounded-full font-bold shadow-lg shadow-emerald-200 flex items-center justify-center gap-2 mb-2"
+              >
+                <span className="material-symbols-outlined">payments</span>
+                Open UPI App Again
+              </button>
+            )}
             <p className="text-xs text-on-surface-variant">Redirecting in <strong className="text-on-surface">{countdown}s</strong></p>
             <button onClick={() => navigate('/orders')} className="w-full py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">View My Orders</button>
             <button onClick={() => navigate('/home')} className="w-full py-3 border border-outline-variant text-on-surface-variant rounded-full font-medium text-sm">Back to Home</button>
