@@ -19,7 +19,6 @@
     scroll-behavior: smooth;
   }
 
-
   html, body, #root {
     height: 100%;
     width: 100%;
@@ -41,42 +40,63 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    /* dvh = dynamic viewport height — accounts for mobile browser chrome */
     height: 100dvh;
+    height: -webkit-fill-available;
+    overflow: hidden;
   }
 
-  button:active, a:active {
-    transform: scale(0.96);
-  }
-
+  /* REMOVED: button:active scale — conflicts with Framer Motion whileTap */
+  /* Framer Motion handles all tap scale animations */
   button, a, [role="button"] {
-    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
   }
 }
 
 @layer utilities {
-  /* Mobile app shell */
+  /* Mobile app shell — the single full-screen container */
   .app-shell {
     position: relative;
     width: 100%;
-    max-width: 430px;          /* phone frame on desktop */
-    height: 100%;
+    max-width: 430px;
+    /* Use dvh for correct height on mobile that accounts for browser chrome */
+    height: 100dvh;
+    height: -webkit-fill-available;
     background-color: #f5f6f7;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
-    /* only top safe-area here — BottomNav (fixed) handles its own bottom offset */
+    /* Safe area at top only — BottomNav is fixed and handles its own offset */
     padding-top: env(safe-area-inset-top);
   }
 
-  /* Standard bottom padding for scrollable page areas to clear the fixed BottomNav */
+  /* Standard bottom padding for scrollable content to clear fixed BottomNav
+     BottomNav is ~64px tall + 12px bottom margin + safe-area = ~90px safe minimum */
   .page-scroll-pb {
-    padding-bottom: max(90px, calc(env(safe-area-inset-bottom) + 90px));
+    padding-bottom: max(96px, calc(env(safe-area-inset-bottom) + 96px));
   }
 
-  /* When installed as PWA (standalone) OR on a real mobile screen:
-     go truly full screen — no max-width, no box shadow */
+  /* Bottom-safe utility for sticky footers/CTAs inside pages */
+  .sticky-cta-pb {
+    padding-bottom: max(88px, calc(env(safe-area-inset-bottom) + 88px));
+  }
+
+  /* GPU-accelerated smooth scrolling for iOS */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Prevent content flash during framer-motion layout animations */
+  .motion-safe {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* When installed as PWA (standalone) OR on a real mobile screen: full screen */
   @media (display-mode: standalone) {
     .app-shell {
       max-width: 100% !important;
@@ -84,7 +104,6 @@
     }
   }
 
-  /* Also go full width on actual narrow screens (real phones in browser) */
   @media (max-width: 480px) {
     .app-shell {
       max-width: 100% !important;

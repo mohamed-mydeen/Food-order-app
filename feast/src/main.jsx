@@ -20,11 +20,9 @@ registerSW({ immediate: true })
 })()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <AuthProvider>
-      <CartProvider>
-        <App />
-      </CartProvider>
-    </AuthProvider>
-  </React.StrictMode>
+  <AuthProvider>
+    <CartProvider>
+      <App />
+    </CartProvider>
+  </AuthProvider>
 )

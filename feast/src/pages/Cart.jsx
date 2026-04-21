@@ -578,9 +578,11 @@ export default function Cart() {
         </div>
       </div>
 
-      {/* Sticky CTA */}
-      <div className="flex-shrink-0 bg-surface border-t border-surface-container px-5 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] relative z-40"
-        style={{ paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom) + 80px))' }}>
+      {/* Sticky CTA — sits above the fixed BottomNav */}
+      <div
+        className="flex-shrink-0 bg-surface border-t border-surface-container px-5 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] relative z-40"
+        style={{ paddingBottom: 'max(96px, calc(env(safe-area-inset-bottom) + 96px))' }}
+      >
         <AnimatePresence>
           {error && (
             <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
