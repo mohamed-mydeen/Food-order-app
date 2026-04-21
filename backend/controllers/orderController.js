@@ -24,7 +24,7 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: "Cart is empty." });
     }
 
-    const DELIVERY_FEE = 45;
+    const DELIVERY_FEE = (address || '').toLowerCase().includes('melapalayam') ? 20 : 50;
     const total_amount = cartItems.reduce(
       (sum, item) => sum + parseFloat(item.product.price) * item.quantity,
       0

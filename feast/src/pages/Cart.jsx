@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 
 const API          = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
-const DELIVERY_FEE = 45
 /* ── Web Audio success chime ────────────────────────────────────── */
 function playSuccessChime() {
   try {
@@ -73,6 +72,7 @@ export default function Cart() {
   }
 
   const subtotal       = cartItems.reduce((s, it) => s + parseFloat(it.product?.price || 0) * it.quantity, 0)
+  const DELIVERY_FEE   = (address || '').toLowerCase().includes('melapalayam') ? 20 : 50;
   const total          = subtotal + DELIVERY_FEE
   const totalItems     = cartItems.reduce((s, it) => s + it.quantity, 0)
   const handlePay = async () => {

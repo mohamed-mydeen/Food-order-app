@@ -49,13 +49,13 @@ export default function About() {
             animate="show"
           >
             <p className="text-[13px] leading-relaxed text-on-surface-variant font-medium mb-4">
-              Welcome to <span className="font-bold text-on-surface">Feast At Night</span>, where we believe that the best cravings happen after dark. We specialize in bringing you the most authentic flavors of traditional <span className="font-bold text-primary">Chicken Mandi</span>, fragrant Biriyani, and a wide selection of refreshing fresh juices.
+              <span className="font-bold text-on-surface">Feast at Night</span> is a late-night food destination dedicated to serving delicious, fresh, and authentic Mandi dishes. Located in Melapalayam, Tirunelveli, we specialize in flavorful Arabian-style Mandi prepared with high-quality ingredients and perfectly cooked rice and meat.
             </p>
             <p className="text-[13px] leading-relaxed text-on-surface-variant font-medium mb-4">
-              Our journey started with a simple idea: late-night hunger should never be compromised with mediocre food. Every dish we serve is prepared with carefully sourced spices, premium ingredients, and the warmth of home-style cooking.
+              Our goal is to deliver a satisfying midnight dining experience with rich taste, generous portions, and halal-certified food. Whether you're craving Juicy Chicken Mandi, Alfaham, or other signature varieties, we ensure every meal is prepared with care and served fresh.
             </p>
             <p className="text-[13px] leading-relaxed text-on-surface-variant font-medium">
-              We are based in Tirunelveli, and our mission is to deliver not just food, but an unforgettable dining experience straight to your doorstep.
+              At Feast at Night, great taste meets late-night cravings.
             </p>
 
             <div className="mt-8 pt-6 border-t border-black/[0.04]">
