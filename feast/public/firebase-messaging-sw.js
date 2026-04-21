@@ -15,19 +15,22 @@ const messaging = firebase.messaging();
 
 // ── Background / app-closed message handler ─────────────────────────────────
 // This fires when the PWA is in the BACKGROUND or CLOSED.
-// FCM auto-shows the notification, but we override here for custom options.
 messaging.onBackgroundMessage((payload) => {
   console.log('[FCM SW] Background message received:', payload);
 
-  const { title, body, image } = payload.notification || {};
+  const notification = payload.notification || {};
   const data = payload.data || {};
+  
+  const title = notification.title || data.title || 'Feast At Night';
+  const body = notification.body || data.body || '';
+  const image = notification.image || data.image || undefined;
 
   // Build rich notification options
   const options = {
-    body: body || '',
+    body: body,
     icon: '/pwa-192x192.png',
     badge: '/pwa-192x192.png',
-    image: image || undefined,
+    image: image,
     vibrate: [200, 100, 200, 100, 200],
     sound: 'default',
     requireInteraction: true,   // keeps it on screen until user interacts
@@ -45,7 +48,7 @@ messaging.onBackgroundMessage((payload) => {
   };
 
   // Show the notification
-  self.registration.showNotification(title || 'Feast At Night', options);
+  self.registration.showNotification(title, options);
 });
 
 // ── Notification click handler ───────────────────────────────────────────────

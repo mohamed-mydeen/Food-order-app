@@ -54,8 +54,6 @@ async function sendToAll({ title, body, data = {} }) {
 function buildPayload(tokens, title, body, data = {}) {
   return {
     tokens,
-    // notification field = shown automatically by FCM on background/killed app
-    notification: { title, body },
     // Android: high priority channels ensures status bar appearance on phones
     android: {
       priority: 'high',
@@ -73,22 +71,15 @@ function buildPayload(tokens, title, body, data = {}) {
         visibility: 'PUBLIC',
       },
     },
-    // WebPush: for PWA on Chrome/Android
-    webpush: {
-      headers: { Urgency: 'high' },
-      notification: {
-        title,
-        body,
-        icon: '/pwa-192x192.png',
-        badge: '/pwa-192x192.png',
-        vibrate: [200, 100, 200, 100, 200],
-        requireInteraction: true,
-        actions: [{ action: 'open', title: 'View Order' }],
-      },
-      fcmOptions: { link: '/' },
+    // We remove webpush.notification so it doesn't auto-handle.
+    // Instead we rely entirely on data payload + service worker logic to force display.
+    data: { 
+      ...data, 
+      title: String(title), 
+      body: String(body), 
+      click_action: '/', 
+      timestamp: String(Date.now()) 
     },
-    // data payload so service worker can read extra info
-    data: { ...data, click_action: '/', timestamp: String(Date.now()) },
   };
 }
 

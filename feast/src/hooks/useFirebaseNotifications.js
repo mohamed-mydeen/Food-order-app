@@ -63,19 +63,24 @@ export function useFirebaseNotifications() {
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log('Received foreground message:', payload);
       
+      const notification = payload.notification || {};
+      const data = payload.data || {};
+      const title = notification.title || data.title;
+      const body = notification.body || data.body;
+
       // Force the browser to spawn a native OS notification even if the tab is focused!
-      if (payload.notification && Notification.permission === 'granted') {
+      if (title && Notification.permission === 'granted') {
         // Mobile devices (Android) do NOT support `new Notification()`. They require Service Worker.
         navigator.serviceWorker.ready.then((registration) => {
-          registration.showNotification(payload.notification.title, {
-            body: payload.notification.body,
+          registration.showNotification(title, {
+            body: body,
             icon: '/pwa-192x192.png',
             vibrate: [200, 100, 200]
           });
         }).catch(err => {
           // Fallback for desktop if SW lacks scope
-          new Notification(payload.notification.title, {
-            body: payload.notification.body,
+          new Notification(title, {
+            body: body,
             icon: '/pwa-192x192.png'
           });
         });
