@@ -316,69 +316,61 @@ export default function TopBar({ showSubtitle = true }) {
 
   return (
     <>
-      <div className="flex-shrink-0 z-30 bg-white/90 backdrop-blur-xl shadow-sm">
-        <div className="flex justify-between items-center px-5 py-3.5 w-full">
-          <div className="flex items-center gap-2.5">
-            <motion.button
-              onClick={() => setDrawerOpen(true)}
-              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors"
-              whileTap={{ scale: 0.88 }}
-            >
-              <span className="material-symbols-outlined text-[22px] text-orange-800">menu</span>
-            </motion.button>
-            {/* Brand logo image */}
-            <img
-              src={brandLogo}
-              alt="Feast At Night"
-              onClick={() => navigate('/home')}
-              className="h-9 w-9 rounded-full object-cover cursor-pointer border-2 border-primary/20 shadow-sm"
-            />
-            <span
-              className="font-headline font-black text-orange-900 tracking-tighter text-lg cursor-pointer"
-              onClick={() => navigate('/home')}
-            >
-              Feast At Night
-            </span>
+      <div className="flex-shrink-0 z-30 bg-surface shadow-sm sticky top-0">
+        <div className="flex justify-between items-center px-4 py-3 w-full">
+          {/* Swiggy-style Location Context */}
+          <div 
+            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" 
+            onClick={() => isLoggedIn ? setDrawerOpen(true) : navigate('/login')}
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <span className="material-symbols-outlined text-primary text-[22px] font-variation-fill">near_me</span>
+            </div>
+            <div className="flex flex-col min-w-0 pr-2">
+              <div className="flex items-center gap-1">
+                <span className="font-headline font-black text-on-surface text-base tracking-tight">Delivery Address</span>
+                <span className="material-symbols-outlined text-[16px] text-primary">keyboard_arrow_down</span>
+              </div>
+              <span className="text-on-surface-variant text-[11px] font-medium truncate w-full">
+                {isLoggedIn ? (user?.address || 'Tap to add your delivery address') : 'Please sign in to set location'}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {showSubtitle && (
-              <div className="text-orange-800 font-headline font-bold tracking-tight text-[10px] opacity-60 hidden xs:block">
-                In the name of Allah
-              </div>
-            )}
-
-            {/* PWA Install button — only shown when installable */}
+          <div className="flex items-center gap-2.5 flex-shrink-0 pl-2">
+            {/* Download App Prompt */}
             <AnimatePresence>
               {canInstall && (
                 <motion.button
-                  key="install-btn"
                   onClick={promptInstall}
-                  title="Install App"
-                  className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center"
-                  initial={{ opacity: 0, scale: 0.6 }}
+                  className="bg-primary text-on-primary px-3 py-1.5 rounded-full text-[10px] font-bold shadow-sm"
+                  initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.6 }}
-                  whileTap={{ scale: 0.85 }}
-                  whileHover={{ scale: 1.12 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <span className="material-symbols-outlined text-orange-700 text-[18px]">download_for_offline</span>
+                  Get App
                 </motion.button>
               )}
             </AnimatePresence>
 
+            {/* Profile Avatar / Sidebar Trigger */}
             <motion.button
-              onClick={() => navigate(isLoggedIn ? '/profile' : '/login')}
-              className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.88 }}
+              onClick={() => setDrawerOpen(true)}
+              className="w-9 h-9 rounded-full bg-surface-container-high border border-outline-variant/30 flex items-center justify-center shadow-sm relative"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.92 }}
             >
               {isLoggedIn && user?.name ? (
                 <span className="font-headline font-black text-primary text-sm">
                   {user.name.charAt(0).toUpperCase()}
                 </span>
               ) : (
-                <span className="material-symbols-outlined text-primary text-[18px]">person</span>
+                <span className="material-symbols-outlined text-outline text-[20px]">person</span>
+              )}
+              {/* Online Indicator */}
+              {isLoggedIn && (
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-surface rounded-full"></span>
               )}
             </motion.button>
           </div>
