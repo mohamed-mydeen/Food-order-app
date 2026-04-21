@@ -118,18 +118,27 @@ const getRecommendations = async (req, res) => {
       });
     }
 
-    // Step 2: Find categories the user orders most
-    const userCategories = await OrderItem.findAll({
+    // Step 2: Find categories the user orders most (Aggregated in JS to avoid SQL ONLY_FULL_GROUP_BY errors)
+    const userOrderItems = await OrderItem.findAll({
       include: [
-        { model: Order, as: "order", where: { user_id: userId }, attributes: [] },
-        { model: Product, as: "product", attributes: ['category'] },
+        { model: Order, as: 'order', where: { user_id: userId }, attributes: [] },
+        { model: Product, as: 'product', attributes: ['category'] },
       ],
-      attributes: [[fn('COUNT', col('OrderItem.id')), 'cnt']],
-      group: ['product.category'],
-      order: [[literal('cnt'), 'DESC']],
-      limit: 3,
+      attributes: ['product_id'],
     });
-    const topCategories = userCategories.map(i => i.product?.category).filter(Boolean);
+    
+    const categoryCounts = {};
+    userOrderItems.forEach(item => {
+      const cat = item.product?.category;
+      if (cat) {
+        categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+      }
+    });
+
+    const topCategories = Object.entries(categoryCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(entry => entry[0]);
 
     // Step 3: Get products from those categories that user hasn't ordered (or ordered least)
     const recommended = await Product.findAll({
