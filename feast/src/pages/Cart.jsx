@@ -587,22 +587,36 @@ export default function Cart() {
           )}
         </AnimatePresence>
 
-        <div className="flex items-center justify-between mb-3 px-1">
-          <p className="text-xs font-bold text-on-surface-variant">
-            Paying via <strong className="text-on-surface">{chosen?.label}</strong>
-          </p>
-          <p className="font-headline font-black text-primary text-lg">₹{total.toFixed(2)}</p>
-        </div>
+        <div className="flex items-center justify-between gap-5 mb-1 pt-1">
+          {/* Left Side: Amount Summary */}
+          <div className="flex flex-col flex-shrink-0 pl-1">
+            <span className="text-[10px] uppercase font-black tracking-widest text-on-surface-variant mb-1">To Pay</span>
+            <span className="font-headline font-black text-on-surface text-[22px] leading-none tracking-tight">₹{total.toFixed(2)}</span>
+          </div>
 
-        <button onClick={handlePay} disabled={placing}
-          className="w-full py-4 rounded-2xl font-headline font-bold text-base transition-all disabled:opacity-60 flex items-center justify-center gap-2.5 shadow-lg bg-primary text-on-primary shadow-primary/25 active:scale-[0.98]">
-          {placing
-            ? <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Placing Order...</>
-            : chosen?.method === 'UPI'
-              ? <><span className="material-symbols-outlined text-[20px]">payments</span>Pay ₹{total.toFixed(0)} via GPay</>
-              : <><span className="material-symbols-outlined text-[20px]">restaurant</span>Place Order · ₹{total.toFixed(0)}</>
-          }
-        </button>
+          {/* Right Side: Action Button */}
+          <button onClick={handlePay} disabled={placing}
+            className="flex-1 py-4 rounded-[18px] font-headline text-[15px] transition-all disabled:opacity-60 flex items-center justify-between px-5 shadow-[0_6px_20px_rgba(255,120,76,0.3)] bg-gradient-to-r from-[#e34105] to-[#ff7138] text-white active:scale-[0.97]">
+            {placing ? (
+               <span className="flex items-center justify-center gap-2 w-full font-bold">
+                <svg className="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Placing...
+              </span>
+            ) : (
+                <>
+                <span className="font-black tracking-wide uppercase">
+                  Pay via {chosen?.method === 'UPI' ? 'GPay' : 'Cash'}
+                </span>
+                <motion.span 
+                    animate={{ x: [0, 4, 0] }} 
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="material-symbols-outlined text-[16px] font-variation-fill stroke-2"
+                  >
+                    arrow_forward_ios
+                  </motion.span>
+                </>
+            )}
+          </button>
+        </div>
       </div>
 
     </div>
