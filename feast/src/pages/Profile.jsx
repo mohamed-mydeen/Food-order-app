@@ -243,50 +243,71 @@ export default function Profile() {
 
       {/* Edit Profile Modal */}
       {editOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-[2px]">
           <motion.div
-            className="bg-surface rounded-3xl w-full max-w-md p-6 shadow-2xl"
-            style={{ marginBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}
-            initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
+            className="bg-surface rounded-t-[28px] sm:rounded-3xl w-full max-w-md shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, y: '100%' }} animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
           >
-            <div className="flex justify-between mb-5">
-              <h3 className="font-headline font-bold text-lg text-on-surface">Edit Profile</h3>
-              <button onClick={() => setEditOpen(false)} className="text-outline hover:text-on-surface">
-                <span className="material-symbols-outlined">close</span>
+            <div className="px-6 pt-6 pb-4 flex justify-between items-center border-b border-surface-container/50">
+              <h3 className="font-headline font-black text-xl text-on-surface tracking-tight">Edit Account</h3>
+              <button onClick={() => setEditOpen(false)} className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors">
+                <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
-            {saveMsg && (
-              <div className={`mb-4 text-sm px-4 py-2.5 rounded-xl ${saveMsg.includes('updated') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                {saveMsg}
-              </div>
-            )}
-
-            <form onSubmit={handleSave} className="space-y-4">
-              {[
-                { label: 'Full Name', key: 'name', type: 'text', placeholder: 'Your name' },
-                { label: 'Phone',     key: 'phone', type: 'tel',  placeholder: '+91 98765 43210' },
-                { label: 'Delivery Address', key: 'address', type: 'text', placeholder: 'Your address' },
-              ].map(({ label, key, type, placeholder }) => (
-                <div key={key}>
-                  <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 ml-1">{label}</label>
-                  <input
-                    type={type}
-                    value={editForm[key]}
-                    onChange={e => setEditForm({ ...editForm, [key]: e.target.value })}
-                    placeholder={placeholder}
-                    className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm text-on-surface"
-                  />
+            <div className="p-6">
+              {saveMsg && (
+                <div className={`mb-5 text-sm px-4 py-3 rounded-xl flex items-center gap-2 ${saveMsg.includes('updated') ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+                  <span className="material-symbols-outlined text-[18px]">{saveMsg.includes('updated') ? 'check_circle' : 'error'}</span>
+                  {saveMsg}
                 </div>
-              ))}
-              <button
-                type="submit"
-                disabled={saving}
-                className="w-full py-3.5 bg-primary text-on-primary font-bold rounded-xl transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </form>
+              )}
+
+              <form onSubmit={handleSave} className="space-y-4">
+                {[
+                  { label: 'Full Name', key: 'name', type: 'text', placeholder: 'Enter your full name', icon: 'person' },
+                  { label: 'Phone Number', key: 'phone', type: 'tel', placeholder: '+91 98765 43210', icon: 'call' },
+                  { label: 'Delivery Address', key: 'address', type: 'textarea', placeholder: 'Enter your complete delivery address', icon: 'home_pin' },
+                ].map(({ label, key, type, placeholder, icon }) => (
+                  <div key={key} className="relative">
+                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1.5 ml-1">{label}</label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-4 top-4 material-symbols-outlined text-[20px] text-outline">{icon}</span>
+                      {type === 'textarea' ? (
+                        <textarea
+                          value={editForm[key]}
+                          onChange={e => setEditForm({ ...editForm, [key]: e.target.value })}
+                          placeholder={placeholder}
+                          rows={3}
+                          className="w-full bg-white border border-outline-variant/40 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-[15px] font-medium text-on-surface resize-none shadow-sm"
+                        />
+                      ) : (
+                        <input
+                          type={type}
+                          value={editForm[key]}
+                          onChange={e => setEditForm({ ...editForm, [key]: e.target.value })}
+                          placeholder={placeholder}
+                          className="w-full bg-white border border-outline-variant/40 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-[15px] font-medium text-on-surface shadow-sm"
+                        />
+                      )}
+                    </div>
+                  </div>
+                ))}
+                
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full py-4 bg-gradient-to-r from-[#e34105] to-[#ff7138] shadow-[0_6px_20px_rgba(255,120,76,0.3)] text-white font-headline font-black tracking-wide rounded-[16px] transition-all disabled:opacity-60 flex items-center justify-center gap-2 active:scale-[0.98] text-[15px]"
+                  >
+                    {saving ? (
+                      <><svg className="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Saving...</>
+                    ) : 'SAVE CHANGES'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </motion.div>
         </div>
       )}
