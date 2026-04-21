@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
+import brandLogo from '../assets/brand_logo.png'
 
 const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 
@@ -61,61 +62,191 @@ function OrderCard({ order, index, onReorder }) {
   const handlePrint = (e) => {
     e.stopPropagation()
     const subtotal = items.reduce((s, it) => s + (it.quantity * parseFloat(it.price || 0)), 0)
+    const deliveryFee = (address || '').toLowerCase().includes('melapalayam') ? 20 : 50;
     const total = parseFloat(total_amount).toFixed(2)
     const dateStrFull = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
     const timeStrFull = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
 
     const printContent = `
-      <div style="font-family: 'Courier New', monospace; font-size: 13px; color: #1e293b;">
-        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px dashed #cbd5e1;">
-          <h2 style="font-size: 18px;">FEAST AT NIGHT</h2>
-          <p style="font-size: 11px; color: #64748b; margin-top:2px;">Delicious food, delivered fast</p>
+      <div style="font-family: 'Inter', system-ui, sans-serif; padding: 40px; color: #1f2937; max-width: 500px; margin: auto; border: 1px solid #e5e7eb; border-radius: 24px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <img src="${brandLogo}" style="width: 120px; height: auto; margin-bottom: 15px; border-radius: 12px;" />
+          <h2 style="font-size: 24px; font-weight: 800; margin: 0; color: #a83100;">FEAST AT NIGHT</h2>
+          <p style="font-size: 13px; color: #6b7280; margin-top: 4px;">Premium Midnight Cravings</p>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 16px;">
-          <div>
-            <p>Bill No: <strong>INV-${String(order.id).padStart(5, '0')}</strong></p>
-            <p>Date: ${dateStrFull}</p>
-            <p>Time: ${timeStrFull}</p>
+        
+        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 24px; padding: 16px; bg-color: #f9fafb; border-radius: 16px; border: 1px solid #f3f4f6;">
+          <div style="line-height: 1.6;">
+            <p style="color: #9ca3af; margin: 0;">Order Number</p>
+            <p style="font-weight: 800; font-size: 14px; margin: 0;">#${String(order.id).padStart(4, '0')}</p>
           </div>
-          <div style="text-align: right;">
-            <p>Status: <strong>${status}</strong></p>
-            <p>Payment: <strong>${order.payment_method || 'COD'}</strong></p>
-          </div>
-        </div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 16px;">
-          <tr style="border-bottom: 1px solid #e2e8f0; text-align: left;">
-            <th style="padding: 4px 0;">Item</th>
-            <th style="padding: 4px 0; text-align: center;">Qty</th>
-            <th style="padding: 4px 0; text-align: right;">Amt</th>
-          </tr>
-          ${items.map(it => `
-            <tr style="border-bottom: 1px dashed #f1f5f9;">
-              <td style="padding: 6px 0;">${it.product?.name || 'Item'}</td>
-              <td style="padding: 6px 0; text-align: center;">${it.quantity}</td>
-              <td style="padding: 6px 0; text-align: right;">₹${(it.quantity * parseFloat(it.price||0)).toFixed(2)}</td>
-            </tr>
-          `).join('')}
-        </table>
-        <div style="border-top: 1px solid #e2e8f0; padding-top: 8px; font-size: 11px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Delivery Fee</span><span>₹45.00</span></div>
-          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; border-top: 1px solid #cbd5e1; padding-top: 8px; margin-top: 4px;">
-            <span>TOTAL</span><span>₹${total}</span>
+          <div style="text-align: right; line-height: 1.6;">
+            <p style="color: #9ca3af; margin: 0;">Date & Time</p>
+            <p style="font-weight: 600; margin: 0;">${dateStrFull}, ${timeStrFull}</p>
           </div>
         </div>
-        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px dashed #cbd5e1; font-size: 11px; color: #64748b;">
-          <p>Thank you for your order! 🙏</p>
-          <p style="margin-top: 4px; font-size: 9px;">This is a computer-generated invoice.</p>
+
+        <div style="margin-bottom: 24px;">
+          <p style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #9ca3af; margin-bottom: 12px;">Order Summary</p>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            ${items.map(it => `
+              <tr>
+                <td style="padding: 10px 0; font-weight: 500;">${it.product?.name || 'Item'} <span style="color: #9ca3af;">x ${it.quantity}</span></td>
+                <td style="padding: 10px 0; text-align: right; font-weight: 600;">₹${(it.quantity * parseFloat(it.price||0)).toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </table>
+        </div>
+
+        <div style="border-top: 1px dashed #e5e7eb; padding-top: 16px; font-size: 13px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #6b7280;"><span>Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #6b7280;"><span>Delivery Fee</span><span>₹${deliveryFee.toFixed(2)}</span></div>
+          <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 18px; color: #111827; border-top: 2px solid #a83100; padding-top: 16px;">
+            <span>Amount Paid</span><span style="color: #a83100;">₹${total}</span>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #f3f4f6;">
+          <p style="font-weight: 700; color: #374151; font-size: 14px;">Thank you for ordering! 🙏</p>
+          <p style="font-size: 11px; color: #9ca3af; margin-top: 6px;">Feel free to share your feast on social media!</p>
         </div>
       </div>
     `
-    const win = window.open('', '_blank', 'width=400,height=600')
+    const win = window.open('', '_blank', 'width=600,height=800')
     if (win) {
-      win.document.write(`<html><head><title>Invoice INV-${String(order.id).padStart(5, '0')}</title></head><body style="padding:20px; margin:0;">${printContent}</body></html>`)
+      win.document.write(`<html><head><title>Invoice #${String(order.id).padStart(4, '0')}</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></head><body style="margin:20px; background: #f3f4f6;">${printContent}</body></html>`)
       win.document.close()
       win.focus()
-      setTimeout(() => { win.print(); win.close() }, 400)
+      // Wait for font and logo to load, then print
+      setTimeout(() => { win.print() }, 800)
     }
+  }
+
+  const downloadBillAsImage = async (e) => {
+    e.stopPropagation();
+    
+    // Create a high-res canvas (2x for clarity)
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const scale = 2;
+    canvas.width = 400 * scale;
+    canvas.height = 600 * scale;
+    ctx.scale(scale, scale);
+
+    // Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 400, 600);
+
+    // Border (optional)
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(10, 10, 380, 580);
+
+    // Draw Logo
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = brandLogo;
+    
+    await new Promise((resolve) => {
+      img.onload = resolve;
+      img.onerror = resolve; // Continue even if logo fails
+    });
+
+    if (img.complete && img.naturalWidth > 0) {
+      ctx.drawImage(img, 160, 30, 80, 80);
+    }
+
+    // Title
+    ctx.fillStyle = '#a83100';
+    ctx.font = 'bold 20px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('FEAST AT NIGHT', 200, 130);
+    
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '12px Inter, sans-serif';
+    ctx.fillText('Premium Midnight Cravings', 200, 150);
+
+    // Order Info
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#1f2937';
+    ctx.font = 'bold 14px Inter, sans-serif';
+    ctx.fillText(`Order #${String(order.id).padStart(4, '0')}`, 30, 190);
+    
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.fillText(`${dateStr} ${timeStr}`, 370, 190);
+
+    // Items Header
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = 'bold 10px Inter, sans-serif';
+    ctx.fillText('ITEM', 30, 230);
+    ctx.textAlign = 'right';
+    ctx.fillText('PRICE', 370, 230);
+    
+    ctx.beginPath();
+    ctx.moveTo(30, 240);
+    ctx.lineTo(370, 240);
+    ctx.strokeStyle = '#f3f4f6';
+    ctx.stroke();
+
+    // Items
+    let y = 260;
+    ctx.fillStyle = '#1f2937';
+    ctx.font = '13px Inter, sans-serif';
+    items.forEach(it => {
+      ctx.textAlign = 'left';
+      ctx.fillText(`${it.product?.name || 'Item'} x${it.quantity}`, 30, y);
+      ctx.textAlign = 'right';
+      ctx.fillText(`₹${(it.quantity * parseFloat(it.price||0)).toFixed(2)}`, 370, y);
+      y += 25;
+    });
+
+    // Totals
+    y += 20;
+    ctx.beginPath();
+    ctx.moveTo(30, y);
+    ctx.lineTo(370, y);
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.setLineDash([5, 5]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    y += 30;
+    ctx.fillStyle = '#6b7280';
+    ctx.textAlign = 'left';
+    ctx.fillText('Subtotal', 30, y);
+    ctx.textAlign = 'right';
+    const subtotal = items.reduce((s, it) => s + (it.quantity * parseFloat(it.price || 0)), 0);
+    ctx.fillText(`₹${subtotal.toFixed(2)}`, 370, y);
+
+    y += 20;
+    ctx.textAlign = 'left';
+    ctx.fillText('Delivery Fee', 30, y);
+    ctx.textAlign = 'right';
+    const deliveryFee = (address || '').toLowerCase().includes('melapalayam') ? 20 : 50;
+    ctx.fillText(`₹${deliveryFee.toFixed(2)}`, 370, y);
+
+    y += 35;
+    ctx.fillStyle = '#a83100';
+    ctx.font = 'bold 18px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('TOTAL PAID', 30, y);
+    ctx.textAlign = 'right';
+    ctx.fillText(`₹${total_amount}`, 370, y);
+
+    // Footer
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '12px Inter, sans-serif';
+    ctx.fillText('Thank you for ordering! 🙏', 200, 560);
+
+    // Download
+    const link = document.createElement('a');
+    link.download = `FeastAtNight-Order-${order.id}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   }
 
   return (
@@ -131,7 +262,7 @@ function OrderCard({ order, index, onReorder }) {
         <span className={`material-symbols-outlined text-[16px] ${cfg.color}`}>{cfg.icon}</span>
         <span className={`text-xs font-black uppercase tracking-widest ${cfg.color}`}>{cfg.label}</span>
         <div className="flex-1" />
-        <span className="text-[10px] text-on-surface-variant font-medium">{dateStr} · {timeStr}</span>
+        <span className="text-[10px] text-on-surface-variant font-medium">#{String(order.id).padStart(4, '0')} · {dateStr} · {timeStr}</span>
       </div>
 
       {/* ── Body ──────────────────────────────────────────────── */}
@@ -210,6 +341,15 @@ function OrderCard({ order, index, onReorder }) {
             Bill
           </motion.button>
           <motion.button
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold transition-colors"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.93 }}
+            onClick={downloadBillAsImage}
+          >
+            <span className="material-symbols-outlined text-[13px]">image</span>
+            Save
+          </motion.button>
+          <motion.button
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#a83100] text-white text-xs font-bold shadow-sm"
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.93 }}
@@ -249,6 +389,17 @@ export default function Orders() {
   const [orders,  setOrders]  = useState([])
   const [loading, setLoading] = useState(true)
   const [filter,  setFilter]  = useState('All')
+  const [showToast, setShowToast] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('status') === 'success') {
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 5000)
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }, [])
 
   const fetchOrders = async (showLoader = false) => {
     if (showLoader) setLoading(true)
@@ -369,6 +520,23 @@ export default function Orders() {
 
         <div className="h-4" />
       </div>
+
+      {/* Success Toast */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="fixed bottom-24 left-4 right-4 z-50 pointer-events-none flex justify-center"
+          >
+            <div className="bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+              <span className="material-symbols-outlined">check_circle</span>
+              <p className="font-bold text-sm">Payment Successful! Order is being processed.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <BottomNav />
     </div>

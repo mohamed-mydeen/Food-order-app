@@ -30,7 +30,12 @@ function playSuccessChime() {
 /* ── Payment Options ────────────────────────────────────────────── */
 const MERCHANT_UPI  = 'mkaubathulla@oksbi'
 const MERCHANT_NAME = 'Mohamed Kaubathulla'
-const makeGPayLink  = (amt) => `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR`
+const makeGPayLink  = (amt, orderId) => {
+  const base = `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR`
+  if (!orderId) return base
+  const callbackUrl = encodeURIComponent(`${window.location.origin}/orders?orderId=${orderId}&status=success`)
+  return `${base}&tr=${orderId}&tn=${encodeURIComponent(`Order #${orderId} - FeastAtNight`)}&url=${callbackUrl}`
+}
 
 const getPaymentOptions = (amount) => [
   {
@@ -135,8 +140,11 @@ export default function Cart() {
       await fetchCart()
       playSuccessChime()   // 🔔 Play chime!
       
-      if (chosen.deepLink) {
-        window.location.href = chosen.deepLink
+      if (chosen.method === 'UPI' && data.data?.id) {
+        const upiLink = makeGPayLink(total, data.data.id)
+        setTimeout(() => {
+          window.location.href = upiLink
+        }, 800) // Small delay to let user see "Order Placed" state
       }
       
       setOrderSuccess(true)
