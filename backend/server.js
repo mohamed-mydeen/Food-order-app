@@ -76,15 +76,26 @@ app.use((err, req, res, next) => {
 (async () => {
   try {
     await sequelize.authenticate();
-    console.log("✅ Database connected successfully");
-    // sync({ alter: true }) can cause issues with TiDB, disable in production
-    await sequelize.sync({ alter: process.env.NODE_ENV === "development" });
-    console.log("✅ Database synced");
+    console.log('✅ Database connected successfully');
+
+    // NEVER use alter:true in production — it breaks on TiDB/MySQL UNIQUE KEY cols.
+    // In development, use alter only if explicitly set via env var DEV_SYNC=true
+    const shouldAlter = process.env.NODE_ENV !== 'production' && process.env.DEV_SYNC === 'true';
+    try {
+      await sequelize.sync({ alter: shouldAlter });
+      console.log('✅ Database synced');
+    } catch (syncErr) {
+      // If alter fails (e.g. unique key constraint already exists), fall back to no-op sync
+      console.warn('⚠️  alter sync failed, retrying with force:false...', syncErr.message);
+      await sequelize.sync({ force: false });
+      console.log('✅ Database synced (no-alter fallback)');
+    }
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("❌ Unable to start server:", error);
+    console.error('❌ Unable to start server:', error);
     process.exit(1);
   }
 })();

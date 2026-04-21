@@ -1,9 +1,8 @@
 const { Order, OrderItem, Cart, Product, User, NotificationToken } = require("../models");
-const { messaging } = require("../config/firebase");
-const { Op } = require("sequelize");
+const { sendToUser } = require("../utils/notificationHelper");
+const { Op, fn, col, literal } = require("sequelize");
 
 // ─── POST /api/orders ──────────────────────────────────────────────────────────
-// Place order from cart
 const placeOrder = async (req, res) => {
   try {
     const { address, payment_method = 'COD', payment_reference = null } = req.body;
@@ -13,8 +12,6 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: "Delivery address is required." });
     }
 
-
-    // Get cart items with product details
     const cartItems = await Cart.findAll({
       where: { user_id: userId },
       include: [{ model: Product, as: "product" }],
@@ -26,11 +23,9 @@ const placeOrder = async (req, res) => {
 
     const DELIVERY_FEE = (address || '').toLowerCase().includes('melapalayam') ? 20 : 50;
     const total_amount = cartItems.reduce(
-      (sum, item) => sum + parseFloat(item.product.price) * item.quantity,
-      0
+      (sum, item) => sum + parseFloat(item.product.price) * item.quantity, 0
     ) + DELIVERY_FEE;
 
-    // Create order
     const order = await Order.create({
       user_id: userId,
       total_amount,
@@ -38,10 +33,9 @@ const placeOrder = async (req, res) => {
       status: "Pending",
       payment_method,
       payment_reference: payment_reference || null,
-      payment_status: "Pending", // Always Pending until admin verifies payment manually
+      payment_status: "Pending",
     });
 
-    // Create order items (snapshot price at time of order)
     const orderItemsData = cartItems.map((item) => ({
       order_id: order.id,
       product_id: item.product_id,
@@ -49,44 +43,21 @@ const placeOrder = async (req, res) => {
       price: item.product.price,
     }));
     await OrderItem.bulkCreate(orderItemsData);
-
-    // Clear cart
     await Cart.destroy({ where: { user_id: userId } });
 
-    // Return full order
     const fullOrder = await Order.findByPk(order.id, {
-      include: [
-        {
-          model: OrderItem,
-          as: "items",
-          include: [{ model: Product, as: "product" }],
-        },
-      ],
+      include: [{ model: OrderItem, as: "items", include: [{ model: Product, as: "product" }] }],
     });
 
-    // Trigger Order Confirmed Notification
-    if (messaging) {
-      try {
-        const tokens = await NotificationToken.findAll({ where: { user_id: userId }, attributes: ['token'] });
-        if (tokens.length > 0) {
-          await messaging.sendEachForMulticast({
-            notification: {
-              title: `Order Placed! 🍽️`,
-              body: `Order confirm aagiduchu ✅\nUngal order ready aaguthu 🍗`
-            },
-            tokens: tokens.map(t => t.token)
-          });
-        }
-      } catch (err) {
-        console.error("Failed to send order placement push:", err);
-      }
-    }
-
-    return res.status(201).json({
-      success: true,
-      message: "Order placed successfully.",
-      data: fullOrder,
+    // ── Order Confirmed Notification ──
+    const itemNames = cartItems.slice(0, 2).map(i => i.product.name).join(', ');
+    await sendToUser(userId, {
+      title: `Order Confirmed! 🎉`,
+      body: `${itemNames}${cartItems.length > 2 ? ' & more' : ''} — Ready panna aagudhu! 🍗\nDelivery ku wait pannunga 🚚`,
+      data: { order_id: String(order.id), type: 'order_placed' }
     });
+
+    return res.status(201).json({ success: true, message: "Order placed successfully.", data: fullOrder });
   } catch (error) {
     console.error("placeOrder:", error);
     return res.status(500).json({ success: false, message: "Failed to place order." });
@@ -94,25 +65,102 @@ const placeOrder = async (req, res) => {
 };
 
 // ─── GET /api/orders/user ──────────────────────────────────────────────────────
-// Get logged-in user's orders
 const getUserOrders = async (req, res) => {
   try {
     const orders = await Order.findAll({
       where: { user_id: req.user.userId },
-      include: [
-        {
-          model: OrderItem,
-          as: "items",
-          include: [{ model: Product, as: "product" }],
-        },
-      ],
+      include: [{ model: OrderItem, as: "items", include: [{ model: Product, as: "product" }] }],
       order: [["created_at", "DESC"]],
     });
-
     return res.json({ success: true, data: orders });
   } catch (error) {
     console.error("getUserOrders:", error);
     return res.status(500).json({ success: false, message: "Failed to fetch orders." });
+  }
+};
+
+// ─── GET /api/orders/recommendations ──────────────────────────────────────────
+// Returns product recommendations based on this user's order history
+const getRecommendations = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Step 1: Get product IDs this user has ordered, sorted by frequency
+    const userOrderedItems = await OrderItem.findAll({
+      include: [{
+        model: Order,
+        as: "order",
+        where: { user_id: userId },
+        attributes: [],
+      }],
+      attributes: ['product_id', [fn('SUM', col('OrderItem.quantity')), 'total_ordered']],
+      group: ['product_id'],
+      order: [[literal('total_ordered'), 'DESC']],
+      limit: 10,
+    });
+
+    const orderedProductIds = userOrderedItems.map(i => i.product_id);
+
+    if (orderedProductIds.length === 0) {
+      // New user — return popular products overall
+      const popular = await OrderItem.findAll({
+        attributes: ['product_id', [fn('SUM', col('quantity')), 'total_ordered']],
+        group: ['product_id'],
+        order: [[literal('total_ordered'), 'DESC']],
+        limit: 6,
+        include: [{ model: Product, as: 'product', where: { is_available: true }, attributes: ['id', 'name', 'price', 'image', 'category', 'description'] }],
+      });
+      return res.json({
+        success: true,
+        type: 'popular',
+        message: 'Trending items at Feast At Night 🔥',
+        data: popular.map(i => ({ ...i.product.toJSON(), order_count: i.get('total_ordered') })),
+      });
+    }
+
+    // Step 2: Find categories the user orders most
+    const userCategories = await OrderItem.findAll({
+      include: [
+        { model: Order, as: "order", where: { user_id: userId }, attributes: [] },
+        { model: Product, as: "product", attributes: ['category'] },
+      ],
+      attributes: [[fn('COUNT', col('OrderItem.id')), 'cnt']],
+      group: ['product.category'],
+      order: [[literal('cnt'), 'DESC']],
+      limit: 3,
+    });
+    const topCategories = userCategories.map(i => i.product?.category).filter(Boolean);
+
+    // Step 3: Get products from those categories that user hasn't ordered (or ordered least)
+    const recommended = await Product.findAll({
+      where: {
+        is_available: true,
+        ...(topCategories.length > 0 ? { category: { [Op.in]: topCategories } } : {}),
+        id: { [Op.notIn]: orderedProductIds.slice(0, 5) }, // exclude user's top 5 to show new things
+      },
+      limit: 6,
+      order: [['id', 'ASC']],
+      attributes: ['id', 'name', 'price', 'image', 'category', 'description'],
+    });
+
+    // Step 4: Also include their #1 most ordered item as a "favourite"
+    const topProduct = await Product.findByPk(orderedProductIds[0], {
+      attributes: ['id', 'name', 'price', 'image', 'category', 'description'],
+    });
+
+    const results = [];
+    if (topProduct) results.push({ ...topProduct.toJSON(), tag: 'Your Favourite ❤️' });
+    recommended.forEach(p => results.push({ ...p.toJSON(), tag: 'Try This 👍' }));
+
+    return res.json({
+      success: true,
+      type: 'personalised',
+      message: "Ungalukku personally select pannina items 🍽️",
+      data: results,
+    });
+  } catch (error) {
+    console.error("getRecommendations:", error);
+    return res.status(500).json({ success: false, message: "Failed to fetch recommendations." });
   }
 };
 
@@ -122,24 +170,17 @@ const getAllOrders = async (req, res) => {
     const { status, page = 1, limit = 20 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    // Support comma-separated statuses (e.g. "Pending,Preparing,Out for Delivery")
-    let where = {}
+    let where = {};
     if (status) {
-      const statuses = status.split(',').map(s => s.trim()).filter(Boolean)
-      where = statuses.length === 1
-        ? { status: statuses[0] }
-        : { status: { [Op.in]: statuses } }
+      const statuses = status.split(',').map(s => s.trim()).filter(Boolean);
+      where = statuses.length === 1 ? { status: statuses[0] } : { status: { [Op.in]: statuses } };
     }
 
     const { count, rows } = await Order.findAndCountAll({
       where,
       include: [
         { model: User, as: "user", attributes: ["id", "name", "email", "phone", "address"] },
-        {
-          model: OrderItem,
-          as: "items",
-          include: [{ model: Product, as: "product" }],
-        },
+        { model: OrderItem, as: "items", include: [{ model: Product, as: "product" }] },
       ],
       order: [["created_at", "DESC"]],
       limit: parseInt(limit),
@@ -163,17 +204,11 @@ const getOrderById = async (req, res) => {
     const order = await Order.findByPk(req.params.id, {
       include: [
         { model: User, as: "user", attributes: ["id", "name", "email", "phone"] },
-        {
-          model: OrderItem,
-          as: "items",
-          include: [{ model: Product, as: "product" }],
-        },
+        { model: OrderItem, as: "items", include: [{ model: Product, as: "product" }] },
       ],
     });
 
     if (!order) return res.status(404).json({ success: false, message: "Order not found." });
-
-    // Users can only view their own orders
     if (req.user.role !== "admin" && order.user_id !== req.user.userId) {
       return res.status(403).json({ success: false, message: "Access denied." });
     }
@@ -202,37 +237,21 @@ const updateOrderStatus = async (req, res) => {
     if (!order) return res.status(404).json({ success: false, message: "Order not found." });
 
     const updateData = { status };
-    // Automatically mark payment as Paid if the admin accepts the order (e.g. Preparing)
     if (order.payment_method === 'UPI' && status !== 'Pending' && status !== 'Cancelled') {
       updateData.payment_status = 'Paid';
     }
-
     await order.update(updateData);
 
-    // ─── Trigger Push Notification ──────────────────────────────────
-    if (messaging) {
-      try {
-        const tokens = await NotificationToken.findAll({ where: { user_id: order.user_id }, attributes: ['token'] });
-        if (tokens.length > 0) {
-          const statusMessages = {
-            'Preparing': 'Ungal food prepare aaguthu 👨‍🍳🔥\nSuper taste ready aagudhu 😋',
-            'Out for Delivery': 'Delivery partner vandhutaru 🚚\nKonjam nerathula reach aagum 😎',
-            'Delivered': 'Order deliver aagiduchu 🎉\nEnjoy pannunga 😋\nFeedback kudunga 🙌',
-            'Cancelled': '❌ Order cancel aagiduchu.'
-          };
-          const msgBody = statusMessages[status] || `Order #${order.id} status updated to ${status}.`;
-          
-          await messaging.sendEachForMulticast({
-            notification: {
-              title: `Order Update #${order.id}`,
-              body: msgBody
-            },
-            tokens: tokens.map(t => t.token)
-          });
-        }
-      } catch (err) {
-        console.error("Failed to send push notification for order update:", err);
-      }
+    // ── Status Update Notification with proper priority ──
+    const statusMessages = {
+      'Preparing':        { title: '👨‍🍳 Order Preparing!',        body: `Order #${order.id} — Ungal food fresh-a prepare aaguthu 🔥\nKonjam wait pannunga 😊` },
+      'Out for Delivery': { title: '🚚 On the Way!',              body: `Order #${order.id} — Delivery partner kita irukaaru!\nEdhirpaathu ready-a iru 😎` },
+      'Delivered':        { title: '🎉 Delivered! Enjoy!',        body: `Order #${order.id} — Hot-a saapidu! 😋\nRating kudunga plz 🙏` },
+      'Cancelled':        { title: '❌ Order Cancelled',          body: `Order #${order.id} cancel aagiduchu.\nHelp-a? Contact us 📞` },
+    };
+    const msg = statusMessages[status];
+    if (msg) {
+      await sendToUser(order.user_id, { ...msg, data: { order_id: String(order.id), type: 'status_update', status } });
     }
 
     return res.json({ success: true, message: "Order status updated.", data: order });
@@ -242,4 +261,4 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-module.exports = { placeOrder, getUserOrders, getAllOrders, getOrderById, updateOrderStatus };
+module.exports = { placeOrder, getUserOrders, getAllOrders, getOrderById, updateOrderStatus, getRecommendations };

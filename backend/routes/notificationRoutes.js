@@ -3,10 +3,10 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const requireRole = require('../middleware/roleMiddleware');
 const { NotificationToken } = require('../models');
+const { sendToUser, sendToAll } = require('../utils/notificationHelper');
 const { messaging } = require('../config/firebase');
 
 // ─── POST /api/notifications/register ─────────────────────────
-// Clients call this to register their FCM token upon login/consent
 router.post('/register', authMiddleware, async (req, res) => {
   try {
     const { token, device_info } = req.body;
@@ -16,7 +16,6 @@ router.post('/register', authMiddleware, async (req, res) => {
       return res.status(400).json({ success: false, message: 'FCM Token is required.' });
     }
 
-    // Upsert logic: if token exists, update user_id (in case of re-login), else create
     const existing = await NotificationToken.findOne({ where: { token } });
     let isNewToken = false;
     if (existing) {
@@ -32,18 +31,13 @@ router.post('/register', authMiddleware, async (req, res) => {
       });
     }
 
-    if (isNewToken && messaging) {
-      try {
-        await messaging.send({
-          token,
-          notification: {
-            title: 'Welcome 🎉',
-            body: 'Feast At Night ku welcome!\nInniku special offer iruku 🔥 check pannunga!'
-          }
-        });
-      } catch (e) {
-        console.error('Failed to send welcome push:', e);
-      }
+    // Welcome push for brand-new device registrations
+    if (isNewToken) {
+      await sendToUser(userId, {
+        title: 'Feast At Night-ku Welcome! 🎉',
+        body: 'Inniku special offers iruku 🔥\nMenu check pannunga — hot deals waiting!',
+        data: { type: 'welcome' }
+      });
     }
 
     return res.json({ success: true, message: 'Push notification token registered.' });
@@ -53,57 +47,73 @@ router.post('/register', authMiddleware, async (req, res) => {
   }
 });
 
-// ─── POST /api/notifications/send ──────────────────────────────
-// Admins call this to manually broadcast a message (e.g. Offers)
+// ─── POST /api/notifications/send (broadcast) ──────────────────
 router.post('/send', authMiddleware, requireRole('admin', 'developer'), async (req, res) => {
   try {
-    const { title, body, imageUrl } = req.body;
+    const { title, body } = req.body;
 
     if (!messaging) {
-      return res.status(503).json({ success: false, message: 'Firebase Admin not configured on server.' });
+      return res.status(503).json({ success: false, message: 'Firebase Admin not configured.' });
     }
     if (!title || !body) {
       return res.status(400).json({ success: false, message: 'Title and body are required.' });
     }
 
-    // Fetch all unique tokens
-    const tokens = await NotificationToken.findAll({ attributes: ['token'] });
-    const tokenList = tokens.map(t => t.token);
-
-    if (tokenList.length === 0) {
-      return res.json({ success: true, message: 'No devices registered for notifications.' });
-    }
-
-    const payload = {
-      notification: {
-        title,
-        body,
-        ...(imageUrl && { image: imageUrl })
-      },
-      tokens: tokenList
-    };
-
-    const response = await messaging.sendEachForMulticast(payload);
-    
-    // Optional: Cleanup invalid tokens (NotRegistered)
-    const tokensToRemove = [];
-    response.responses.forEach((resp, idx) => {
-      if (!resp.success && resp.error.code === 'messaging/registration-token-not-registered') {
-        tokensToRemove.push(tokenList[idx]);
-      }
-    });
-
-    if (tokensToRemove.length > 0) {
-      await NotificationToken.destroy({ where: { token: tokensToRemove } });
-    }
-
+    const result = await sendToAll({ title, body, data: { type: 'broadcast' } });
     return res.json({
       success: true,
-      message: `Message sent. Success: ${response.successCount}, Failed: ${response.failureCount}`,
+      message: `Broadcast sent. ✅ ${result.successCount} success, ❌ ${result.failureCount} failed.`,
     });
   } catch (error) {
     console.error('Notification Send Error:', error);
     return res.status(500).json({ success: false, message: 'Failed to broadcast notification.' });
+  }
+});
+
+// ─── POST /api/notifications/send-offer ────────────────────────
+// Automatically send an offer notification to all users
+router.post('/send-offer', authMiddleware, requireRole('admin', 'developer'), async (req, res) => {
+  try {
+    const { offerTitle, offerDescription, discount } = req.body;
+    const title = `🔥 ${offerTitle || 'Special Offer for You!'}`;
+    const body  = offerDescription || `Get ${discount || ''}% off today at Feast At Night! Don't miss out 🍗`;
+
+    const result = await sendToAll({ title, body, data: { type: 'offer', discount: String(discount || '') } });
+    return res.json({ success: true, message: `Offer notification sent to ${result.successCount} devices.` });
+  } catch (error) {
+    console.error('Offer Notification Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to send offer notification.' });
+  }
+});
+
+// ─── POST /api/notifications/recommendation ────────────────────
+// Push a recommendation nudge to a specific user or all users
+router.post('/recommendation', authMiddleware, requireRole('admin', 'developer'), async (req, res) => {
+  try {
+    const { userId, productName, category } = req.body;
+    const title = `🍽️ You'll love this, ${category ? category + ' fan!' : 'try this!'} `;
+    const body  = `${productName || 'A special dish'} is waiting for you at Feast At Night 😋`;
+
+    if (userId) {
+      await sendToUser(userId, { title, body, data: { type: 'recommendation' } });
+    } else {
+      await sendToAll({ title, body, data: { type: 'recommendation' } });
+    }
+
+    return res.json({ success: true, message: 'Recommendation notification sent.' });
+  } catch (error) {
+    console.error('Recommendation Notification Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to send recommendation.' });
+  }
+});
+
+// ─── GET /api/notifications/tokens (developer only) ────────────
+router.get('/tokens', authMiddleware, requireRole('developer', 'admin'), async (req, res) => {
+  try {
+    const tokens = await NotificationToken.findAll({ attributes: ['id', 'user_id', 'device_info', 'created_at'] });
+    return res.json({ success: true, count: tokens.length, data: tokens });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to fetch tokens.' });
   }
 });
 

@@ -136,6 +136,20 @@ export default function Home() {
     : []
   const isSearching = q.length > 0
 
+  // Recommendations fetch
+  const { token } = useAuth()
+  const [recs, setRecs]       = useState([])
+  const [recsMsg, setRecsMsg] = useState('')
+  useEffect(() => {
+    if (!token) return
+    fetch(`${API}/api/orders/recommendations`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(d => { if (d.success) { setRecs(d.data || []); setRecsMsg(d.message || '') } })
+      .catch(() => {})
+  }, [token])
+
   // Show top 6 as "best options" scroll row
   const topProducts = products.slice(0, 6)
 
@@ -377,6 +391,54 @@ export default function Home() {
                       )
                     })}
                   </motion.div>
+                </div>
+              )}
+
+              {/* ── Personalised Recommendations ── */}
+              {recs.length > 0 && (
+                <div className="space-y-3 pb-2">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-headline font-bold text-lg text-on-surface">For You 💡</h3>
+                      {recsMsg && <p className="text-[11px] text-on-surface-variant mt-0.5">{recsMsg}</p>}
+                    </div>
+                    <motion.button
+                      onClick={() => navigate('/menu')}
+                      className="text-primary font-bold text-xs flex items-center gap-1"
+                      whileTap={{ scale: 0.92 }}
+                    >
+                      See All <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                    </motion.button>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4">
+                    {recs.map((p, i) => (
+                      <motion.button
+                        key={`rec-${p.id}`}
+                        onClick={() => setSelected(p)}
+                        className="flex-none w-36 bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-container text-left"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.06 }}
+                        whileTap={{ scale: 0.96 }}
+                      >
+                        <div className="relative h-24 bg-gray-100 overflow-hidden">
+                          {p.image
+                            ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center text-3xl">🍽️</div>
+                          }
+                          {p.tag && (
+                            <span className="absolute top-1.5 left-1.5 bg-primary/90 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">
+                              {p.tag}
+                            </span>
+                          )}
+                        </div>
+                        <div className="p-2.5">
+                          <p className="font-bold text-xs text-on-surface line-clamp-1">{p.name}</p>
+                          <p className="font-black text-primary text-sm mt-0.5">₹{parseFloat(p.price).toFixed(0)}</p>
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
                 </div>
               )}
 

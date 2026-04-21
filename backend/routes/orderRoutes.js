@@ -6,6 +6,7 @@ const {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  getRecommendations,
 } = require("../controllers/orderController");
 const authMiddleware = require("../middleware/authMiddleware");
 const requireRole = require("../middleware/roleMiddleware");
@@ -15,6 +16,9 @@ router.use(authMiddleware);
 
 // POST /api/orders             (place order from cart — regular users)
 router.post("/", placeOrder);
+
+// GET /api/orders/recommendations  (personalised / popular products for logged-in user)
+router.get("/recommendations", getRecommendations);
 
 // GET /api/orders/user         (logged-in user's own orders)
 router.get("/user", getUserOrders);
