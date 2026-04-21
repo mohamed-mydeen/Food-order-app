@@ -27,6 +27,34 @@ function playSuccessChime() {
   } catch { /* audio blocked — silently ignore */ }
 }
 
+/* ── Payment Options ────────────────────────────────────────────── */
+const MERCHANT_UPI  = 'mkaubathulla@oksbi'
+const MERCHANT_NAME = 'Mohamed Kaubathulla'
+const makeGPayLink  = (amt) => `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR`
+
+const getPaymentOptions = (amount) => [
+  {
+    id: 'GPAY', method: 'UPI', label: 'Google Pay / UPI',
+    sub: 'Pay securely via any UPI app', deepLink: makeGPayLink(amount),
+    badge: 'Recommended', badgeCls: 'bg-emerald-50 text-emerald-600',
+    logo: (
+      <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-white border border-gray-100 shadow-sm">
+        <img src="https://cdn.simpleicons.org/googlepay/5F6368" alt="GPay" className="w-6 h-6 object-contain"
+          onError={e => { e.target.style.display='none' }} />
+      </div>
+    ),
+  },
+  {
+    id: 'COD', method: 'COD', label: 'Cash on Delivery',
+    sub: 'Pay at your doorstep', deepLink: null,
+    logo: (
+      <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-emerald-50 text-emerald-600">
+        <span className="material-symbols-outlined text-[20px]">payments</span>
+      </div>
+    ),
+  }
+]
+
 /* ── Divider ────────────────────────────────────────────────────── */
 const Divider = () => <div className="h-2 bg-surface-container -mx-0" />
 
@@ -39,6 +67,7 @@ export default function Cart() {
   const [placing, setPlacing]           = useState(false)
   const [address, setAddress]           = useState(user?.address || '')
   const [showCheckout, setShowCheckout] = useState(false)
+  const [selectedPayment, setPayment]   = useState('GPAY')
   const [orderSuccess, setOrderSuccess] = useState(false)
   const [error, setError]               = useState('')
   const [countdown, setCountdown]       = useState(5)
@@ -75,8 +104,12 @@ export default function Cart() {
   const DELIVERY_FEE   = (address || '').toLowerCase().includes('melapalayam') ? 20 : 50;
   const total          = subtotal + DELIVERY_FEE
   const totalItems     = cartItems.reduce((s, it) => s + it.quantity, 0)
+  const PAYMENT_OPTIONS = getPaymentOptions(total)
+  const chosen          = PAYMENT_OPTIONS.find(p => p.id === selectedPayment)
+
   const handlePay = async () => {
     if (!address.trim()) { setError('Please enter a delivery address.'); return }
+    if (!chosen) { setError('Please select a payment method.'); return }
     setPlacing(true); setError('')
 
     try {
@@ -85,8 +118,8 @@ export default function Cart() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           address,
-          payment_method: 'COD',
-          payment_reference: null,
+          payment_method: chosen.method,
+          payment_reference: chosen.id !== 'COD' ? chosen.id : null,
         }),
       })
       const data = await res.json()
@@ -101,6 +134,11 @@ export default function Cart() {
 
       await fetchCart()
       playSuccessChime()   // 🔔 Play chime!
+      
+      if (chosen.deepLink) {
+        window.location.href = chosen.deepLink
+      }
+      
       setOrderSuccess(true)
       setShowCheckout(false)
     } catch (err) {
@@ -167,7 +205,7 @@ export default function Cart() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <h2 className="font-headline font-black text-3xl text-on-surface tracking-tight">Order Placed!</h2>
             <p className="text-on-surface-variant text-sm mt-2">
-              Pay ₹{total.toFixed(0)} when your order arrives
+              {chosen?.method === 'UPI' ? `Redirecting to payment...` : `Pay ₹${total.toFixed(0)} when your order arrives`}
             </p>
           </motion.div>
           <motion.div className="w-full max-w-xs bg-green-50 border border-green-100 rounded-2xl px-5 py-4 flex items-center gap-4"
@@ -177,7 +215,7 @@ export default function Cart() {
             </div>
             <div className="text-left">
               <p className="text-xs text-on-surface-variant font-medium">Total Amount</p>
-              <p className="text-xs text-on-surface-variant mt-0.5">Cash on Delivery</p>
+              <p className="text-xs text-on-surface-variant mt-0.5">{chosen?.method === 'UPI' ? 'Paid via UPI' : 'Cash on Delivery'}</p>
             </div>
           </motion.div>
           <motion.div className="flex flex-col gap-3 w-full max-w-xs"
@@ -435,13 +473,30 @@ export default function Cart() {
 
           {/* ── Payment Method ──────────────────────────────────────── */}
           <div className="bg-surface px-5 pt-4 pb-2 text-center pt-8 border-t border-surface-container">
-            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
-              <span className="material-symbols-outlined text-[32px]">payments</span>
-            </div>
-            <p className="font-headline font-black text-lg text-on-surface mb-1">Cash on Delivery</p>
-            <p className="text-sm text-on-surface-variant max-w-[240px] mx-auto pb-4">
-              Pay with cash at the time of delivery
-            </p>
+            <p className="font-bold text-sm text-on-surface mb-3 text-left">Payment</p>
+            {PAYMENT_OPTIONS.map((opt, idx) => (
+              <button key={opt.id} onClick={() => setPayment(opt.id)}
+                className={`w-full flex items-center gap-3.5 py-3.5 transition-all rounded-xl px-3 mb-2 ${
+                  selectedPayment === opt.id ? 'bg-primary/5 border border-primary/20' : 'bg-surface-container border border-transparent'
+                }`}>
+                <div className="flex-shrink-0">{opt.logo}</div>
+                <div className="flex-1 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-on-surface">{opt.label}</span>
+                    {opt.badge && <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${opt.badgeCls}`}>{opt.badge}</span>}
+                  </div>
+                  <p className="text-xs text-on-surface-variant mt-0.5">{opt.sub}</p>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                  selectedPayment === opt.id ? 'border-primary' : 'border-outline-variant'
+                }`}>
+                  {selectedPayment === opt.id && (
+                    <motion.div layoutId="pay-dot" className="w-2.5 h-2.5 rounded-full bg-primary"
+                      transition={{ type: 'spring', stiffness: 400, damping: 28 }} />
+                  )}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -461,7 +516,7 @@ export default function Cart() {
         <div className="flex items-center justify-between mb-3 px-1">
           <div>
             <p className="text-xs font-bold text-on-surface-variant">
-              To Pay
+              Paying via <strong className="text-on-surface">{chosen?.label}</strong>
             </p>
           </div>
           <p className="font-headline font-black text-primary text-lg">₹{total.toFixed(2)}</p>
