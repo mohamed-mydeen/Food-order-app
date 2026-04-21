@@ -108,7 +108,7 @@ const getRecommendations = async (req, res) => {
         group: ['product_id'],
         order: [[literal('total_ordered'), 'DESC']],
         limit: 6,
-        include: [{ model: Product, as: 'product', where: { is_available: true }, attributes: ['id', 'name', 'price', 'image', 'category', 'description'] }],
+        include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'price', 'image', 'category', 'description'] }],
       });
       return res.json({
         success: true,
@@ -134,7 +134,6 @@ const getRecommendations = async (req, res) => {
     // Step 3: Get products from those categories that user hasn't ordered (or ordered least)
     const recommended = await Product.findAll({
       where: {
-        is_available: true,
         ...(topCategories.length > 0 ? { category: { [Op.in]: topCategories } } : {}),
         id: { [Op.notIn]: orderedProductIds.slice(0, 5) }, // exclude user's top 5 to show new things
       },
