@@ -1,10 +1,7 @@
 const admin = require('firebase-admin');
-const fs = require('fs');
-const path = require('path');
+const fs    = require('fs');
+const path  = require('path');
 
-// Determine path to the service account key
-// The user needs to download this from Firebase Console (Project Settings -> Service Accounts -> Generate New Private Key)
-// and save it as "firebase-service-account.json" in the backend directory.
 const serviceAccountPath = path.join(__dirname, '../firebase-service-account.json');
 
 let messaging = null;
@@ -12,36 +9,47 @@ let messaging = null;
 try {
   let serviceAccount = null;
 
+  // ── Strategy 1: FIREBASE_SERVICE_ACCOUNT_BASE64 env var (Render/production) ──
   if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-    const decodedJSON = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
-    serviceAccount = JSON.parse(decodedJSON);
+    const raw = Buffer.from(
+      process.env.FIREBASE_SERVICE_ACCOUNT_BASE64.trim(),
+      'base64'
+    ).toString('utf8');
+
+    serviceAccount = JSON.parse(raw);
+
+    // Normalize the private_key — handles every encoding scenario:
+    //   • JSON.parse already converts \\n → \n (real newline) in most cases
+    //   • But if the base64 source had literal \n strings, fix them too
+    //   • Also strip any stray \r (Windows line endings)
     if (serviceAccount.private_key) {
-      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-      console.log('Firebase Private Key Length:', serviceAccount.private_key.length);
-      console.log('Firebase Private Key starts with:', serviceAccount.private_key.substring(0, 30));
-      console.log('Firebase Private Key ends with:', serviceAccount.private_key.substring(serviceAccount.private_key.length - 30));
-    } else {
-      console.log('Firebase Private Key is MISSING in JSON');
+      serviceAccount.private_key = serviceAccount.private_key
+        .replace(/\\n/g, '\n')   // literal backslash-n → real newline
+        .replace(/\r/g, '');     // strip carriage returns
     }
-  }
-  // 2. Try falling back to local file
-  else if (fs.existsSync(serviceAccountPath)) {
-    serviceAccount = require(serviceAccountPath);
+
+    console.log('🔑 Firebase key loaded from env var, length:', serviceAccount.private_key?.length);
   }
 
-  if (serviceAccount) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-    
-    messaging = admin.messaging();
-    console.log("🔥 Firebase Admin SDK initialized successfully.");
-  } else {
-    console.warn("⚠️ Firebase Admin SDK not initialized.");
-    console.warn("⚠️ Missing 'firebase-service-account.json' file OR 'FIREBASE_SERVICE_ACCOUNT_BASE64' env var.");
+  // ── Strategy 2: local JSON file (development fallback) ────────────────────
+  else if (fs.existsSync(serviceAccountPath)) {
+    serviceAccount = require(serviceAccountPath);
+    console.log('🔑 Firebase key loaded from local service-account.json');
   }
-} catch (error) {
-  console.error("❌ Failed to initialize Firebase Admin SDK:", error);
+
+  // ── Initialize ────────────────────────────────────────────────────────────
+  if (serviceAccount) {
+    if (!admin.apps.length) {
+      admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    }
+    messaging = admin.messaging();
+    console.log('🔥 Firebase Admin SDK initialized successfully.');
+  } else {
+    console.warn('⚠️  Firebase Admin SDK not initialized — set FIREBASE_SERVICE_ACCOUNT_BASE64 in Render env vars.');
+  }
+
+} catch (err) {
+  console.error('❌ Firebase Admin SDK init failed:', err.message);
 }
 
 module.exports = { messaging };
