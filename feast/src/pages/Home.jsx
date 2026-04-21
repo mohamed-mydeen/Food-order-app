@@ -401,7 +401,7 @@ export default function Home() {
                 <div className="space-y-3 pb-2">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="font-headline font-bold text-lg text-on-surface">For You 💡</h3>
+                      <h3 className="font-headline font-bold text-lg text-on-surface">Recommendations</h3>
                       {recsMsg && <p className="text-[11px] text-on-surface-variant mt-0.5">{recsMsg}</p>}
                     </div>
                     <motion.button

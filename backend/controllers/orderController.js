@@ -157,13 +157,13 @@ const getRecommendations = async (req, res) => {
     });
 
     const results = [];
-    if (topProduct) results.push({ ...topProduct.toJSON(), tag: 'Your Favourite ❤️' });
-    recommended.forEach(p => results.push({ ...p.toJSON(), tag: 'Try This 👍' }));
+    if (topProduct) results.push({ ...topProduct.toJSON(), tag: 'Your Favourite' });
+    recommended.forEach(p => results.push({ ...p.toJSON(), tag: 'Recommended' }));
 
     return res.json({
       success: true,
       type: 'personalised',
-      message: "Ungalukku personally select pannina items 🍽️",
+      message: "Curated based on your previous orders.",
       data: results,
     });
   } catch (error) {
