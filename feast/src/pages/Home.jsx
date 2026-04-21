@@ -214,15 +214,15 @@ export default function Home() {
            style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
         <main className="px-4 pt-4 pb-4 space-y-6">
 
-          {/* Zomato-style Search */}
-          <div className="relative z-30">
+          {/* Separated Instamart/Zomato Search */}
+          <div className="relative z-30 flex items-center gap-2.5">
             <motion.div
-              className={`flex items-center bg-surface-container rounded-2xl px-4 py-3.5 transition-all ${searchFocused ? 'shadow-lg ring-1 ring-primary/30' : 'shadow-sm border border-outline-variant/30'}`}
+              className={`flex-1 flex items-center bg-surface-container rounded-[18px] px-4 py-[14px] transition-all ${searchFocused ? 'shadow-lg ring-1 ring-primary/40' : 'shadow-sm border border-outline-variant/30'}`}
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <span className="material-symbols-outlined text-primary mr-3 text-[26px]">search</span>
+              <span className="material-symbols-outlined text-primary mr-3 text-[24px]">search</span>
               <input
                 className="!bg-transparent border-0 outline-none shadow-none ring-0 w-full p-0 m-0 text-on-surface font-semibold text-base placeholder:text-outline-variant placeholder:font-medium focus:ring-0 appearance-none"
                 style={{ backgroundColor: 'transparent' }}
@@ -236,28 +236,40 @@ export default function Home() {
                   if(e.key === 'Enter' && query.trim()) saveRecentSearch(query.trim())
                 }}
               />
-              <div className="flex items-center gap-2 pl-2 border-l border-gray-200 ml-2">
-                {query ? (
-                  <button onClick={() => setQuery('')} className="p-1">
-                    <span className="material-symbols-outlined text-outline text-[22px]">close</span>
-                  </button>
-                ) : (
-                  <button onClick={() => {
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    if (!SpeechRecognition) return alert("Voice search is not supported in your browser.");
-                    const recognition = new SpeechRecognition();
-                    recognition.start();
-                    recognition.onresult = (e) => {
-                      const transcript = e.results[0][0].transcript;
-                      setQuery(transcript);
-                      saveRecentSearch(transcript);
-                    };
-                  }} className="p-1 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary text-[24px] font-variation-fill">mic</span>
-                  </button>
+              <AnimatePresence>
+                {query && (
+                  <motion.button 
+                    initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setQuery('')} className="p-1.5 -mr-1.5 ml-2 flex items-center justify-center bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-on-surface-variant text-[16px] stroke-2">close</span>
+                  </motion.button>
                 )}
-              </div>
+              </AnimatePresence>
             </motion.div>
+
+            {/* Separated Voice Search Button */}
+            <motion.button
+              onClick={() => {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) return alert("Voice search is not supported in your browser.");
+                const recognition = new SpeechRecognition();
+                recognition.start();
+                recognition.onresult = (e) => {
+                  const transcript = e.results[0][0].transcript;
+                  setQuery(transcript);
+                  saveRecentSearch(transcript);
+                };
+              }}
+              className="w-[52px] h-[52px] rounded-[18px] bg-white border border-outline-variant/20 shadow-[0_4px_12px_rgba(0,0,0,0.04)] flex items-center justify-center flex-shrink-0"
+              whileTap={{ scale: 0.9 }}
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.05 }}
+            >
+              <span className="material-symbols-outlined text-primary text-[24px] font-variation-fill">mic</span>
+            </motion.button>
 
             {/* Recent Searches Dropdown */}
             <AnimatePresence>
