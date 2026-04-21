@@ -13,7 +13,8 @@ export default function About() {
     <div className="flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
 
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
+      <div className="flex-1 overflow-y-auto hide-scrollbar"
+           style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
         {/* Hero Header */}
         <div className="relative bg-gradient-to-br from-[#0c0f10] to-[#1c1c1c] px-6 pt-8 pb-10">
           <img

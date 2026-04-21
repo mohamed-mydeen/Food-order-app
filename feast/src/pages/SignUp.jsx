@@ -103,7 +103,8 @@ export default function SignUp() {
       <div className="fixed bottom-0 left-0 -z-10 w-96 h-96 bg-tertiary-container/10 blur-[120px] rounded-full" />
 
       {/* Header */}
-      <header className="bg-surface/80 backdrop-blur-xl flex-shrink-0 z-50 px-6 py-4 flex items-center justify-between border-b border-surface-container">
+      <header className="bg-surface/80 backdrop-blur-xl flex-shrink-0 z-50 px-6 py-4 flex items-center justify-between border-b border-surface-container"
+              style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
         <button onClick={() => navigate('/login')} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
           <span className="material-symbols-outlined text-on-surface">arrow_back</span>
         </button>
@@ -112,7 +113,8 @@ export default function SignUp() {
       </header>
 
       <div className="flex-1 overflow-y-auto hide-scrollbar">
-        <main className="max-w-md mx-auto px-6 pt-8 pb-24">
+        <main className="max-w-md mx-auto px-6 pt-8"
+              style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}>
 
           <div className="mb-7">
             <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Create Account</h1>

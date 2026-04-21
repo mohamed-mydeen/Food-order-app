@@ -61,7 +61,11 @@ export default function Login() {
   }
 
   return (
-    <main className="relative h-full w-full flex flex-col items-center justify-center p-6 overflow-hidden bg-background font-body text-on-background antialiased">
+    <main className="relative h-full w-full flex flex-col items-center justify-center p-6 overflow-y-auto hide-scrollbar bg-background font-body text-on-background antialiased"
+          style={{ 
+            paddingTop: 'max(24px, env(safe-area-inset-top))',
+            paddingBottom: 'max(24px, env(safe-area-inset-bottom))'
+          }}>
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <img className="w-full h-full object-cover"
