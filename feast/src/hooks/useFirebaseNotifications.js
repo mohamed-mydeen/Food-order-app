@@ -68,8 +68,8 @@ export function useFirebaseNotifications() {
         navigator.serviceWorker.ready.then((registration) => {
           registration.showNotification(payload.notification.title, {
             body: payload.notification.body,
-            icon: '/icon-192.png',
-            badge: '/badge.png'
+            icon: '/pwa-192x192.png',
+            badge: '/pwa-192x192.png'
           });
         });
       }
