@@ -217,14 +217,15 @@ export default function Home() {
           {/* Zomato-style Search */}
           <div className="relative z-30">
             <motion.div
-              className={`flex items-center bg-white rounded-2xl px-4 py-3.5 transition-all ${searchFocused ? 'shadow-lg ring-1 ring-gray-200' : 'shadow-sm border border-gray-100'}`}
+              className={`flex items-center bg-surface-container rounded-2xl px-4 py-3.5 transition-all ${searchFocused ? 'shadow-lg ring-1 ring-primary/30' : 'shadow-sm border border-outline-variant/30'}`}
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
             >
               <span className="material-symbols-outlined text-primary mr-3 text-[26px]">search</span>
               <input
-                className="bg-transparent border-none outline-none w-full p-0 m-0 text-on-surface font-semibold text-base placeholder:text-outline-variant placeholder:font-medium focus:ring-0"
+                className="!bg-transparent border-0 outline-none shadow-none ring-0 w-full p-0 m-0 text-on-surface font-semibold text-base placeholder:text-outline-variant placeholder:font-medium focus:ring-0 appearance-none"
+                style={{ backgroundColor: 'transparent' }}
                 placeholder="Restaurant, item or more"
                 type="text"
                 value={query}
