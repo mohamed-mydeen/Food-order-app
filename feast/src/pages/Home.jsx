@@ -108,9 +108,35 @@ export default function Home() {
   const { wishlist, toggleWishlist } = useWishlist()
   const { products, loading }       = useProducts()
   const [query, setQuery]           = useState('')
+  const [searchFocused, setSearchFocused] = useState(false)
+  const [recentSearches, setRecentSearches] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('fan_recent_searches')) || [] } catch { return [] }
+  })
+  
   const [categories, setCategories] = useState([])
   const [selected, setSelected]     = useState(null)
+  
+  // Recommendations state
+  const [recs, setRecs]             = useState([])
+  const [recsLoading, setRecsLoading]= useState(true)
+  const [recsMsg, setRecsMsg]       = useState('')
+
+  // Offer popup state
   const [offerOpen, setOfferOpen]   = useState(false)
+
+  const saveRecentSearch = (term) => {
+    if (!term) return
+    const updated = [term, ...recentSearches.filter(s => s !== term)].slice(0, 7)
+    setRecentSearches(updated)
+    localStorage.setItem('fan_recent_searches', JSON.stringify(updated))
+  }
+
+  const removeRecentSearch = (e, term) => {
+    e.stopPropagation()
+    const updated = recentSearches.filter(s => s !== term)
+    setRecentSearches(updated)
+    localStorage.setItem('fan_recent_searches', JSON.stringify(updated))
+  }
 
   const handleWishlistClick = (e, productId) => {
     e.stopPropagation()
@@ -191,27 +217,71 @@ export default function Home() {
            style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
         <main className="px-4 pt-4 pb-4 space-y-6">
 
-          {/* Search */}
-          <motion.div
-            className="flex items-center bg-white rounded-full px-5 py-3.5 shadow-sm focus-within:ring-2 ring-primary/20 transition-all"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <span className="material-symbols-outlined text-outline mr-3 text-[20px]">search</span>
-            <input
-              className="bg-transparent border-none outline-none w-full text-on-surface placeholder:text-outline-variant font-medium text-sm"
-              placeholder="Search for food or items"
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            {query && (
-              <button onClick={() => setQuery('')}>
-                <span className="material-symbols-outlined text-outline text-[20px]">close</span>
-              </button>
-            )}
-          </motion.div>
+          {/* Zomato-style Search */}
+          <div className="relative z-30">
+            <motion.div
+              className={`flex items-center bg-white rounded-2xl px-4 py-3.5 transition-all ${searchFocused ? 'shadow-lg ring-1 ring-gray-200' : 'shadow-sm border border-gray-100'}`}
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <span className="material-symbols-outlined text-primary mr-3 text-[26px]">search</span>
+              <input
+                className="bg-transparent border-none outline-none w-full text-on-surface font-semibold text-base placeholder:text-outline-variant placeholder:font-medium"
+                placeholder="Restaurant, item or more"
+                type="text"
+                value={query}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if(e.key === 'Enter' && query.trim()) saveRecentSearch(query.trim())
+                }}
+              />
+              <div className="flex items-center gap-2 pl-2 border-l border-gray-200 ml-2">
+                {query ? (
+                  <button onClick={() => setQuery('')} className="p-1">
+                    <span className="material-symbols-outlined text-outline text-[22px]">close</span>
+                  </button>
+                ) : (
+                  <button className="p-1 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary text-[24px] font-variation-fill">mic</span>
+                  </button>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Recent Searches Dropdown */}
+            <AnimatePresence>
+              {searchFocused && !isSearching && recentSearches.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 5 }}
+                  className="absolute top-16 left-0 right-0 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-40"
+                >
+                  <h4 className="text-xs font-bold text-outline-variant uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">history</span> Recent Searches
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {recentSearches.map((term, i) => (
+                      <div
+                        key={i}
+                        onClick={() => { setQuery(term); saveRecentSearch(term); }}
+                        className="flex items-center gap-1.5 bg-surface-container py-1.5 pl-3 pr-1.5 rounded-full cursor-pointer hover:bg-surface-container-high transition-colors text-sm font-medium text-on-surface-variant"
+                      >
+                        {term}
+                        <button onClick={(e) => removeRecentSearch(e, term)} className="ml-0.5 flex items-center justify-center p-0.5 rounded-full hover:bg-black/10 text-outline">
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
 
           {/* ── SEARCH RESULTS ── */}
           <AnimatePresence>
@@ -245,7 +315,7 @@ export default function Home() {
                     transition={{ delay: i * 0.06 }}
                     whileHover={{ x: 3 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelected(item)}
+                    onClick={() => { saveRecentSearch(item.name); setSelected(item); }}
                   >
                     <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                       {item.image ? (
