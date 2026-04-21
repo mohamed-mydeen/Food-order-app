@@ -224,7 +224,7 @@ export default function Home() {
             >
               <span className="material-symbols-outlined text-primary mr-3 text-[26px]">search</span>
               <input
-                className="bg-transparent border-none outline-none w-full text-on-surface font-semibold text-base placeholder:text-outline-variant placeholder:font-medium"
+                className="bg-transparent border-none outline-none w-full p-0 m-0 text-on-surface font-semibold text-base placeholder:text-outline-variant placeholder:font-medium focus:ring-0"
                 placeholder="Restaurant, item or more"
                 type="text"
                 value={query}
@@ -241,7 +241,17 @@ export default function Home() {
                     <span className="material-symbols-outlined text-outline text-[22px]">close</span>
                   </button>
                 ) : (
-                  <button className="p-1 flex items-center justify-center">
+                  <button onClick={() => {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if (!SpeechRecognition) return alert("Voice search is not supported in your browser.");
+                    const recognition = new SpeechRecognition();
+                    recognition.start();
+                    recognition.onresult = (e) => {
+                      const transcript = e.results[0][0].transcript;
+                      setQuery(transcript);
+                      saveRecentSearch(transcript);
+                    };
+                  }} className="p-1 flex items-center justify-center">
                     <span className="material-symbols-outlined text-primary text-[24px] font-variation-fill">mic</span>
                   </button>
                 )}
