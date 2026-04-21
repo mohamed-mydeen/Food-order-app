@@ -135,6 +135,7 @@ export default function Profile() {
         <div className="px-4 mt-5 space-y-2">
           {[
             { icon: 'shopping_bag', label: 'My Orders',        sub: `${orders.length} order${orders.length !== 1 ? 's' : ''} placed`, action: () => navigate('/orders'), badge: orders.filter(o => o.status === 'Pending' || o.status === 'Preparing').length },
+            { icon: 'favorite',     label: 'My Wishlist',      sub: 'Your saved dishes', action: () => navigate('/wishlist') },
             { icon: 'person',       label: 'Edit Profile',      sub: 'Update your name & details', action: openEdit },
             { icon: 'location_on',  label: 'Delivery Address',  sub: user?.address || 'Add your address', action: openEdit },
             { icon: 'settings',     label: 'Settings',          sub: 'Theme, address, support & more', action: () => navigate('/settings') },

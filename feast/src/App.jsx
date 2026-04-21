@@ -16,6 +16,7 @@ const Orders   = lazy(() => import('./pages/Orders'))
 const Contact  = lazy(() => import('./pages/Contact'))
 const About    = lazy(() => import('./pages/About'))
 const Settings = lazy(() => import('./pages/Settings'))
+const Wishlist = lazy(() => import('./pages/Wishlist'))
 
 import InstallBanner from './components/InstallBanner'
 import BottomNav from './components/BottomNav'
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/contact"  element={<Contact />} />
             <Route path="/about"    element={<About />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/wishlist" element={<Wishlist />} />
             <Route path="*"         element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
