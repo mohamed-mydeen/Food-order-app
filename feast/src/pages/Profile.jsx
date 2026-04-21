@@ -86,7 +86,8 @@ export default function Profile() {
   return (
     <div className="flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
+      <div className="flex-1 overflow-y-auto hide-scrollbar"
+           style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
 
         {/* Hero Header */}
         <div className="relative bg-cover bg-center px-6 pt-8 pb-16"
@@ -244,7 +245,8 @@ export default function Profile() {
       {editOpen && (
         <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-4">
           <motion.div
-            className="bg-surface rounded-3xl w-full max-w-md p-6 shadow-2xl mb-[85px] sm:mb-0"
+            className="bg-surface rounded-3xl w-full max-w-md p-6 shadow-2xl"
+            style={{ marginBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
           >
             <div className="flex justify-between mb-5">

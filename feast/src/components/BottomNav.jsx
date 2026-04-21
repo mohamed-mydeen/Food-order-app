@@ -16,7 +16,10 @@ export default function BottomNav() {
   const { cartCount } = useCart()
 
   return (
-    <div className="absolute bottom-5 inset-x-0 mx-auto w-[88%] max-w-[340px] z-50 rounded-full bg-white/30 supports-[backdrop-filter]:bg-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] border border-white/20 flex justify-around items-center p-2">
+    <div
+      className="fixed inset-x-0 mx-auto w-[88%] max-w-[340px] z-50 rounded-full bg-white/30 supports-[backdrop-filter]:bg-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] border border-white/20 flex justify-around items-center p-2"
+      style={{ bottom: 'max(12px, calc(env(safe-area-inset-bottom) + 8px))' }}
+    >
       {navItems.map(({ label, icon, path }) => {
         const isActive = pathname === path
         const isCart   = label === 'Cart'

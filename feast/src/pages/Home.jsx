@@ -146,7 +146,8 @@ export default function Home() {
   return (
     <div className="relative flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
+      <div className="flex-1 overflow-y-auto hide-scrollbar"
+           style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
         <main className="px-4 pt-4 pb-4 space-y-6">
 
           {/* Search */}

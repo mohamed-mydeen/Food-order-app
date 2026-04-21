@@ -123,7 +123,8 @@ export default function Settings() {
   return (
     <div className="relative flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-16">
+      <div className="flex-1 overflow-y-auto hide-scrollbar"
+           style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
 
         {/* ── Hero banner ─────────────────────────────────────────── */}
         <div className="relative px-6 pt-8 pb-14 overflow-hidden bg-cover bg-center"
@@ -143,7 +144,7 @@ export default function Settings() {
           </motion.div>
         </div>
 
-        <div className="pt-4 pb-28 space-y-1">
+        <div className="pt-4 space-y-1">
 
           {/* ── Account ──────────────────────────────────────────── */}
           <Section title="Account">
@@ -240,6 +241,7 @@ export default function Settings() {
               onClick={() => setAddrOpen(false)} />
             <motion.div
               className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-6 shadow-2xl"
+              style={{ paddingBottom: 'max(24px, calc(env(safe-area-inset-bottom) + 16px))' }}
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
             >

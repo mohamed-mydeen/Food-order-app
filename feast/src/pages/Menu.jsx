@@ -240,7 +240,8 @@ export default function Menu() {
   return (
     <div className="relative flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
+      <div className="flex-1 overflow-y-auto hide-scrollbar"
+           style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
         <main className="px-4 pt-4 max-w-5xl mx-auto">
 
           {/* Silent offline indicator — no banner, just a tiny dot */}

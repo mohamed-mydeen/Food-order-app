@@ -325,7 +325,8 @@ export default function Orders() {
       </div>
 
       {/* ── Content ─────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar px-4 py-4 space-y-3 pb-28">
+      <div className="flex-1 overflow-y-auto hide-scrollbar px-4 py-4 space-y-3"
+           style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
 
         {/* Loading skeletons */}
         {loading && [1, 2, 3].map(i => <SkeletonCard key={i} />)}

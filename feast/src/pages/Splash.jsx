@@ -12,13 +12,13 @@ export default function Splash() {
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
-    // Fire backend warm-up immediately — gives Render ~5s to wake before user hits menu
+    // Fire backend warm-up immediately — gives Render time to wake before user hits menu
     warmupBackend()
 
     const timer = setTimeout(() => {
       setVisible(false)
-      setTimeout(() => navigate('/home'), 600)
-    }, 5600)
+      setTimeout(() => navigate('/home'), 500)
+    }, 3000)
     return () => clearTimeout(timer)
   }, [navigate])
 
@@ -45,7 +45,9 @@ export default function Splash() {
           </div>
 
           {/* Content */}
-          <div className="relative z-10 flex flex-col items-center justify-between flex-1 px-6 py-10 text-center">
+          <div className="relative z-10 flex flex-col items-center justify-between flex-1 px-6 pt-8 text-center"
+            style={{ paddingBottom: 'max(28px, env(safe-area-inset-bottom))' }}
+          >
 
             {/* Top label */}
             <motion.span
@@ -88,7 +90,7 @@ export default function Splash() {
               </motion.p>
 
               <motion.p
-                className="font-body text-white/55 text-sm mb-10 max-w-xs leading-relaxed"
+                className="font-body text-white/55 text-sm mb-8 max-w-xs leading-relaxed"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7, duration: 0.6 }}
@@ -98,10 +100,10 @@ export default function Splash() {
 
               {/* Animated loading dots */}
               <motion.div
-                className="flex gap-2 mb-6"
+                className="flex gap-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.0 }}
+                transition={{ delay: 0.85 }}
               >
                 {[0, 1, 2].map((i) => (
                   <span
@@ -111,23 +113,24 @@ export default function Splash() {
                   />
                 ))}
               </motion.div>
-
-              <motion.button
-                onClick={() => navigate('/home')}
-                className="relative inline-flex items-center justify-center px-10 py-4 font-headline font-bold text-[#ffefeb] rounded-full overflow-hidden shadow-2xl"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.85, duration: 0.5 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="absolute inset-0 bg-gradient-to-tr from-[#a83100] to-[#ff784c]" />
-                <span className="relative flex items-center gap-2 text-base">
-                  Order Now
-                  <span className="material-symbols-outlined text-lg">arrow_forward</span>
-                </span>
-              </motion.button>
             </div>
+
+            {/* Order Now — always pinned to bottom, never hidden */}
+            <motion.button
+              onClick={() => navigate('/home')}
+              className="relative inline-flex items-center justify-center w-full max-w-xs px-10 py-4 font-headline font-bold text-[#ffefeb] rounded-full overflow-hidden shadow-2xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9, duration: 0.5 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="absolute inset-0 bg-gradient-to-tr from-[#a83100] to-[#ff784c]" />
+              <span className="relative flex items-center gap-2 text-base">
+                Order Now
+                <span className="material-symbols-outlined text-lg">arrow_forward</span>
+              </span>
+            </motion.button>
           </div>
 
         </motion.div>
