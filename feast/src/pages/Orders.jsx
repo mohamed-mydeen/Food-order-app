@@ -45,8 +45,107 @@ function ProgressBar({ status }) {
   )
 }
 
+/* ── Rate Order Items Bottom Sheet ───────────────────────────────── */
+function RateSheet({ order, onClose }) {
+  const { token } = useAuth()
+  const [ratings, setRatings] = useState({})
+  const [comments, setComments] = useState({})
+  const [submitting, setSubmitting] = useState(false)
+  const [done, setDone] = useState(false)
+
+  const handleSubmit = async () => {
+    setSubmitting(true)
+    try {
+      const promises = order.items.map(it => {
+        const rating = ratings[it.product_id]
+        if (!rating) return Promise.resolve()
+        return fetch(`${API}/reviews`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ product_id: it.product_id, rating, comment: comments[it.product_id] || '', order_id: order.id }),
+        })
+      })
+      await Promise.all(promises)
+      setDone(true)
+      setTimeout(() => onClose(), 1500)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const hasRatings = Object.keys(ratings).length > 0
+
+  return (
+    <>
+      <motion.div className="fixed inset-0 bg-black/50 z-40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+      <motion.div
+        className="fixed left-0 right-0 bottom-0 z-50 bg-surface rounded-t-3xl shadow-2xl overflow-hidden flex flex-col"
+        style={{ maxHeight: '88vh' }}
+        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 32, stiffness: 300 }}
+      >
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0"><div className="w-10 h-1 bg-gray-200 rounded-full" /></div>
+        
+        <div className="overflow-y-auto px-5 pt-3 pb-4 flex-1">
+          <h2 className="font-headline font-black text-xl text-on-surface mb-1">Rate your items</h2>
+          <p className="text-xs text-on-surface-variant mb-4">How was the food from order #{String(order.id).padStart(4, '0')}?</p>
+
+          {done ? (
+            <div className="py-12 flex flex-col items-center">
+              <span className="material-symbols-outlined text-green-500 text-6xl mb-2">check_circle</span>
+              <p className="font-bold text-on-surface">Thank you for your feedback!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {order.items.map(it => (
+                <div key={it.product_id} className="bg-surface-container-low rounded-xl p-4 border border-surface-container">
+                  <p className="font-bold text-sm text-on-surface mb-2">{it.product?.name || 'Item'}</p>
+                  <div className="flex gap-1 mb-3">
+                    {[1,2,3,4,5].map(s => {
+                      const r = ratings[it.product_id] || 0
+                      return (
+                         <span key={s} onClick={() => setRatings(prev => ({ ...prev, [it.product_id]: s }))}
+                           className="material-symbols-outlined text-[28px] cursor-pointer"
+                           style={{ fontVariationSettings: `'FILL' ${r >= s ? 1 : 0}`, color: r >= s ? '#f59e0b' : '#d1d5db' }}>
+                           star
+                         </span>
+                      )
+                    })}
+                  </div>
+                  {ratings[it.product_id] > 0 && (
+                    <textarea
+                      value={comments[it.product_id] || ''}
+                      onChange={e => setComments(prev => ({ ...prev, [it.product_id]: e.target.value}))}
+                      placeholder="Was it tasty? Tell us more..."
+                      className="w-full bg-white text-xs border border-surface-container rounded-lg px-3 py-2 resize-none outline-none focus:border-primary"
+                      rows={2}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {!done && (
+          <div className="p-4 border-t border-surface-container bg-surface flex-shrink-0">
+            <button
+              onClick={handleSubmit} disabled={!hasRatings || submitting}
+              className="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-sm disabled:opacity-50"
+            >
+              {submitting ? 'Submitting...' : 'Submit Ratings'}
+            </button>
+          </div>
+        )}
+      </motion.div>
+    </>
+  )
+}
+
 /* ── Order Card ───────────────────────────────────────────────── */
 function OrderCard({ order, index, onReorder }) {
+  const [showRate, setShowRate] = useState(false)
   const { created_at, items = [], total_amount, status, address } = order
   const cfg = STATUS_CONFIG[status] || { label: status, color: 'text-on-surface-variant', bg: 'bg-surface-container', dot: 'bg-outline', icon: 'info', step: -1 }
 
@@ -348,6 +447,18 @@ function OrderCard({ order, index, onReorder }) {
             <span className="material-symbols-outlined text-[13px]">image</span>
             Save
           </motion.button>
+          {status === 'Delivered' && (
+            <motion.button
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 text-primary border border-orange-200 text-xs font-bold transition-colors"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.93 }}
+              onClick={() => setShowRate(true)}
+            >
+              <span className="material-symbols-outlined text-[13px] text-amber-500" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+              Rate
+            </motion.button>
+          )}
+
           <motion.button
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#a83100] text-white text-xs font-bold shadow-sm"
             whileHover={{ scale: 1.04 }}
@@ -359,6 +470,10 @@ function OrderCard({ order, index, onReorder }) {
           </motion.button>
         </div>
       </div>
+      
+      <AnimatePresence>
+        {showRate && <RateSheet order={order} onClose={() => setShowRate(false)} />}
+      </AnimatePresence>
     </motion.div>
   )
 }
