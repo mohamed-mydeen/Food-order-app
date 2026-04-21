@@ -65,11 +65,18 @@ export function useFirebaseNotifications() {
       
       // Force the browser to spawn a native OS notification even if the tab is focused!
       if (payload.notification && Notification.permission === 'granted') {
+        // Mobile devices (Android) do NOT support `new Notification()`. They require Service Worker.
         navigator.serviceWorker.ready.then((registration) => {
           registration.showNotification(payload.notification.title, {
             body: payload.notification.body,
             icon: '/pwa-192x192.png',
-            badge: '/pwa-192x192.png'
+            vibrate: [200, 100, 200]
+          });
+        }).catch(err => {
+          // Fallback for desktop if SW lacks scope
+          new Notification(payload.notification.title, {
+            body: payload.notification.body,
+            icon: '/pwa-192x192.png'
           });
         });
       }
