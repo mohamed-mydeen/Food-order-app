@@ -52,33 +52,71 @@ async function sendToAll({ title, body, data = {} }) {
  * that forces the notification into the system tray at high priority.
  */
 function buildPayload(tokens, title, body, data = {}) {
+  const clickUrl = data.click_action || '/';
   return {
     tokens,
-    // Android: high priority channels ensures status bar appearance on phones
+
+    // ── Top-level notification (iOS Safari + fallback) ─────────────────────
+    notification: {
+      title,
+      body,
+    },
+
+    // ── Android: high priority channel ────────────────────────────────────
     android: {
       priority: 'high',
       notification: {
         title,
         body,
-        icon: 'ic_notification',       // fallback icon in drawable
-        color: '#a83100',              // Feast brand color for the icon tint
+        icon: 'ic_notification',
+        color: '#a83100',
         sound: 'default',
-        channelId: 'feast_orders',     // custom channel id
-        clickAction: 'FLUTTER_NOTIFICATION_CLICK',
+        channelId: 'feast_orders',
         defaultSound: true,
         defaultVibrateTimings: true,
         notificationPriority: 'PRIORITY_HIGH',
         visibility: 'PUBLIC',
       },
     },
-    // We remove webpush.notification so it doesn't auto-handle.
-    // Instead we rely entirely on data payload + service worker logic to force display.
-    data: { 
-      ...data, 
-      title: String(title), 
-      body: String(body), 
-      click_action: '/', 
-      timestamp: String(Date.now()) 
+
+    // ── WebPush: THIS is what makes it appear in the OS notification tray ─
+    // Without this block, Chrome/Firefox treat it as data-only and MAY drop it.
+    webpush: {
+      headers: {
+        Urgency: 'high',
+        TTL: '86400',
+      },
+      notification: {
+        title,
+        body,
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        requireInteraction: true,
+        vibrate: [200, 100, 200, 100, 200],
+        tag: data.order_id ? `order-${data.order_id}` : 'feast-notification',
+        renotify: true,
+        data: {
+          url: clickUrl,
+          order_id: data.order_id || null,
+          type: data.type || 'general',
+        },
+        actions: [
+          { action: 'view',    title: '👁️ View' },
+          { action: 'dismiss', title: '✖ Dismiss' },
+        ],
+      },
+      fcmOptions: {
+        link: clickUrl,
+      },
+    },
+
+    // ── Data payload (available inside SW for deep-link routing) ───────────
+    data: {
+      ...data,
+      title:        String(title),
+      body:         String(body),
+      click_action: clickUrl,
+      timestamp:    String(Date.now()),
     },
   };
 }
