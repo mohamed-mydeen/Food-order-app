@@ -144,8 +144,7 @@ function RateSheet({ order, onClose }) {
 }
 
 /* ── Order Card ───────────────────────────────────────────────── */
-function OrderCard({ order, index, onReorder }) {
-  const [showRate, setShowRate] = useState(false)
+function OrderCard({ order, index, onReorder, onRate }) {
   const { created_at, items = [], total_amount, status, address } = order
   const cfg = STATUS_CONFIG[status] || { label: status, color: 'text-on-surface-variant', bg: 'bg-surface-container', dot: 'bg-outline', icon: 'info', step: -1 }
 
@@ -452,7 +451,7 @@ function OrderCard({ order, index, onReorder }) {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 text-primary border border-orange-200 text-xs font-bold transition-colors"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.93 }}
-              onClick={() => setShowRate(true)}
+              onClick={() => onRate(order)}
             >
               <span className="material-symbols-outlined text-[13px] text-amber-500" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
               Rate
@@ -471,9 +470,6 @@ function OrderCard({ order, index, onReorder }) {
         </div>
       </div>
       
-      <AnimatePresence>
-        {showRate && <RateSheet order={order} onClose={() => setShowRate(false)} />}
-      </AnimatePresence>
     </motion.div>
   )
 }
@@ -504,6 +500,7 @@ export default function Orders() {
   const [loading, setLoading] = useState(true)
   const [filter,  setFilter]  = useState('All')
   const [showToast, setShowToast] = useState(false)
+  const [ratingOrder, setRatingOrder] = useState(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -670,7 +667,7 @@ export default function Orders() {
         {/* Order cards */}
         <AnimatePresence>
           {!loading && filtered.map((order, i) => (
-            <OrderCard key={order.id} order={order} index={i} onReorder={onReorder} />
+            <OrderCard key={order.id} order={order} index={i} onReorder={onReorder} onRate={setRatingOrder} />
           ))}
         </AnimatePresence>
 
@@ -692,6 +689,10 @@ export default function Orders() {
             </div>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {ratingOrder && <RateSheet order={ratingOrder} onClose={() => setRatingOrder(null)} />}
       </AnimatePresence>
 
     </div>
