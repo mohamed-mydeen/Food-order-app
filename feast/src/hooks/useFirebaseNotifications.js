@@ -38,14 +38,14 @@ export function useFirebaseNotifications() {
           return;
         }
 
-        // 4. Register service worker explicitly so Vite dev server doesn't timeout
+        // 4. Register service worker with a specific scope to avoid PWA conflict
         let swReg = null;
         try {
+          // Use the dedicated Firebase push scope (standard practice)
           swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-            scope: '/',
+            scope: '/firebase-cloud-messaging-push-scope', 
           });
-          await navigator.serviceWorker.ready;
-          console.log('[FCM] Service worker registered.');
+          console.log('[FCM] Service worker registered with scope:', swReg.scope);
         } catch (swErr) {
           console.error('[FCM] SW registration failed:', swErr);
         }
