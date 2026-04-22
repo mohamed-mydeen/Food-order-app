@@ -20,7 +20,6 @@ const Wishlist = lazy(() => import('./pages/Wishlist'))
 
 import InstallBanner from './components/InstallBanner'
 import BottomNav from './components/BottomNav'
-import { useFirebaseNotifications } from './hooks/useFirebaseNotifications'
 
 // Overlay loader — preserves app shell during lazy-chunk load
 function PageLoader() {
@@ -38,7 +37,6 @@ function PageLoader() {
 }
 
 export default function App() {
-  useFirebaseNotifications()
 
   useEffect(() => {
     // ── 1. Move dark class from <html> to .app-shell post-mount ───────────────

@@ -43,7 +43,7 @@ export function useFirebaseNotifications() {
         try {
           // Use the dedicated Firebase push scope (standard practice)
           swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-            scope: '/firebase-cloud-messaging-push-scope', 
+            scope: '/firebase-cloud-messaging-push-scope',
           });
           console.log('[FCM] Service worker registered with scope:', swReg.scope);
         } catch (swErr) {
@@ -83,9 +83,9 @@ export function useFirebaseNotifications() {
         unsubscribeFn = onMessage(messaging, (payload) => {
           console.log('[FCM] Foreground message:', payload);
           const notif = payload.notification || {};
-          const data  = payload.data || {};
+          const data = payload.data || {};
           const title = notif.title || data.title || 'Feast At Night';
-          const body  = notif.body  || data.body  || '';
+          const body = notif.body || data.body || '';
 
           if (!title || Notification.permission !== 'granted') return;
 
@@ -93,16 +93,16 @@ export function useFirebaseNotifications() {
           navigator.serviceWorker.ready.then((reg) => {
             reg.showNotification(title, {
               body,
-              icon:              '/pwa-192x192.png',
-              badge:             '/pwa-192x192.png',
-              vibrate:           [200, 100, 200],
+              icon: '/pwa-192x192.png',
+              badge: '/pwa-192x192.png',
+              vibrate: [200, 100, 200],
               requireInteraction: false,
-              tag:               data.order_id ? `order-${data.order_id}` : 'feast-fg',
-              renotify:          true,
+              tag: data.order_id ? `order-${data.order_id}` : 'feast-fg',
+              renotify: true,
               data: {
-                url:      data.click_action || '/',
+                url: data.click_action || '/',
                 order_id: data.order_id || null,
-                type:     data.type || 'general',
+                type: data.type || 'general',
               },
             });
           }).catch(() => {
