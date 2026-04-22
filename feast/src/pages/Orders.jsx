@@ -526,11 +526,53 @@ export default function Orders() {
   }
 
   useEffect(() => {
-    if (!isLoggedIn) { navigate('/login'); return }
+    if (!isLoggedIn) return // Allow guest browsing
     fetchOrders(true)
     const interval = setInterval(() => fetchOrders(false), 15000)
     return () => clearInterval(interval)
   }, [token, isLoggedIn])
+
+  if (!isLoggedIn) {
+     return (
+      <div className="flex flex-col h-full w-full bg-surface-container text-on-surface">
+        <TopBar />
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center"
+             style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
+          
+          <motion.div 
+            className="w-32 h-32 rounded-[24px] bg-[#a83100]/10 flex items-center justify-center mb-6 shadow-xl"
+            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 12 }}
+          >
+            <span className="material-symbols-outlined text-[#a83100] text-6xl icon-filled">shopping_bag</span>
+          </motion.div>
+
+          <h2 className="font-headline font-black text-3xl text-on-surface mb-2 leading-tight">Your Orders</h2>
+          <p className="text-secondary text-sm mb-10 max-w-xs leading-relaxed font-medium">
+            Sign in to track your active orders and see what you've feasted on before!
+          </p>
+
+          <div className="w-full max-w-xs space-y-4">
+            <motion.button
+              onClick={() => navigate('/login')}
+              className="w-full py-4 bg-[#a83100] text-white rounded-2xl font-headline font-black tracking-wide shadow-lg shadow-[#a83100]/20 active:scale-[0.98] transition-all"
+              whileTap={{ scale: 0.98 }}
+            >
+              SIGN IN
+            </motion.button>
+            
+            <motion.button
+              onClick={() => navigate('/signup')}
+              className="w-full py-4 bg-white border-2 border-slate-200 text-slate-800 rounded-2xl font-headline font-black tracking-wide active:scale-[0.98] transition-all"
+              whileTap={{ scale: 0.98 }}
+            >
+              CREATE ACCOUNT
+            </motion.button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
 
   const filtered = filter === 'All' ? orders : orders.filter(o => o.status === filter)
   const onReorder = () => navigate('/menu')

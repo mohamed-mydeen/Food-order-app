@@ -123,12 +123,41 @@ export default function Contact() {
                 <span className="material-symbols-outlined text-primary text-[20px] icon-filled">schedule</span>
               </div>
               <div className="flex-1 w-full">
-                 <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-3">Opening Hours</p>
-                 <div className="space-y-2.5">
+                  <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4">Opening Hours</p>
+                  
+                  {/* Pro Highlight Card */}
+                  <div className="mb-6 relative overflow-hidden bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl border border-orange-100 p-4">
+                    {/* Decorative element */}
+                    <div className="absolute right-[-10px] top-[-10px] w-20 h-20 bg-orange-200/20 rounded-full blur-2xl" />
+                    
+                    <div className="relative z-10 flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#a83100] flex items-center justify-center shadow-md shadow-orange-900/20">
+                        <span className="material-symbols-outlined text-white text-[18px] font-variation-fill">stars</span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[13px] font-black text-gray-900 tracking-tight">Book Order Before 8 PM</span>
+                          <span className="bg-[#a83100] text-white text-[7px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-widest">Recommended</span>
+                        </div>
+                        <p className="text-[11px] text-gray-600 leading-relaxed font-medium">
+                          Secure your feast! Pre-orders placed before 8 PM ensure priority midnight processing.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Schedule List */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-1 px-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-[11px] font-bold text-green-600 uppercase tracking-tighter">Delivery Active: 10:30 PM - 1:00 AM</span>
+                    </div>
+
+
                    {[
-                     { day: 'Mon – Fri', time: '8 PM – 2 AM' },
-                     { day: 'Saturday',  time: '7 PM – 3 AM' },
-                     { day: 'Sunday',    time: '7 PM – 2 AM' },
+                     { day: 'Mon – Fri', time: '10:30 PM – 1:00 AM' },
+                     { day: 'Saturday',  time: '10:30 PM – 1:00 AM' },
+                     { day: 'Sunday',    time: '10:30 PM – 1:00 AM' },
                    ].map(({ day, time }) => (
                      <div key={day} className="flex justify-between items-center w-full">
                        <span className="text-[13px] font-medium text-on-surface-variant">{day}</span>

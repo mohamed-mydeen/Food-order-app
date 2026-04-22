@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import TopBar from '../components/TopBar'
 import { useAuth } from '../context/AuthContext'
+import { NEIGHBORHOODS } from '../constants/neighborhoods'
+import NeighborhoodPicker from '../components/NeighborhoodPicker'
 import mandiBanner from '../assets/mandi_profile.png'
 
 const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
@@ -20,14 +22,12 @@ export default function Profile() {
   const [orders, setOrders]         = useState([])
   const [ordersLoading, setOLoading]= useState(true)
   const [editOpen, setEditOpen]     = useState(false)
-  const [editForm, setEditForm]     = useState({ name: '', phone: '', address: '' })
+  const [editForm, setEditForm]     = useState({ name: '', phone: '', address: '', neighborhood: '' })
   const [saving, setSaving]         = useState(false)
   const [saveMsg, setSaveMsg]       = useState('')
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isLoggedIn) navigate('/login')
-  }, [isLoggedIn])
+  // Removed automatic redirect to allow guest browsing
+
 
   // Fetch user orders
   useEffect(() => {
@@ -47,7 +47,12 @@ export default function Profile() {
 
   // Open edit form pre-filled
   const openEdit = () => {
-    setEditForm({ name: user?.name || '', phone: user?.phone || '', address: user?.address || '' })
+    setEditForm({ 
+      name: user?.name || '', 
+      phone: user?.phone || '', 
+      address: user?.address || '',
+      neighborhood: user?.neighborhood || ''
+    })
     setEditOpen(true)
     setSaveMsg('')
   }
@@ -65,7 +70,12 @@ export default function Profile() {
       })
       const data = await res.json()
       if (!data.success) throw new Error(data.message)
-      updateUser({ name: editForm.name, phone: editForm.phone, address: editForm.address })
+      updateUser({ 
+        name: editForm.name, 
+        phone: editForm.phone, 
+        address: editForm.address,
+        neighborhood: editForm.neighborhood
+      })
       setSaveMsg('Profile updated!')
       setTimeout(() => setEditOpen(false), 1000)
     } catch (err) {
@@ -78,6 +88,51 @@ export default function Profile() {
   const handleLogout = () => {
     logout()
     navigate('/login')
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="flex flex-col h-full w-full bg-surface text-on-surface">
+        <TopBar />
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center"
+             style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
+          
+          <motion.div 
+            className="w-32 h-32 rounded-[24px] bg-[#a83100]/10 flex items-center justify-center mb-6 shadow-xl"
+            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 12 }}
+          >
+            <span className="material-symbols-outlined text-[#a83100] text-6xl icon-filled">account_circle</span>
+          </motion.div>
+
+          <h2 className="font-headline font-black text-3xl text-on-surface mb-2 leading-tight">Join the Feast</h2>
+          <p className="text-secondary text-sm mb-10 max-w-xs leading-relaxed font-medium">
+            Create an account to track your orders, save favorite dishes, and get exclusive midnight offers!
+          </p>
+
+          <div className="w-full max-w-xs space-y-4">
+            <motion.button
+              onClick={() => navigate('/login')}
+              className="w-full py-4 bg-gradient-to-r from-[#e34105] to-[#ff7138] text-white rounded-2xl font-headline font-black tracking-wide shadow-lg shadow-[#e34105]/20 active:scale-[0.98] transition-all"
+              whileTap={{ scale: 0.98 }}
+            >
+              SIGN IN
+            </motion.button>
+            
+            <motion.button
+              onClick={() => navigate('/signup')}
+              className="w-full py-4 bg-white border-2 border-slate-100 text-slate-800 rounded-2xl font-headline font-black tracking-wide active:scale-[0.98] transition-all"
+              whileTap={{ scale: 0.98 }}
+            >
+              CREATE ACCOUNT
+            </motion.button>
+          </div>
+
+          <p className="mt-8 text-[11px] text-outline font-medium tracking-wide">
+            Experience Tirunelveli's finest midnight flavors.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   const initial = user?.name?.charAt(0)?.toUpperCase() || '?'
@@ -232,6 +287,7 @@ export default function Profile() {
           </motion.button>
         </div>
 
+
         {/* Developer credit */}
         <div className="pt-2 pb-6 text-center text-[10.5px] text-outline tracking-wide font-medium">
           Developed by{' '}
@@ -268,13 +324,19 @@ export default function Profile() {
                 {[
                   { label: 'Full Name', key: 'name', type: 'text', placeholder: 'Enter your full name', icon: 'person' },
                   { label: 'Phone Number', key: 'phone', type: 'tel', placeholder: '+91 98765 43210', icon: 'call' },
+                  { label: 'Neighborhood', key: 'neighborhood', type: 'select', placeholder: 'Select your area', icon: 'location_on' },
                   { label: 'Delivery Address', key: 'address', type: 'textarea', placeholder: 'Enter your complete delivery address', icon: 'home_pin' },
                 ].map(({ label, key, type, placeholder, icon }) => (
                   <div key={key} className="relative">
                     <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1.5 ml-1">{label}</label>
                     <div className="relative flex items-center">
-                      <span className="absolute left-4 top-4 material-symbols-outlined text-[20px] text-outline">{icon}</span>
-                      {type === 'textarea' ? (
+                      <span className="absolute left-4 top-4 material-symbols-outlined text-[20px] text-outline z-10">{icon}</span>
+                      {type === 'select' ? (
+                        <NeighborhoodPicker 
+                          value={editForm[key]}
+                          onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
+                        />
+                      ) : type === 'textarea' ? (
                         <textarea
                           value={editForm[key]}
                           onChange={e => setEditForm({ ...editForm, [key]: e.target.value })}

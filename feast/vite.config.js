@@ -8,6 +8,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
+      useCredentials: true,
       /* Pre-cache all critical assets so install is instant */
       includeAssets: [
         'favicon.ico',

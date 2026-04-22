@@ -31,6 +31,10 @@ const User = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    neighborhood: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
     role: {
       type: DataTypes.ENUM("user", "admin", "delivery", "developer"),
       defaultValue: "user",

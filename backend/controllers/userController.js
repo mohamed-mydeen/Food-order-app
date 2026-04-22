@@ -59,17 +59,29 @@ const updateAddress = async (req, res) => {
 // ─── PUT /api/users/profile ───────────────────────────────────────────────────
 const updateProfile = async (req, res) => {
   try {
-    const { name, phone, address } = req.body;
+    const { name, phone, address, neighborhood } = req.body;
 
     const user = await User.findByPk(req.user.userId);
     if (!user) return res.status(404).json({ success: false, message: "User not found." });
 
-    await user.update({ name: name || user.name, phone: phone || user.phone, address: address || user.address });
+    await user.update({ 
+      name: name || user.name, 
+      phone: phone || user.phone, 
+      address: address || user.address,
+      neighborhood: neighborhood || user.neighborhood
+    });
 
     return res.json({
       success: true,
       message: "Profile updated.",
-      data: { id: user.id, name: user.name, email: user.email, phone: user.phone, address: user.address },
+      data: { 
+        id: user.id, 
+        name: user.name, 
+        email: user.email, 
+        phone: user.phone, 
+        address: user.address,
+        neighborhood: user.neighborhood
+      },
     });
   } catch (error) {
     console.error("updateProfile:", error);

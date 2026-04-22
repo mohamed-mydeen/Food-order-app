@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import TopBar from '../components/TopBar'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import { getDeliveryFee } from '../constants/neighborhoods'
 
 const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 
@@ -165,7 +166,7 @@ export default function Cart() {
   }
 
   const subtotal     = cartItems.reduce((s, it) => s + parseFloat(it.product?.price || 0) * it.quantity, 0)
-  const DELIVERY_FEE = (address || '').toLowerCase().includes('melapalayam') ? 20 : 50
+  const DELIVERY_FEE = getDeliveryFee(user?.neighborhood)
   const total        = subtotal + DELIVERY_FEE
   const totalItems   = cartItems.reduce((s, it) => s + it.quantity, 0)
   const chosen       = PAYMENT_OPTIONS.find(p => p.id === selectedPayment)
@@ -226,19 +227,42 @@ export default function Cart() {
   if (!isLoggedIn) return (
     <div className="flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
-      <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8 text-center">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-          <span className="material-symbols-outlined text-primary text-4xl">shopping_cart</span>
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center"
+           style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
+        
+        <motion.div 
+          className="w-32 h-32 rounded-[24px] bg-[#a83100]/10 flex items-center justify-center mb-6 shadow-xl"
+          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 12 }}
+        >
+          <span className="material-symbols-outlined text-[#a83100] text-6xl icon-filled">shopping_cart</span>
+        </motion.div>
+
+        <h2 className="font-headline font-black text-3xl text-on-surface mb-2 leading-tight">Your Cart</h2>
+        <p className="text-secondary text-sm mb-10 max-w-xs leading-relaxed font-medium">
+          Sign in to add items to your cart and experience the best midnight delivery in town!
+        </p>
+
+        <div className="w-full max-w-xs space-y-4">
+          <motion.button
+            onClick={() => navigate('/login')}
+            className="w-full py-4 bg-gradient-to-r from-[#e34105] to-[#ff7138] text-white rounded-2xl font-headline font-black tracking-wide shadow-lg shadow-[#e34105]/20 active:scale-[0.98] transition-all"
+            whileTap={{ scale: 0.98 }}
+          >
+            SIGN IN
+          </motion.button>
+          
+          <motion.button
+            onClick={() => navigate('/signup')}
+            className="w-full py-4 bg-white border-2 border-slate-100 text-slate-800 rounded-2xl font-headline font-black tracking-wide active:scale-[0.98] transition-all"
+            whileTap={{ scale: 0.98 }}
+          >
+            CREATE ACCOUNT
+          </motion.button>
         </div>
-        <div>
-          <h2 className="font-headline font-black text-2xl text-on-surface mb-2">Sign in to view cart</h2>
-          <p className="text-on-surface-variant text-sm">Your cart is saved — log in to continue your order.</p>
-        </div>
-        <button onClick={() => navigate('/login')} className="px-8 py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">Sign In</button>
-        <button onClick={() => navigate('/signup')} className="text-primary font-bold text-sm hover:underline">New here? Create account</button>
       </div>
     </div>
   )
+
 
   /* ── UPI Return: "Did you pay?" screen ── */
   if (returnFromUpi && pendingData) return (
@@ -458,7 +482,13 @@ export default function Cart() {
             <span className="material-symbols-outlined text-green-500 text-[20px]">directions_bike</span>
             <div>
               <p className="text-xs font-bold text-on-surface">Delivery in <span className="text-green-600">30–40 mins</span></p>
-              <p className="text-[11px] text-on-surface-variant">Delivery fee ₹{DELIVERY_FEE}</p>
+              <p className="text-[11px] text-on-surface-variant flex items-center gap-1">
+                {user?.neighborhood ? (
+                  <>Delivery to <span className="font-bold text-on-surface">{user.neighborhood}</span> — ₹{DELIVERY_FEE}</>
+                ) : (
+                  <>Delivery fee ₹{DELIVERY_FEE}</>
+                )}
+              </p>
             </div>
           </div>
           <Divider />

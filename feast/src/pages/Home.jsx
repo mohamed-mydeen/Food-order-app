@@ -237,6 +237,8 @@ export default function Home() {
               <p className="text-indigo-200 text-[12px] font-medium leading-snug">
                 Exclusive night service from <span className="font-bold text-white">10:30 PM</span> to <span className="font-bold text-white">1:00 AM</span>
               </p>
+
+
             </div>
           </motion.div>
 

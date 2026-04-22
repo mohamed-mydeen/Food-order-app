@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import NeighborhoodPicker from '../components/NeighborhoodPicker'
 
 const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 
@@ -14,6 +15,7 @@ function validate(form) {
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Invalid email format'
   if (!form.phone.trim())                        errs.phone   = 'Phone number is required'
   else if (!/^\d{10}$/.test(form.phone.replace(/\s/g, '')))  errs.phone = 'Phone must be exactly 10 digits'
+  if (!form.neighborhood)                        errs.neighborhood = 'Please select your area'
   if (!form.password)                            errs.password = 'Password is required'
   else if (form.password.length < 6)            errs.password = 'Password must be at least 6 characters'
   if (!form.confirm)                             errs.confirm  = 'Please confirm your password'
@@ -21,57 +23,28 @@ function validate(form) {
   return errs
 }
 
-// ── Field wrapper with inline error ──────────────────────────────────────────
-function Field({ label, error, touched, children }) {
-  return (
-    <div>
-      <label className="block text-[10px] font-semibold tracking-widest text-on-surface-variant uppercase mb-1.5 ml-1">
-        {label}
-      </label>
-      {children}
-      <AnimatePresence>
-        {touched && error && (
-          <motion.p className="text-red-500 text-xs mt-1 ml-1 flex items-center gap-1"
-            initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <span className="material-symbols-outlined text-[12px]">error</span>{error}
-          </motion.p>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
-const inputBase = (hasError, touched) =>
-  `w-full bg-surface-container-low border rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 transition-all placeholder:text-outline text-on-surface text-sm
-  ${hasError && touched
-    ? 'border-red-400 focus:ring-red-200 focus:border-red-400'
-    : 'border-outline-variant/30 focus:ring-primary/20 focus:border-primary'
-  }`
-
 export default function SignUp() {
   const navigate = useNavigate()
   const { login } = useAuth()
-  const [form, setForm]     = useState({ name: '', email: '', phone: '', password: '', confirm: '', address: '' })
+  const [form, setForm]     = useState({ name: '', email: '', phone: '', password: '', confirm: '', address: '', neighborhood: '' })
   const [touched, setT]     = useState({})
   const [loading, setLoad]  = useState(false)
   const [apiError, setApiE] = useState('')
   const [success, setSucc]  = useState(false)
   const [showPass, setShow] = useState(false)
 
-  const set = (key) => (e) => {
+  const setSlice = (key) => (e) => {
     setForm(f => ({ ...f, [key]: e.target.value }))
     setT(t => ({ ...t, [key]: true }))
     setApiE('')
   }
-  const blur = (key) => () => setT(t => ({ ...t, [key]: true }))
 
   const errors  = validate(form)
   const isValid = Object.keys(errors).length === 0
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    // Touch all fields to show errors
-    setT({ name: true, email: true, phone: true, password: true, confirm: true })
+    setT({ name: true, email: true, phone: true, password: true, confirm: true, neighborhood: true })
     if (!isValid) return
     setLoad(true); setApiE('')
     try {
@@ -84,6 +57,7 @@ export default function SignUp() {
           phone: form.phone.replace(/\s/g, ''),
           password: form.password,
           address: form.address,
+          neighborhood: form.neighborhood,
         }),
       })
       const data = await res.json()
@@ -96,132 +70,170 @@ export default function SignUp() {
     } finally { setLoad(false) }
   }
 
+  const inputClass = (key) => `
+    w-full bg-white border rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none transition-all text-[14px] font-medium shadow-sm
+    ${touched[key] && errors[key] 
+      ? 'border-red-400 focus:ring-4 focus:ring-red-100 placeholder:text-red-300' 
+      : 'border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 placeholder:text-slate-400'
+    }
+  `
+
   return (
-    <div className="bg-white text-on-surface h-full w-full flex flex-col relative">
-      {/* Background blobs */}
-      <div className="fixed top-0 right-0 -z-10 w-64 h-64 bg-primary-container/10 blur-[100px] rounded-full" />
-      <div className="fixed bottom-0 left-0 -z-10 w-96 h-96 bg-tertiary-container/10 blur-[120px] rounded-full" />
+    <main className="relative min-h-full w-full flex flex-col items-center p-6 overflow-x-hidden bg-[#0A0A0B]">
+      {/* Immersive Background */}
+      <div className="fixed inset-0 z-0">
+        <img 
+          className="w-full h-full object-cover scale-110 opacity-40"
+          src="https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=2070&auto=format&fit=crop"
+          alt="Feast Background" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-[#0A0A0B]/90 to-transparent" />
+      </div>
 
-      {/* Header */}
-      <header className="bg-surface/80 backdrop-blur-xl flex-shrink-0 z-50 px-6 py-4 flex items-center justify-between border-b border-surface-container"
-              style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
-        <button onClick={() => navigate('/login')} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
-          <span className="material-symbols-outlined text-on-surface">arrow_back</span>
-        </button>
-        <span className="text-xl font-black tracking-tighter text-zinc-900">FEAST AT NIGHT</span>
-        <div className="w-10" />
-      </header>
+      <div className="relative z-10 w-full max-w-md flex flex-col pt-4">
+        
+        {/* Back Button */}
+        <div className="mb-6 flex justify-start">
+          <button 
+            onClick={() => navigate('/login')}
+            className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-white/30 transition-all"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
+        </div>
 
-      <div className="flex-1 overflow-y-auto hide-scrollbar">
-        <main className="max-w-md mx-auto px-6 pt-8"
-              style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}>
+        {/* Branding Section */}
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <h1 className="font-headline font-black text-4xl text-white tracking-tighter leading-none mb-2">
+            Create <br />
+            <span className="text-primary italic font-black">Account</span>
+          </h1>
+          <p className="text-slate-400 text-sm font-medium tracking-tight">Begin your flavor journey tonight.</p>
+        </motion.div>
 
-          <div className="mb-7">
-            <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Create Account</h1>
-            <p className="text-secondary text-sm leading-relaxed">Join Feast At Night and curate your culinary journey.</p>
-          </div>
+        {/* Success / Error Banners */}
+        <AnimatePresence>
+          {success && (
+            <motion.div className="mb-6 bg-green-500 text-white rounded-2xl p-4 flex items-center gap-3 overflow-hidden font-bold"
+              initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}>
+              <span className="material-symbols-outlined icon-filled">verified</span>
+              Welcome! Redirecting...
+            </motion.div>
+          )}
+          {apiError && (
+            <motion.div className="mb-6 bg-red-50 text-red-600 border border-red-200 rounded-2xl p-4 flex items-center gap-3 text-sm font-bold"
+              initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}>
+              <span className="material-symbols-outlined">error</span>
+              {apiError}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          {/* Success banner */}
-          <AnimatePresence>
-            {success && (
-              <motion.div className="mb-5 flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm font-medium"
-                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0 }}>
-                <span className="material-symbols-outlined text-[20px] icon-filled">check_circle</span>
-                Account created! Redirecting you in...
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* API Error banner */}
-          <AnimatePresence>
-            {apiError && (
-              <motion.div className="mb-5 flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm"
-                initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <span className="material-symbols-outlined text-[16px]">error</span>{apiError}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
+        {/* Form Card */}
+        <motion.div 
+          className="bg-white rounded-[32px] p-8 shadow-2xl mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            
+            {/* Full Name */}
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">person</span>
+              <input type="text" value={form.name} onChange={setSlice('name')}
+                placeholder="Full Name" className={inputClass('name')} />
+              {touched.name && errors.name && <p className="text-red-500 text-[10px] absolute -bottom-4 left-4 font-bold uppercase">{errors.name}</p>}
+            </div>
 
-            <Field label="Full Name *" error={errors.name} touched={touched.name}>
-              <input type="text" value={form.name} onChange={set('name')} onBlur={blur('name')}
-                placeholder="Muhammad Ali"
-                className={inputBase(errors.name, touched.name)} />
-            </Field>
+            {/* Email */}
+            <div className="relative pt-1">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">mail</span>
+              <input type="email" value={form.email} onChange={setSlice('email')}
+                placeholder="Email Address" className={inputClass('email')} />
+              {touched.email && errors.email && <p className="text-red-500 text-[10px] absolute -bottom-4 left-4 font-bold uppercase">{errors.email}</p>}
+            </div>
 
-            <Field label="Email Address *" error={errors.email} touched={touched.email}>
-              <input type="email" value={form.email} onChange={set('email')} onBlur={blur('email')}
-                placeholder="you@example.com"
-                className={inputBase(errors.email, touched.email)} />
-            </Field>
+            {/* Phone */}
+            <div className="relative pt-1">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">call</span>
+              <input type="tel" value={form.phone} onChange={setSlice('phone')}
+                placeholder="Phone Number" className={inputClass('phone')} />
+              {touched.phone && errors.phone && <p className="text-red-500 text-[10px] absolute -bottom-4 left-4 font-bold uppercase">{errors.phone}</p>}
+            </div>
 
-            <Field label="Phone Number *" error={errors.phone} touched={touched.phone}>
-              <input type="tel" value={form.phone} onChange={set('phone')} onBlur={blur('phone')}
-                placeholder="9876543210 (10 digits)"
-                className={inputBase(errors.phone, touched.phone)} />
-            </Field>
-
-            <Field label="Delivery Address (optional)" error={null} touched={false}>
-              <input type="text" value={form.address} onChange={set('address')}
-                placeholder="Street, City, PIN"
-                className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-outline text-on-surface text-sm" />
-            </Field>
+            {/* Neighborhood */}
+            <div className="relative pt-1">
+               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Your Area</label>
+               <NeighborhoodPicker 
+                 value={form.neighborhood}
+                 onChange={(e) => setForm(f => ({ ...f, neighborhood: e.target.value }))}
+                 touched={touched.neighborhood}
+                 error={errors.neighborhood}
+               />
+            </div>
 
             {/* Password */}
-            <Field label="Password *" error={errors.password} touched={touched.password}>
-              <div className="relative">
-                <input type={showPass ? 'text' : 'password'} value={form.password}
-                  onChange={set('password')} onBlur={blur('password')}
-                  placeholder="Min. 6 characters"
-                  className={`${inputBase(errors.password, touched.password)} pr-12`} />
-                <button type="button" onClick={() => setShow(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface">
-                  <span className="material-symbols-outlined text-[20px]">{showPass ? 'visibility_off' : 'visibility'}</span>
-                </button>
-              </div>
-              {/* Password strength indicator */}
-              {form.password.length > 0 && (
-                <div className="flex gap-1 mt-2">
-                  {[...Array(4)].map((_, i) => {
-                    const score = form.password.length >= 10 ? 4 : form.password.length >= 8 ? 3 : form.password.length >= 6 ? 2 : 1
-                    return <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i < score ? (score >= 3 ? 'bg-green-400' : 'bg-amber-400') : 'bg-gray-200'}`} />
-                  })}
-                </div>
-              )}
-            </Field>
+            <div className="relative pt-1">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">lock</span>
+              <input type={showPass ? 'text' : 'password'} value={form.password} onChange={setSlice('password')}
+                placeholder="Password (Min. 6)" className={`${inputClass('password')} pr-12`} />
+              <button type="button" onClick={() => setShow(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <span className="material-symbols-outlined text-[18px]">{showPass ? 'visibility_off' : 'visibility'}</span>
+              </button>
+              {touched.password && errors.password && <p className="text-red-500 text-[10px] absolute -bottom-4 left-4 font-bold uppercase">{errors.password}</p>}
+            </div>
 
-            {/* Confirm Password */}
-            <Field label="Confirm Password *" error={errors.confirm} touched={touched.confirm}>
-              <input type="password" value={form.confirm} onChange={set('confirm')} onBlur={blur('confirm')}
-                placeholder="Re-enter password"
-                className={inputBase(errors.confirm, touched.confirm)} />
-            </Field>
+            {/* Confirm */}
+            <div className="relative pt-1 pb-2">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">verified_user</span>
+              <input type="password" value={form.confirm} onChange={setSlice('confirm')}
+                placeholder="Confirm Password" className={inputClass('confirm')} />
+              {touched.confirm && errors.confirm && <p className="text-red-500 text-[10px] absolute -bottom-4 left-4 font-bold uppercase">{errors.confirm}</p>}
+            </div>
 
             <motion.button
               type="submit"
               disabled={loading || success}
-              className="w-full bg-primary py-4 rounded-full text-on-primary font-headline font-bold text-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
-              whileHover={{ scale: isValid && !loading ? 1.02 : 1 }}
-              whileTap={{ scale: 0.97 }}
+              className="w-full bg-gradient-to-r from-[#e34105] to-[#ff7138] shadow-[0_10px_25px_rgba(227,65,5,0.3)] text-white font-headline font-black tracking-wide rounded-2xl py-4 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-60 text-base"
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {loading
-                ? <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Creating Account...</>
-                : success ? '✓ Welcome!'
-                : !isValid && Object.values(touched).some(Boolean) ? 'Fix errors above'
-                : 'Create Account'
-              }
+              {loading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
+            </motion.button>
+
+            {/* Skip for now button */}
+            <motion.button
+              type="button"
+              onClick={() => navigate('/home')}
+              className="w-full bg-slate-50 border border-slate-100 text-slate-600 font-bold rounded-2xl py-3.5 flex items-center justify-center gap-2 active:scale-[0.98] transition-all text-sm"
+              whileHover={{ bg: '#f8fafc' }}
+            >
+              Skip for now
+              <span className="material-symbols-outlined text-[18px]">fast_forward</span>
             </motion.button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-secondary text-sm">
-              Already have an account?{' '}
-              <button onClick={() => navigate('/login')} className="text-primary font-bold ml-1 hover:underline">Sign in</button>
-            </p>
-          </div>
-        </main>
+        </motion.div>
+
+        {/* Footer */}
+        <div className="text-center pb-12">
+          <p className="text-slate-400 text-sm font-medium">
+            Already have an account?{' '}
+            <button 
+              onClick={() => navigate('/login')} 
+              className="text-white font-black hover:text-primary transition-colors underline underline-offset-4 decoration-primary/50 decoration-2"
+            >
+              Sign In
+            </button>
+          </p>
+        </div>
+
       </div>
-    </div>
+    </main>
   )
 }
+

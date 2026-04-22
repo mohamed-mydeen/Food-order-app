@@ -14,13 +14,6 @@ function validate(form) {
   return errs
 }
 
-const inputBase = (hasErr, touched) =>
-  `w-full h-13 bg-surface-container-low border rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 transition-all text-on-surface placeholder:text-outline text-sm
-  ${hasErr && touched
-    ? 'border-red-400 focus:ring-red-200 focus:border-red-400'
-    : 'border-outline-variant/30 focus:ring-primary/20 focus:border-primary'
-  }`
-
 export default function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
@@ -30,12 +23,11 @@ export default function Login() {
   const [apiError, setApiE] = useState('')
   const [showPass, setShow] = useState(false)
 
-  const set = (key) => (e) => {
+  const setSlice = (key) => (e) => {
     setForm(f => ({ ...f, [key]: e.target.value }))
     setT(t => ({ ...t, [key]: true }))
     setApiE('')
   }
-  const blur = (key) => () => setT(t => ({ ...t, [key]: true }))
 
   const errors  = validate(form)
   const isValid = Object.keys(errors).length === 0
@@ -60,105 +52,165 @@ export default function Login() {
     } finally { setLoad(false) }
   }
 
+  const inputClass = (key) => `
+    w-full bg-white border rounded-2xl pl-12 pr-4 py-4 focus:outline-none transition-all text-[15px] font-medium shadow-sm
+    ${touched[key] && errors[key] 
+      ? 'border-red-400 focus:ring-4 focus:ring-red-100 placeholder:text-red-300' 
+      : 'border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 placeholder:text-slate-400'
+    }
+  `
+
   return (
-    <main className="relative h-full w-full flex flex-col items-center justify-center p-6 overflow-y-auto hide-scrollbar bg-background font-body text-on-background antialiased"
-          style={{ 
-            paddingTop: 'max(24px, env(safe-area-inset-top))',
-            paddingBottom: 'max(24px, env(safe-area-inset-bottom))'
-          }}>
-      {/* Background */}
+    <main className="relative h-full w-full flex flex-col items-center justify-center p-6 overflow-hidden bg-[#0A0A0B]">
+      {/* Immersive Background */}
       <div className="absolute inset-0 z-0">
-        <img className="w-full h-full object-cover"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSGlQFmkqPMwEF5CUr1vnUXRKSrbTSo4gbReOhsiBB9NtFWgD7KkUsL4YoFjqCekzUl1NG7cPryK-8rQ0hYM373RZlpsz5ntO2VrPCzuPtIJeaNk4RYPUekRILkqykJ3OJudT8Ig6afgLylLp_lD6VDb0P0kzG9K7gekxqR-9D0x3jjMu3oSj7peZXggoYHDeoemogf-w1q4PHOFNpyBPpqHD8Tfy8F8qqHBiAccFIKUyGWj0W31BcIptZIkNsTLJQmPVoEtGLub0"
-          alt="Feast At Night" />
-        <div className="absolute inset-0 backdrop-blur-[2px]"
-          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.72) 100%)' }} />
+        <img 
+          className="w-full h-full object-cover scale-110 opacity-60"
+          src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop"
+          alt="Feast Background" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-[#0A0A0B]/80 to-transparent" />
       </div>
 
-      {/* Brand */}
-      <header className="relative z-10 mb-10 text-center">
-        <h1 className="font-headline font-black text-5xl md:text-6xl tracking-tighter text-white drop-shadow-2xl">
-          FEAST AT NIGHT
-        </h1>
-        <p className="text-white/60 text-sm mt-2">Sign in to your account</p>
-      </header>
-
-      {/* Card */}
-      <motion.div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20"
-        initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-
-        {/* API Error */}
-        <AnimatePresence>
-          {apiError && (
-            <motion.div className="mb-5 flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm"
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <span className="material-symbols-outlined text-[16px]">error</span>{apiError}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-
-          {/* Email */}
-          <div>
-            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 ml-1">Email</label>
-            <input type="email" value={form.email}
-              onChange={set('email')} onBlur={blur('email')}
-              placeholder="you@example.com"
-              className={inputBase(errors.email, touched.email)} />
-            <AnimatePresence>
-              {touched.email && errors.email && (
-                <motion.p className="text-red-500 text-xs mt-1 ml-1 flex items-center gap-1"
-                  initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                  <span className="material-symbols-outlined text-[12px]">error</span>{errors.email}
-                </motion.p>
-              )}
-            </AnimatePresence>
+      {/* Content Container */}
+      <div className="relative z-10 w-full max-w-md flex flex-col">
+        
+        {/* Branding Section */}
+        <motion.div 
+          className="text-center mb-10"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-md px-4 py-1.5 rounded-full mb-4 border border-primary/30">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-[10px] font-black tracking-[0.2em] text-primary uppercase">Tirunelveli's Night Kitchen</span>
           </div>
+          <h1 className="font-headline font-black text-5xl text-white tracking-tighter leading-none mb-3">
+            FEAST AT <br />
+            <span className="text-primary italic">NIGHT</span>
+          </h1>
+          <p className="text-slate-400 text-sm font-medium">Delivering happiness, one bite at a time.</p>
+        </motion.div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 ml-1">Password</label>
-            <div className="relative">
-              <input type={showPass ? 'text' : 'password'} value={form.password}
-                onChange={set('password')} onBlur={blur('password')}
-                placeholder="••••••••"
-                className={`${inputBase(errors.password, touched.password)} pr-12`} />
-              <button type="button" onClick={() => setShow(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors">
-                <span className="material-symbols-outlined text-[20px]">{showPass ? 'visibility_off' : 'visibility'}</span>
+        {/* Login Card */}
+        <motion.div 
+          className="bg-white rounded-[32px] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', damping: 20 }}
+        >
+          <h2 className="text-2xl font-black text-slate-900 mb-2">Welcome Back</h2>
+          <p className="text-slate-500 text-sm mb-8 font-medium">Please sign in to continue your feast.</p>
+
+          <AnimatePresence>
+            {apiError && (
+              <motion.div 
+                className="mb-6 flex items-center gap-3 bg-red-50 border border-red-100 text-red-600 rounded-2xl px-4 py-3.5 text-xs font-bold"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0 }}
+              >
+                <span className="material-symbols-outlined text-[18px]">warning</span>
+                {apiError}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            {/* Email Field */}
+            <div className="relative Group">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">
+                alternate_email
+              </span>
+              <input 
+                type="email" 
+                value={form.email}
+                onChange={setSlice('email')}
+                placeholder="Email Address"
+                className={inputClass('email')} 
+              />
+            </div>
+
+            {/* Password Field */}
+            <div className="relative group">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">
+                lock_open
+              </span>
+              <input 
+                type={showPass ? 'text' : 'password'} 
+                value={form.password}
+                onChange={setSlice('password')}
+                placeholder="Password"
+                className={`${inputClass('password')} pr-12`} 
+              />
+              <button 
+                type="button" 
+                onClick={() => setShow(!showPass)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {showPass ? 'visibility_off' : 'visibility'}
+                </span>
               </button>
             </div>
-            <AnimatePresence>
-              {touched.password && errors.password && (
-                <motion.p className="text-red-500 text-xs mt-1 ml-1 flex items-center gap-1"
-                  initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                  <span className="material-symbols-outlined text-[12px]">error</span>{errors.password}
-                </motion.p>
+
+            <div className="flex justify-end pt-1">
+              <button type="button" className="text-xs font-bold text-primary hover:underline">
+                Forgot Password?
+              </button>
+            </div>
+
+            <motion.button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-[#e34105] to-[#ff7138] shadow-[0_10px_25px_rgba(227,65,5,0.3)] text-white font-headline font-black tracking-wide rounded-2xl py-4 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-60 text-base"
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  Authenticating...
+                </div>
+              ) : (
+                <>SIGN IN <span className="material-symbols-outlined text-[20px]">arrow_forward</span></>
               )}
-            </AnimatePresence>
-          </div>
+            </motion.button>
 
-          <motion.button type="submit" disabled={loading}
-            className="w-full h-14 bg-primary text-on-primary font-bold rounded-xl text-base transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-60 mt-2"
-            whileHover={{ scale: !loading ? 1.01 : 1 }}
-            whileTap={{ scale: 0.97 }}>
-            {loading
-              ? <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Signing in...</>
-              : 'Sign In'
-            }
-          </motion.button>
-        </form>
+            {/* Skip for now button */}
+            <motion.button
+              type="button"
+              onClick={() => navigate('/home')}
+              className="w-full bg-slate-50 border border-slate-100 text-slate-600 font-bold rounded-2xl py-3.5 flex items-center justify-center gap-2 active:scale-[0.98] transition-all text-sm"
+              whileHover={{ bg: '#f8fafc' }}
+            >
+              Skip for now
+              <span className="material-symbols-outlined text-[18px]">fast_forward</span>
+            </motion.button>
+          </form>
 
-        <div className="mt-8 text-center">
-          <p className="text-on-surface-variant font-medium text-sm">
+        </motion.div>
+
+        {/* Footer Link */}
+        <motion.div 
+          className="mt-8 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <p className="text-slate-400 text-sm font-medium">
             New to Feast At Night?{' '}
-            <button onClick={() => navigate('/signup')} className="text-primary font-bold hover:underline ml-1">
-              Create an account
+            <button 
+              onClick={() => navigate('/signup')} 
+              className="text-white font-black hover:text-primary transition-colors underline underline-offset-4 decoration-primary/50 decoration-2"
+            >
+              Create Account
             </button>
           </p>
-        </div>
-      </motion.div>
+        </motion.div>
+
+      </div>
     </main>
   )
 }
+

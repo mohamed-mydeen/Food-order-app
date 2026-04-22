@@ -152,7 +152,12 @@ export default function Products() {
       await api.delete(`/products/${deleteTarget.id}`)
       setDeleteTarget(null)
       fetchProducts()
-    } catch {
+    } catch (err) {
+      // If 404, the product was already deleted from DB (stale UI). 
+      // Synchronize state locally and close dialog.
+      if (err.response?.status === 404) {
+        setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
+      }
       setDeleteTarget(null)
     } finally {
       setDeleting(false)

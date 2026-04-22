@@ -5,7 +5,7 @@ const { User } = require("../models");
 // ─── Register ─────────────────────────────────────────────────────────────────
 const register = async (req, res) => {
   try {
-    const { name, email, password, phone, address, role } = req.body;
+    const { name, email, password, phone, address, neighborhood, role } = req.body;
 
     // ── 1. Field presence validation ────────────────────────────────
     if (!name || !email || !password || !phone) {
@@ -54,6 +54,7 @@ const register = async (req, res) => {
       password: hashedPassword,
       phone: phoneClean,
       address: address || null,
+      neighborhood: neighborhood || null,
       role: role === 'admin' ? 'admin' : 'user',
     });
 
@@ -74,6 +75,7 @@ const register = async (req, res) => {
           email: user.email,
           phone: user.phone,
           address: user.address,
+          neighborhood: user.neighborhood,
           role: user.role,
         },
       },
@@ -126,6 +128,7 @@ const login = async (req, res) => {
           email: user.email,
           phone: user.phone,
           address: user.address,
+          neighborhood: user.neighborhood,
           role: user.role,
         },
       },
