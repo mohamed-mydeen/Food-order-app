@@ -191,6 +191,7 @@ export default function SignUp() {
             <div className="relative pt-1 pb-2">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">verified_user</span>
               <input type="password" value={form.confirm} onChange={setSlice('confirm')}
+                onPaste={(e) => e.preventDefault()}
                 placeholder="Confirm Password" className={inputClass('confirm')} />
               {touched.confirm && errors.confirm && <p className="text-red-500 text-[10px] absolute -bottom-4 left-4 font-bold uppercase">{errors.confirm}</p>}
             </div>

@@ -109,6 +109,7 @@ export default function Home() {
   const { products, loading }       = useProducts()
   const [query, setQuery]           = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
+  const [isListening, setIsListening] = useState(false)
   const [recentSearches, setRecentSearches] = useState(() => {
     try { return JSON.parse(localStorage.getItem('fan_recent_searches')) || [] } catch { return [] }
   })
@@ -278,26 +279,54 @@ export default function Home() {
             </motion.div>
 
             {/* Separated Voice Search Button */}
-            <motion.button
-              onClick={() => {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) return alert("Voice search is not supported in your browser.");
-                const recognition = new SpeechRecognition();
-                recognition.start();
-                recognition.onresult = (e) => {
-                  const transcript = e.results[0][0].transcript;
-                  setQuery(transcript);
-                  saveRecentSearch(transcript);
-                };
-              }}
-              className="w-[52px] h-[52px] rounded-[18px] bg-white border border-outline-variant/20 shadow-[0_4px_12px_rgba(0,0,0,0.04)] flex items-center justify-center flex-shrink-0"
-              whileTap={{ scale: 0.9 }}
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.05 }}
-            >
-              <span className="material-symbols-outlined text-primary text-[24px] font-variation-fill">mic</span>
-            </motion.button>
+            <div className="relative flex-shrink-0">
+              {/* Pulsing ripple rings when listening */}
+              {isListening && (
+                <>
+                  <span className="absolute inset-0 rounded-[18px] bg-red-500/30 animate-ping" style={{ animationDuration: '0.9s' }} />
+                  <span className="absolute inset-[-6px] rounded-[22px] bg-red-400/15 animate-ping" style={{ animationDuration: '1.2s', animationDelay: '0.15s' }} />
+                </>
+              )}
+              <motion.button
+                onClick={() => {
+                  if (isListening) return; // prevent double-tap
+                  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                  if (!SpeechRecognition) return alert("Voice search is not supported in your browser.");
+                  const recognition = new SpeechRecognition();
+                  recognition.lang = 'en-IN';
+                  recognition.interimResults = false;
+                  recognition.onstart = () => setIsListening(true);
+                  recognition.onresult = (e) => {
+                    const transcript = e.results[0][0].transcript;
+                    setQuery(transcript);
+                    saveRecentSearch(transcript);
+                  };
+                  recognition.onerror = () => setIsListening(false);
+                  recognition.onend = () => setIsListening(false);
+                  recognition.start();
+                }}
+                className={`relative z-10 w-[52px] h-[52px] rounded-[18px] flex items-center justify-center transition-all duration-300 ${
+                  isListening
+                    ? 'bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.25),0_4px_16px_rgba(239,68,68,0.35)] border-0'
+                    : 'bg-white border border-outline-variant/20 shadow-[0_4px_12px_rgba(0,0,0,0.04)]'
+                }`}
+                whileTap={{ scale: 0.88 }}
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.05 }}
+                aria-label={isListening ? 'Listening…' : 'Voice search'}
+              >
+                <motion.span
+                  className={`material-symbols-outlined text-[24px] font-variation-fill ${
+                    isListening ? 'text-white' : 'text-primary'
+                  }`}
+                  animate={isListening ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+                  transition={isListening ? { repeat: Infinity, duration: 0.8, ease: 'easeInOut' } : {}}
+                >
+                  {isListening ? 'mic' : 'mic'}
+                </motion.span>
+              </motion.button>
+            </div>
 
             {/* Recent Searches Dropdown */}
             <AnimatePresence>

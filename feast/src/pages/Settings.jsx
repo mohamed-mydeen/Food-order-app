@@ -5,8 +5,8 @@ import TopBar from '../components/TopBar'
 import { useAuth } from '../context/AuthContext'
 import mandiBanner from '../assets/mandi_settings.png'
 
-const WHATSAPP_NUMBER = '919876543210' // ← replace with your number
-const SUPPORT_PHONE   = '+91 98765 43210' // ← replace with your number
+const WHATSAPP_NUMBER = '917094331888'
+const SUPPORT_PHONE   = '+91 70943 31888'
 const API = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api`
 
 // ── Theme helpers ─────────────────────────────────────────────────────────────
@@ -195,15 +195,9 @@ export default function Settings() {
             <SettingRow icon="headset_mic" label="Contact Support" sub={SUPPORT_PHONE} onClick={() => navigate('/contact')} />
             <SettingRow icon="chat" label="WhatsApp Us" sub="Chat with us instantly"
               onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20Feast%20At%20Night%20Support!`, '_blank')}
-              right={
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full">Online</span>
-                  <span className="material-symbols-outlined text-outline text-[18px]">chevron_right</span>
-                </div>
-              }
             />
             <SettingRow icon="call" label="Call Us" sub={SUPPORT_PHONE}
-              onClick={() => window.open(`tel:${SUPPORT_PHONE.replace(/\s/g, '')}`, '_self')} />
+              onClick={() => window.open(`tel:+917094331888`, '_self')} />
           </Section>
 
           {/* ── About ────────────────────────────────────────────── */}

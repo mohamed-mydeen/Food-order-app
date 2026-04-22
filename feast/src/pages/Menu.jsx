@@ -239,7 +239,7 @@ function ProductSheet({ product, onClose }) {
         {/* Scrollable */}
         <div className="overflow-y-auto flex-1" style={{ overscrollBehavior: 'contain' }}>
           {/* Image */}
-          <div className="relative h-56 bg-gray-100 mx-4 mt-2 rounded-2xl overflow-hidden">
+          <div className="relative h-72 bg-gray-100 mx-4 mt-2 rounded-2xl overflow-hidden">
             {product.image
               ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
               : <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">🍽️</div>
@@ -500,9 +500,9 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
         {/* Wishlist Heart Button */}
         <button 
           onClick={handleWishlistClick}
-          className="absolute top-2 left-2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md hover:bg-black/40 transition-colors"
+          className="absolute top-3 left-3 z-10 w-11 h-11 flex items-center justify-center rounded-full bg-black/25 backdrop-blur-md hover:bg-black/45 transition-colors shadow-sm"
         >
-          <span className={`material-symbols-outlined text-xl transition-colors ${isWishlisted ? 'text-red-500 font-variation-fill' : 'text-white'}`}>
+          <span className={`material-symbols-outlined text-[22px] transition-colors ${isWishlisted ? 'text-red-500 font-variation-fill' : 'text-white'}`}>
             favorite
           </span>
         </button>
