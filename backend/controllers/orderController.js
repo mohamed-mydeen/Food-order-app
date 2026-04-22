@@ -1,4 +1,5 @@
-const { Order, OrderItem, Cart, Product, User } = require("../models");
+const { Order, OrderItem, Cart, Product, User, NotificationToken } = require("../models");
+const { sendToUser } = require("../utils/notificationHelper");
 const { Op, fn, col, literal } = require("sequelize");
 
 // ─── POST /api/orders ──────────────────────────────────────────────────────────
@@ -48,7 +49,13 @@ const placeOrder = async (req, res) => {
       include: [{ model: OrderItem, as: "items", include: [{ model: Product, as: "product" }] }],
     });
 
-
+    // ── Order Confirmed Notification ──
+    const itemNames = cartItems.slice(0, 2).map(i => i.product.name).join(', ');
+    await sendToUser(userId, {
+      title: `Order Confirmed! 🎉`,
+      body: `${itemNames}${cartItems.length > 2 ? ' & more' : ''} — Ready panna aagudhu! 🍗\nDelivery ku wait pannunga 🚚`,
+      data: { order_id: String(order.id), type: 'order_placed' }
+    });
 
     return res.status(201).json({ success: true, message: "Order placed successfully.", data: fullOrder });
   } catch (error) {
@@ -243,7 +250,17 @@ const updateOrderStatus = async (req, res) => {
     }
     await order.update(updateData);
 
-
+    // ── Status Update Notification with proper priority ──
+    const statusMessages = {
+      'Preparing':        { title: '👨‍🍳 Order Preparing!',        body: `Order #${order.id} — Ungal food fresh-a prepare aaguthu 🔥\nKonjam wait pannunga 😊` },
+      'Out for Delivery': { title: '🚚 On the Way!',              body: `Order #${order.id} — Delivery partner kita irukaaru!\nEdhirpaathu ready-a iru 😎` },
+      'Delivered':        { title: '🎉 Delivered! Enjoy!',        body: `Order #${order.id} — Hot-a saapidu! 😋\nRating kudunga plz 🙏` },
+      'Cancelled':        { title: '❌ Order Cancelled',          body: `Order #${order.id} cancel aagiduchu.\nHelp-a? Contact us 📞` },
+    };
+    const msg = statusMessages[status];
+    if (msg) {
+      await sendToUser(order.user_id, { ...msg, data: { order_id: String(order.id), type: 'status_update', status } });
+    }
 
     return res.json({ success: true, message: "Order status updated.", data: order });
   } catch (error) {
