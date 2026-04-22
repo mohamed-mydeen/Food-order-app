@@ -301,7 +301,8 @@ export default function Profile() {
       {editOpen && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-[2px]">
           <motion.div
-            className="bg-surface rounded-t-[28px] sm:rounded-3xl w-full max-w-md shadow-2xl overflow-hidden"
+            className="bg-surface rounded-t-[28px] sm:rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col"
+          style={{ maxHeight: '92dvh' }}
             initial={{ opacity: 0, y: '100%' }} animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
           >
@@ -312,7 +313,7 @@ export default function Profile() {
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="overflow-y-auto hide-scrollbar px-5 sm:px-6 pt-4 pb-6">
               {saveMsg && (
                 <div className={`mb-5 text-sm px-4 py-3 rounded-xl flex items-center gap-2 ${saveMsg.includes('updated') ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
                   <span className="material-symbols-outlined text-[18px]">{saveMsg.includes('updated') ? 'check_circle' : 'error'}</span>

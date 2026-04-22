@@ -61,7 +61,7 @@ export default function Login() {
   `
 
   return (
-    <main className="relative h-full w-full flex flex-col items-center justify-center p-6 overflow-hidden bg-[#0A0A0B]">
+    <main className="relative h-full w-full flex flex-col items-center justify-center px-4 py-6 sm:p-6 overflow-y-auto bg-[#0A0A0B]">
       {/* Immersive Background */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -85,7 +85,7 @@ export default function Login() {
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             <span className="text-[10px] font-black tracking-[0.2em] text-primary uppercase">Tirunelveli's Night Kitchen</span>
           </div>
-          <h1 className="font-headline font-black text-5xl text-white tracking-tighter leading-none mb-3">
+          <h1 className="font-headline font-black text-4xl sm:text-5xl text-white tracking-tighter leading-none mb-3">
             FEAST AT <br />
             <span className="text-primary italic">NIGHT</span>
           </h1>
@@ -94,7 +94,7 @@ export default function Login() {
 
         {/* Login Card */}
         <motion.div 
-          className="bg-white rounded-[32px] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+          className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', damping: 20 }}
