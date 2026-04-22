@@ -45,172 +45,262 @@ function ProgressBar({ status }) {
   )
 }
 
-/* ── Rate Order Items Bottom Sheet — Swiggy/Zomato style ─────────── */
-const RATING_LABELS = ['', 'Terrible 😡', 'Bad 😞', 'Okay 😐', 'Good 😊', 'Loved it! 🤩']
+/* ── Rate Order — Swiggy-style Professional Sheet ─────────────────── */
+const EMOJIS = [
+  { emoji: '😡', label: 'Terrible', score: 1 },
+  { emoji: '😞', label: 'Bad',      score: 2 },
+  { emoji: '😐', label: 'Okay',     score: 3 },
+  { emoji: '😊', label: 'Good',     score: 4 },
+  { emoji: '🤩', label: 'Loved it', score: 5 },
+]
+
+const QUICK_CHIPS_BAD  = ['Food was cold', 'Wrong items', 'Poor packaging', 'Taste was off', 'Small portion']
+const QUICK_CHIPS_GOOD = ['Delicious food!', 'Perfect portion', 'Great packaging', 'Will order again!', 'Fresh & hot']
 
 function RateSheet({ order, onClose }) {
   const { token } = useAuth()
-  const [ratings,    setRatings]    = useState({})
-  const [comments,   setComments]   = useState({})
-  const [submitting, setSubmitting] = useState(false)
-  const [done,       setDone]       = useState(false)
+  const [overallScore, setOverallScore] = useState(0)
+  const [itemRatings,  setItemRatings]  = useState({})
+  const [chips,        setChips]        = useState([])
+  const [comment,      setComment]      = useState('')
+  const [submitting,   setSubmitting]   = useState(false)
+  const [done,         setDone]         = useState(false)
+
+  const items = order?.items || []
+  const quickChips = overallScore > 0 && overallScore <= 3 ? QUICK_CHIPS_BAD : QUICK_CHIPS_GOOD
+
+  const toggleChip = (c) => setChips(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
 
   const handleSubmit = async () => {
     setSubmitting(true)
     try {
-      const promises = order.items.map(it => {
-        const rating = ratings[it.product_id]
-        if (!rating) return Promise.resolve()
-        return fetch(`${API}/reviews`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ product_id: it.product_id, rating, comment: comments[it.product_id] || '', order_id: order.id }),
-        })
-      })
-      await Promise.all(promises)
+      const fullComment = [chips.join(', '), comment].filter(Boolean).join('. ')
+      const ratingToUse = overallScore || 3
+      await Promise.all(
+        items.map(it =>
+          fetch(`${API}/reviews`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              product_id: it.product_id,
+              rating: itemRatings[it.product_id] || ratingToUse,
+              comment: fullComment,
+              order_id: order.id,
+            }),
+          })
+        )
+      )
       setDone(true)
-      setTimeout(() => onClose(), 2000)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setSubmitting(false)
-    }
+      setTimeout(() => onClose(), 2200)
+    } catch (e) { console.error(e) }
+    finally { setSubmitting(false) }
   }
 
-  const hasRatings = Object.keys(ratings).length > 0
+  const canSubmit = overallScore > 0
 
   return (
     <>
-      <motion.div className="fixed inset-0 bg-black/60 z-[9998]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+      {/* Backdrop */}
       <motion.div
-        className="fixed left-0 right-0 bottom-0 z-[9999] bg-white dark:bg-surface rounded-t-3xl shadow-2xl flex flex-col"
-        style={{ maxHeight: '88vh' }}
-        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 280 }}
+        className="fixed inset-0 bg-black/70 z-[9998]"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose}
+      />
+
+      {/* Sheet */}
+      <motion.div
+        className="fixed left-0 right-0 bottom-0 z-[9999] bg-surface rounded-t-[28px] shadow-2xl flex flex-col"
+        style={{ maxHeight: '92vh' }}
+        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 32, stiffness: 300 }}
       >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 bg-gray-200 rounded-full" />
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
+          <div className="w-9 h-1 bg-surface-container-high rounded-full" />
         </div>
 
-        {/* Header */}
-        <div className="px-5 pb-3 flex-shrink-0 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-headline font-black text-lg text-gray-900">Rate your order</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Order #{String(order.id).padStart(7, '0')}</p>
-            </div>
-            <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[18px] text-gray-500">close</span>
-            </button>
-          </div>
-        </div>
+        {/* Scrollable body */}
+        <div className="overflow-y-auto flex-1 px-5 pb-4">
 
-        {/* Content */}
-        <div className="overflow-y-auto flex-1 px-4 py-4 space-y-3">
           {done ? (
+            /* ── Success state ── */
             <motion.div
-              className="py-10 flex flex-col items-center text-center"
-              initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="py-12 flex flex-col items-center text-center"
+              initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', damping: 14 }}
             >
-              <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mb-4">
-                <span className="text-5xl">🎉</span>
-              </div>
-              <h3 className="font-headline font-black text-xl text-gray-900 mb-1">Thanks for rating!</h3>
-              <p className="text-sm text-gray-500">Your feedback helps us improve.</p>
+              <motion.div
+                className="text-7xl mb-4"
+                animate={{ rotate: [0, -15, 15, -10, 10, 0] }}
+                transition={{ duration: 0.6 }}
+              >🎉</motion.div>
+              <h3 className="font-headline font-black text-2xl text-on-surface mb-2">Thank You!</h3>
+              <p className="text-sm text-on-surface-variant leading-relaxed">
+                Your feedback helps us serve you better. 🙏
+              </p>
             </motion.div>
           ) : (
-            order.items.map((it, idx) => {
-              const r = ratings[it.product_id] || 0
-              return (
-                <motion.div
-                  key={it.product_id}
-                  className="bg-gray-50 rounded-2xl p-4"
-                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
+            <>
+              {/* ── Header ── */}
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h2 className="font-headline font-black text-xl text-on-surface">Rate your order</h2>
+                  <p className="text-xs text-on-surface-variant mt-0.5">
+                    Order #{String(order.id).padStart(7, '0')} · {items.length} item{items.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <motion.button
+                  onClick={onClose}
+                  className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5"
+                  whileTap={{ scale: 0.88 }}
                 >
-                  {/* Product row */}
-                  <div className="flex items-center gap-3 mb-4">
-                    {it.product?.image ? (
-                      <img src={it.product.image} alt={it.product.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-gray-100" />
-                    ) : (
-                      <div className="w-14 h-14 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0 text-2xl">🍽️</div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-gray-900 line-clamp-1">{it.product?.name || 'Item'}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Qty: {it.quantity}</p>
-                      {r > 0 && (
-                        <motion.span
-                          key={r}
-                          className="inline-block text-xs font-bold text-[#a83100] mt-1"
-                          initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
-                        >
-                          {RATING_LABELS[r]}
-                        </motion.span>
-                      )}
-                    </div>
-                  </div>
+                  <span className="material-symbols-outlined text-[18px] text-on-surface-variant">close</span>
+                </motion.button>
+              </div>
 
-                  {/* Stars */}
-                  <div className="flex justify-center gap-3 mb-4">
-                    {[1, 2, 3, 4, 5].map(s => (
+              {/* ── Overall Experience ── */}
+              <p className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">
+                Overall Experience
+              </p>
+              <div className="flex justify-between mb-6">
+                {EMOJIS.map(({ emoji, label, score }) => (
+                  <motion.button
+                    key={score}
+                    onClick={() => setOverallScore(score)}
+                    whileTap={{ scale: 0.82 }}
+                    animate={{ scale: overallScore === score ? 1.18 : 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                    className="flex flex-col items-center gap-1.5 focus:outline-none"
+                  >
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl transition-all ${
+                      overallScore === score
+                        ? 'bg-[#a83100]/15 ring-2 ring-[#a83100] shadow-md'
+                        : 'bg-surface-container'
+                    }`}>
+                      {emoji}
+                    </div>
+                    <span className={`text-[10px] font-bold ${overallScore === score ? 'text-[#a83100]' : 'text-on-surface-variant'}`}>
+                      {label}
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* ── Per-item star rating ── */}
+              {items.length > 0 && (
+                <>
+                  <div className="w-full h-px bg-surface-container mb-5" />
+                  <p className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">
+                    Rate each item
+                  </p>
+                  <div className="space-y-3 mb-5">
+                    {items.map(it => {
+                      const r = itemRatings[it.product_id] || 0
+                      return (
+                        <div key={it.product_id} className="flex items-center gap-3 bg-surface-container-low rounded-2xl px-3 py-3">
+                          {/* Thumbnail */}
+                          {it.product?.image ? (
+                            <img src={it.product.image} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-xl bg-[#a83100]/10 flex items-center justify-center flex-shrink-0 text-xl">🍽️</div>
+                          )}
+                          {/* Name */}
+                          <p className="flex-1 font-bold text-sm text-on-surface line-clamp-1 min-w-0">
+                            {it.product?.name || 'Item'}
+                          </p>
+                          {/* Stars */}
+                          <div className="flex gap-0.5 flex-shrink-0">
+                            {[1,2,3,4,5].map(s => (
+                              <motion.button
+                                key={s}
+                                onClick={() => setItemRatings(prev => ({ ...prev, [it.product_id]: s }))}
+                                whileTap={{ scale: 0.7 }}
+                                className="focus:outline-none"
+                              >
+                                <span
+                                  className="material-symbols-outlined text-[22px]"
+                                  style={{
+                                    fontVariationSettings: `'FILL' ${r >= s ? 1 : 0}`,
+                                    color: r >= s ? '#f59e0b' : '#6b7280',
+                                    transition: 'color 0.1s',
+                                  }}
+                                >star</span>
+                              </motion.button>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* ── Quick chips ── */}
+              {overallScore > 0 && (
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="w-full h-px bg-surface-container mb-5" />
+                  <p className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">
+                    {overallScore <= 3 ? 'What went wrong?' : 'What did you love?'}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-5">
+                    {quickChips.map(c => (
                       <motion.button
-                        key={s}
-                        onClick={() => setRatings(prev => ({ ...prev, [it.product_id]: s }))}
-                        whileTap={{ scale: 0.75 }}
-                        animate={{ scale: r >= s ? [1, 1.3, 1] : 1 }}
-                        transition={{ duration: 0.2 }}
-                        className="focus:outline-none"
+                        key={c}
+                        onClick={() => toggleChip(c)}
+                        whileTap={{ scale: 0.92 }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                          chips.includes(c)
+                            ? 'bg-[#a83100] text-white border-[#a83100]'
+                            : 'bg-surface-container text-on-surface border-surface-container-high'
+                        }`}
                       >
-                        <span
-                          className="material-symbols-outlined text-[38px]"
-                          style={{
-                            fontVariationSettings: `'FILL' ${r >= s ? 1 : 0}`,
-                            color: r >= s ? '#f59e0b' : '#d1d5db',
-                            transition: 'color 0.15s ease',
-                          }}
-                        >
-                          star
-                        </span>
+                        {c}
                       </motion.button>
                     ))}
                   </div>
 
-                  {/* Comment */}
-                  {r > 0 && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
-                      <textarea
-                        value={comments[it.product_id] || ''}
-                        onChange={e => setComments(prev => ({ ...prev, [it.product_id]: e.target.value }))}
-                        placeholder={r <= 2 ? "What went wrong? Tell us..." : "Want to share anything? (optional)"}
-                        className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 resize-none outline-none focus:border-[#a83100] transition-colors"
-                        rows={2}
-                      />
-                    </motion.div>
-                  )}
+                  {/* Comment box */}
+                  <textarea
+                    value={comment}
+                    onChange={e => setComment(e.target.value)}
+                    placeholder="Add a comment (optional)..."
+                    rows={3}
+                    className="w-full bg-surface-container border border-surface-container-high rounded-2xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant resize-none outline-none focus:border-[#a83100] transition-colors"
+                  />
                 </motion.div>
-              )
-            })
+              )}
+            </>
           )}
         </div>
 
-        {/* Submit */}
+        {/* ── Submit footer ── */}
         {!done && (
-          <div className="flex-shrink-0 px-4 pb-10 pt-3 border-t border-gray-100 bg-white">
+          <div className="flex-shrink-0 px-5 pt-3 pb-10 border-t border-surface-container bg-surface">
             <motion.button
               onClick={handleSubmit}
-              disabled={!hasRatings || submitting}
-              className="w-full py-4 rounded-2xl font-headline font-black text-white text-base disabled:opacity-40"
-              style={{ background: hasRatings ? 'linear-gradient(135deg, #e34105, #ff7138)' : '#d1d5db' }}
-              whileTap={{ scale: 0.97 }}
+              disabled={!canSubmit || submitting}
+              className="w-full py-4 rounded-2xl font-headline font-black text-sm tracking-wide transition-all"
+              style={{
+                background: canSubmit
+                  ? 'linear-gradient(135deg, #e34105 0%, #ff7138 100%)'
+                  : undefined,
+                color: 'white',
+              }}
+              whileTap={canSubmit ? { scale: 0.97 } : {}}
             >
               {submitting ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                   </svg>
                   Submitting...
                 </span>
-              ) : 'Submit Rating'}
+              ) : canSubmit ? (
+                'Submit Rating'
+              ) : (
+                <span className="opacity-40">Select your experience above</span>
+              )}
             </motion.button>
           </div>
         )}
