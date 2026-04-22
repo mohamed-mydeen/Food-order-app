@@ -12,4 +12,10 @@ router.post("/login", login);
 // GET /api/auth/me  (protected)
 router.get("/me", authMiddleware, getMe);
 
+// POST /api/auth/forgot-password
+router.post("/forgot-password", require("../controllers/authController").forgotPassword);
+
+// POST /api/auth/reset-password
+router.post("/reset-password", require("../controllers/authController").resetPassword);
+
 module.exports = router;

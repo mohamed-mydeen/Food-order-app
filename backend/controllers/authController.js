@@ -5,7 +5,7 @@ const { User } = require("../models");
 // ─── Register ─────────────────────────────────────────────────────────────────
 const register = async (req, res) => {
   try {
-    const { name, email, password, phone, address, neighborhood, role } = req.body;
+    const { name, email, password, phone, address, neighborhood, pincode, role } = req.body;
 
     // ── 1. Field presence validation ────────────────────────────────
     if (!name || !email || !password || !phone) {
@@ -55,6 +55,7 @@ const register = async (req, res) => {
       phone: phoneClean,
       address: address || null,
       neighborhood: neighborhood || null,
+      pincode: pincode || null,
       role: role === 'admin' ? 'admin' : 'user',
     });
 
@@ -76,6 +77,7 @@ const register = async (req, res) => {
           phone: user.phone,
           address: user.address,
           neighborhood: user.neighborhood,
+          pincode: user.pincode,
           role: user.role,
         },
       },
@@ -154,4 +156,85 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe };
+// ─── Forgot Password (Email + Phone Verification) ────────────────────────────
+const forgotPassword = async (req, res) => {
+  try {
+    const { email, phone } = req.body;
+
+    if (!email || !phone) {
+      return res.status(400).json({ success: false, message: "Email and registered phone number are required." });
+    }
+
+    const phoneClean = phone.replace(/\s/g, '');
+
+    const user = await User.findOne({ where: { email: email.toLowerCase() } });
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: "No account found with this email." });
+    }
+
+    if (user.phone !== phoneClean) {
+      return res.status(401).json({ success: false, message: "The phone number provided does not match our records for this email." });
+    }
+
+    // Generate a short-lived token for password reset (15 minutes)
+    const resetToken = jwt.sign(
+      { userId: user.id, reset: true },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    return res.json({
+      success: true,
+      message: "Identity verified. Proceed to reset password.",
+      data: { resetToken }
+    });
+  } catch (error) {
+    console.error("Forgot Password error:", error);
+    return res.status(500).json({ success: false, message: "Server error during forgot password." });
+  }
+};
+
+// ─── Reset Password ──────────────────────────────────────────────────────────
+const resetPassword = async (req, res) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+
+    if (!resetToken || !newPassword) {
+      return res.status(400).json({ success: false, message: "Reset token and new password are required." });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: "Password must be at least 6 characters." });
+    }
+
+    // Verify reset token
+    let decoded;
+    try {
+      decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+      if (!decoded.reset) throw new Error("Invalid token type");
+    } catch (err) {
+      return res.status(401).json({ success: false, message: "Invalid or expired reset token. Please try again." });
+    }
+
+    const user = await User.findByPk(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    // Hash new password and update
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Password reset successfully. You can now log in.",
+    });
+  } catch (error) {
+    console.error("Reset Password error:", error);
+    return res.status(500).json({ success: false, message: "Server error during password reset." });
+  }
+};
+
+module.exports = { register, login, getMe, forgotPassword, resetPassword };

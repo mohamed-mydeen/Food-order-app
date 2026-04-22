@@ -10,6 +10,7 @@ import Menu    from './pages/Menu'
 // ── Lazy-load less-critical pages (code splitting → smaller initial bundle) ──
 const Login    = lazy(() => import('./pages/Login'))
 const SignUp   = lazy(() => import('./pages/SignUp'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const Cart     = lazy(() => import('./pages/Cart'))
 const Profile  = lazy(() => import('./pages/Profile'))
 const Orders   = lazy(() => import('./pages/Orders'))
@@ -65,6 +66,7 @@ export default function App() {
             <Route path="/menu"     element={<Menu />} />
             <Route path="/login"    element={<Login />} />
             <Route path="/signup"   element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/cart"     element={<Cart />} />
             <Route path="/profile"  element={<Profile />} />
             <Route path="/orders"   element={<Orders />} />

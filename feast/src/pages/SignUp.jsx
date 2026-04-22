@@ -16,6 +16,8 @@ function validate(form) {
   if (!form.phone.trim())                        errs.phone   = 'Phone number is required'
   else if (!/^\d{10}$/.test(form.phone.replace(/\s/g, '')))  errs.phone = 'Phone must be exactly 10 digits'
   if (!form.neighborhood)                        errs.neighborhood = 'Please select your area'
+  if (!form.pincode.trim())                      errs.pincode = 'Pincode is required'
+  else if (!/^\d{6}$/.test(form.pincode.trim())) errs.pincode = 'Pincode must be exactly 6 digits'
   if (!form.password)                            errs.password = 'Password is required'
   else if (form.password.length < 6)            errs.password = 'Password must be at least 6 characters'
   if (!form.confirm)                             errs.confirm  = 'Please confirm your password'
@@ -26,7 +28,7 @@ function validate(form) {
 export default function SignUp() {
   const navigate = useNavigate()
   const { login } = useAuth()
-  const [form, setForm]     = useState({ name: '', email: '', phone: '', password: '', confirm: '', address: '', neighborhood: '' })
+  const [form, setForm]     = useState({ name: '', email: '', phone: '', password: '', confirm: '', address: '', neighborhood: '', pincode: '' })
   const [touched, setT]     = useState({})
   const [loading, setLoad]  = useState(false)
   const [apiError, setApiE] = useState('')
@@ -44,7 +46,7 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setT({ name: true, email: true, phone: true, password: true, confirm: true, neighborhood: true })
+    setT({ name: true, email: true, phone: true, password: true, confirm: true, neighborhood: true, pincode: true })
     if (!isValid) return
     setLoad(true); setApiE('')
     try {
@@ -58,6 +60,7 @@ export default function SignUp() {
           password: form.password,
           address: form.address,
           neighborhood: form.neighborhood,
+          pincode: form.pincode.trim(),
         }),
       })
       const data = await res.json()
@@ -174,6 +177,14 @@ export default function SignUp() {
                  touched={touched.neighborhood}
                  error={errors.neighborhood}
                />
+            </div>
+
+            {/* Pincode */}
+            <div className="relative pt-1">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">pin_drop</span>
+              <input type="text" maxLength={6} value={form.pincode} onChange={setSlice('pincode')}
+                placeholder="6-digit Pincode" className={inputClass('pincode')} />
+              {touched.pincode && errors.pincode && <p className="text-red-500 text-[10px] absolute -bottom-4 left-4 font-bold uppercase">{errors.pincode}</p>}
             </div>
 
             {/* Password */}
