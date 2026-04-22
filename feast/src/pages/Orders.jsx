@@ -79,9 +79,9 @@ function RateSheet({ order, onClose }) {
 
   return (
     <>
-      <motion.div className="fixed inset-0 bg-black/50 z-[90]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+      <motion.div className="fixed inset-0 bg-black/60 z-[9998]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
       <motion.div
-        className="fixed left-0 right-0 bottom-0 z-[100] bg-surface rounded-t-3xl shadow-2xl overflow-hidden flex flex-col"
+        className="fixed left-0 right-0 bottom-0 z-[9999] bg-surface rounded-t-3xl shadow-2xl overflow-hidden flex flex-col"
         style={{ maxHeight: '90vh' }}
         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 32, stiffness: 300 }}
       >

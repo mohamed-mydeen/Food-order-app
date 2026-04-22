@@ -27,7 +27,7 @@ export default function BottomNav() {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-        className="fixed inset-x-0 mx-auto w-[88%] max-w-[340px] z-50 rounded-full"
+        className="fixed inset-x-0 mx-auto w-[88%] max-w-[340px] z-40 rounded-full"
         style={{ bottom: 'max(12px, calc(env(safe-area-inset-bottom) + 8px))' }}
       >
         {/* Glass background */}
