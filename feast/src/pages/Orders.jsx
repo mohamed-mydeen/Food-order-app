@@ -418,37 +418,30 @@ function OrderCard({ order, index, onReorder, onRate }) {
       <div className="mx-4 border-t border-dashed border-surface-container-high mt-3" />
 
       {/* ── Footer ────────────────────────────────────────────── */}
-      <div className="px-4 py-3 flex items-center justify-between">
+      <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-y-2">
         <div className="flex items-center gap-1.5">
           <span className={`w-2 h-2 rounded-full ${cfg.dot} ${isActive ? 'animate-pulse' : ''}`} />
-          <span className="text-xs text-on-surface-variant font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">
+          <span className="text-xs text-on-surface-variant font-medium">
             {status === 'Delivered' ? 'Order completed' :
              status === 'Cancelled' ? 'Order cancelled' :
              'Tracking order'}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Bill button — downloads as image (renamed from Save) */}
           <motion.button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold transition-colors"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.93 }}
-            onClick={handlePrint}
-          >
-            <span className="material-symbols-outlined text-[13px]">receipt_long</span>
-            Bill
-          </motion.button>
-          <motion.button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold transition-colors"
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.93 }}
             onClick={downloadBillAsImage}
           >
-            <span className="material-symbols-outlined text-[13px]">image</span>
-            Save
+            <span className="material-symbols-outlined text-[13px]">receipt_long</span>
+            Bill
           </motion.button>
+
           {status === 'Delivered' && (
             <motion.button
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 text-primary border border-orange-200 text-xs font-bold transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-orange-50 text-primary border border-orange-200 text-xs font-bold transition-colors"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.93 }}
               onClick={() => onRate(order)}
@@ -459,7 +452,7 @@ function OrderCard({ order, index, onReorder, onRate }) {
           )}
 
           <motion.button
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#a83100] text-white text-xs font-bold shadow-sm"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#a83100] text-white text-xs font-bold shadow-sm"
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.93 }}
             onClick={() => onReorder(items)}
