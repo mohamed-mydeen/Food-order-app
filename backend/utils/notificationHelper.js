@@ -56,13 +56,7 @@ function buildPayload(tokens, title, body, data = {}) {
   return {
     tokens,
 
-    // ── Top-level notification (iOS Safari + fallback) ─────────────────────
-    notification: {
-      title,
-      body,
-    },
-
-    // ── Android: high priority channel ────────────────────────────────────
+    // ── Android: strictly defined for high priority delivery ──────────────
     android: {
       priority: 'high',
       notification: {
@@ -79,8 +73,7 @@ function buildPayload(tokens, title, body, data = {}) {
       },
     },
 
-    // ── WebPush: THIS is what makes it appear in the OS notification tray ─
-    // Without this block, Chrome/Firefox treat it as data-only and MAY drop it.
+    // ── WebPush: The standard way to ensure system tray delivery ──────────
     webpush: {
       headers: {
         Urgency: 'high',
@@ -91,32 +84,22 @@ function buildPayload(tokens, title, body, data = {}) {
         body,
         icon: '/pwa-192x192.png',
         badge: '/pwa-192x192.png',
-        requireInteraction: true,
         vibrate: [200, 100, 200, 100, 200],
         tag: data.order_id ? `order-${data.order_id}` : 'feast-notification',
         renotify: true,
-        data: {
-          url: clickUrl,
-          order_id: data.order_id || null,
-          type: data.type || 'general',
-        },
-        actions: [
-          { action: 'view',    title: '👁️ View' },
-          { action: 'dismiss', title: '✖ Dismiss' },
-        ],
+        requireInteraction: true,
       },
       fcmOptions: {
         link: clickUrl,
       },
     },
 
-    // ── Data payload (available inside SW for deep-link routing) ───────────
+    // ── Data payload: used by service worker if notification is suppressed ──
     data: {
       ...data,
-      title:        String(title),
-      body:         String(body),
+      title: String(title),
+      body: String(body),
       click_action: clickUrl,
-      timestamp:    String(Date.now()),
     },
   };
 }
