@@ -86,7 +86,7 @@ export default function ForgotPassword() {
     }
   }
 
-  const inputClass = `w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-[14px] font-medium shadow-sm placeholder:text-slate-400`
+  const inputClass = `w-full bg-transparent border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-[14px] font-medium text-white shadow-sm placeholder:text-slate-500`
 
   return (
     <main className="relative min-h-full w-full flex flex-col items-center justify-center p-6 bg-[#0A0A0B]">
@@ -105,7 +105,7 @@ export default function ForgotPassword() {
         <div className="mb-6 flex justify-start">
           <button 
             onClick={() => step === 2 ? setStep(1) : navigate('/login')}
-            className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-white/30 transition-all"
+            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-white/20 transition-all"
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
@@ -124,14 +124,14 @@ export default function ForgotPassword() {
         {/* Messages */}
         <AnimatePresence mode="wait">
           {error && (
-            <motion.div key="error" className="mb-6 bg-red-50 text-red-600 border border-red-200 rounded-2xl p-4 flex items-center gap-3 text-sm font-bold"
+            <motion.div key="error" className="mb-6 bg-red-500/10 text-red-400 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3 text-sm font-bold"
               initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
               <span className="material-symbols-outlined">error</span>
               <p className="flex-1">{error}</p>
             </motion.div>
           )}
           {successMsg && !error && (
-            <motion.div key="success" className="mb-6 bg-green-500 text-white rounded-2xl p-4 flex items-center gap-3 font-bold"
+            <motion.div key="success" className="mb-6 bg-green-500/20 border border-green-500/30 text-green-400 rounded-2xl p-4 flex items-center gap-3 font-bold"
               initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
               <span className="material-symbols-outlined icon-filled">verified</span>
               {successMsg}
@@ -140,7 +140,7 @@ export default function ForgotPassword() {
         </AnimatePresence>
 
         {/* Card */}
-        <motion.div className="bg-white rounded-[32px] p-8 shadow-2xl" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+        <motion.div className="bg-[#1C1C1E] rounded-[32px] p-8 shadow-2xl" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
           {step === 1 ? (
             <form onSubmit={handleVerifyIdentity} className="space-y-4">
               <div className="relative">

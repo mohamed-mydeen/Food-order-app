@@ -10,7 +10,7 @@ const navItems = [
   { label: 'Profile', icon: 'person',        path: '/profile' },
 ]
 
-const NO_NAV_ROUTES = ['/', '/login', '/signup']
+const NO_NAV_ROUTES = ['/', '/login', '/signup', '/forgot-password']
 
 export default function BottomNav() {
   const navigate = useNavigate()
