@@ -45,13 +45,15 @@ function ProgressBar({ status }) {
   )
 }
 
-/* ── Rate Order Items Bottom Sheet ───────────────────────────────── */
+/* ── Rate Order Items Bottom Sheet — Swiggy/Zomato style ─────────── */
+const RATING_LABELS = ['', 'Terrible 😡', 'Bad 😞', 'Okay 😐', 'Good 😊', 'Loved it! 🤩']
+
 function RateSheet({ order, onClose }) {
   const { token } = useAuth()
-  const [ratings, setRatings] = useState({})
-  const [comments, setComments] = useState({})
+  const [ratings,    setRatings]    = useState({})
+  const [comments,   setComments]   = useState({})
   const [submitting, setSubmitting] = useState(false)
-  const [done, setDone] = useState(false)
+  const [done,       setDone]       = useState(false)
 
   const handleSubmit = async () => {
     setSubmitting(true)
@@ -67,7 +69,7 @@ function RateSheet({ order, onClose }) {
       })
       await Promise.all(promises)
       setDone(true)
-      setTimeout(() => onClose(), 1500)
+      setTimeout(() => onClose(), 2000)
     } catch (e) {
       console.error(e)
     } finally {
@@ -81,61 +83,135 @@ function RateSheet({ order, onClose }) {
     <>
       <motion.div className="fixed inset-0 bg-black/60 z-[9998]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
       <motion.div
-        className="fixed left-0 right-0 bottom-0 z-[9999] bg-surface rounded-t-3xl shadow-2xl overflow-hidden flex flex-col"
-        style={{ maxHeight: '90vh' }}
-        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 32, stiffness: 300 }}
+        className="fixed left-0 right-0 bottom-0 z-[9999] bg-white dark:bg-surface rounded-t-3xl shadow-2xl flex flex-col"
+        style={{ maxHeight: '88vh' }}
+        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 280 }}
       >
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0"><div className="w-10 h-1 bg-gray-200 rounded-full" /></div>
-        
-        <div className="overflow-y-auto px-5 pt-3 pb-4 flex-1">
-          <h2 className="font-headline font-black text-xl text-on-surface mb-1">Rate your items</h2>
-          <p className="text-xs text-on-surface-variant mb-4">How was the food from order #{String(order.id).padStart(4, '0')}?</p>
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="w-10 h-1 bg-gray-200 rounded-full" />
+        </div>
 
+        {/* Header */}
+        <div className="px-5 pb-3 flex-shrink-0 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-headline font-black text-lg text-gray-900">Rate your order</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Order #{String(order.id).padStart(7, '0')}</p>
+            </div>
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[18px] text-gray-500">close</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="overflow-y-auto flex-1 px-4 py-4 space-y-3">
           {done ? (
-            <div className="py-12 flex flex-col items-center">
-              <span className="material-symbols-outlined text-green-500 text-6xl mb-2">check_circle</span>
-              <p className="font-bold text-on-surface">Thank you for your feedback!</p>
-            </div>
+            <motion.div
+              className="py-10 flex flex-col items-center text-center"
+              initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            >
+              <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mb-4">
+                <span className="text-5xl">🎉</span>
+              </div>
+              <h3 className="font-headline font-black text-xl text-gray-900 mb-1">Thanks for rating!</h3>
+              <p className="text-sm text-gray-500">Your feedback helps us improve.</p>
+            </motion.div>
           ) : (
-            <div className="space-y-4">
-              {order.items.map(it => (
-                <div key={it.product_id} className="bg-surface-container-low rounded-xl p-4 border border-surface-container">
-                  <p className="font-bold text-sm text-on-surface mb-2">{it.product?.name || 'Item'}</p>
-                  <div className="flex gap-1 mb-3">
-                    {[1,2,3,4,5].map(s => {
-                      const r = ratings[it.product_id] || 0
-                      return (
-                         <span key={s} onClick={() => setRatings(prev => ({ ...prev, [it.product_id]: s }))}
-                           className="material-symbols-outlined text-[28px] cursor-pointer"
-                           style={{ fontVariationSettings: `'FILL' ${r >= s ? 1 : 0}`, color: r >= s ? '#f59e0b' : '#d1d5db' }}>
-                           star
-                         </span>
-                      )
-                    })}
+            order.items.map((it, idx) => {
+              const r = ratings[it.product_id] || 0
+              return (
+                <motion.div
+                  key={it.product_id}
+                  className="bg-gray-50 rounded-2xl p-4"
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
+                >
+                  {/* Product row */}
+                  <div className="flex items-center gap-3 mb-4">
+                    {it.product?.image ? (
+                      <img src={it.product.image} alt={it.product.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-gray-100" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0 text-2xl">🍽️</div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-gray-900 line-clamp-1">{it.product?.name || 'Item'}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Qty: {it.quantity}</p>
+                      {r > 0 && (
+                        <motion.span
+                          key={r}
+                          className="inline-block text-xs font-bold text-[#a83100] mt-1"
+                          initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
+                        >
+                          {RATING_LABELS[r]}
+                        </motion.span>
+                      )}
+                    </div>
                   </div>
-                  {ratings[it.product_id] > 0 && (
-                    <textarea
-                      value={comments[it.product_id] || ''}
-                      onChange={e => setComments(prev => ({ ...prev, [it.product_id]: e.target.value}))}
-                      placeholder="Was it tasty? Tell us more..."
-                      className="w-full bg-white text-xs border border-surface-container rounded-lg px-3 py-2 resize-none outline-none focus:border-primary"
-                      rows={2}
-                    />
+
+                  {/* Stars */}
+                  <div className="flex justify-center gap-3 mb-4">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <motion.button
+                        key={s}
+                        onClick={() => setRatings(prev => ({ ...prev, [it.product_id]: s }))}
+                        whileTap={{ scale: 0.75 }}
+                        animate={{ scale: r >= s ? [1, 1.3, 1] : 1 }}
+                        transition={{ duration: 0.2 }}
+                        className="focus:outline-none"
+                      >
+                        <span
+                          className="material-symbols-outlined text-[38px]"
+                          style={{
+                            fontVariationSettings: `'FILL' ${r >= s ? 1 : 0}`,
+                            color: r >= s ? '#f59e0b' : '#d1d5db',
+                            transition: 'color 0.15s ease',
+                          }}
+                        >
+                          star
+                        </span>
+                      </motion.button>
+                    ))}
+                  </div>
+
+                  {/* Comment */}
+                  {r > 0 && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                      <textarea
+                        value={comments[it.product_id] || ''}
+                        onChange={e => setComments(prev => ({ ...prev, [it.product_id]: e.target.value }))}
+                        placeholder={r <= 2 ? "What went wrong? Tell us..." : "Want to share anything? (optional)"}
+                        className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 resize-none outline-none focus:border-[#a83100] transition-colors"
+                        rows={2}
+                      />
+                    </motion.div>
                   )}
-                </div>
-              ))}
-            </div>
+                </motion.div>
+              )
+            })
           )}
         </div>
 
+        {/* Submit */}
         {!done && (
-          <div className="p-4 pb-10 border-t border-surface-container bg-surface flex-shrink-0">
-            <button
-              onClick={handleSubmit} disabled={!hasRatings || submitting}
-              className="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-sm disabled:opacity-50"
+          <div className="flex-shrink-0 px-4 pb-10 pt-3 border-t border-gray-100 bg-white">
+            <motion.button
+              onClick={handleSubmit}
+              disabled={!hasRatings || submitting}
+              className="w-full py-4 rounded-2xl font-headline font-black text-white text-base disabled:opacity-40"
+              style={{ background: hasRatings ? 'linear-gradient(135deg, #e34105, #ff7138)' : '#d1d5db' }}
+              whileTap={{ scale: 0.97 }}
             >
-              {submitting ? 'Submitting...' : 'Submit Ratings'}
-            </button>
+              {submitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Submitting...
+                </span>
+              ) : 'Submit Rating'}
+            </motion.button>
           </div>
         )}
       </motion.div>

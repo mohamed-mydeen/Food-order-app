@@ -1,15 +1,32 @@
 import { useEffect } from 'react';
-import { getToken, onMessage, getMessaging } from 'firebase/messaging';
+import { getToken, onMessage, getMessaging, isSupported } from 'firebase/messaging';
 import { app } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
-import { isSupported } from 'firebase/messaging';
 
 const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com';
-
-// Strip surrounding quotes that appear when env vars are written as VITE_X="value"
 const rawVapid = import.meta.env.VITE_FIREBASE_VAPID_KEY || '';
 const VAPID_KEY = rawVapid.replace(/^"|"$/g, '') ||
   'BKf2_g9kh_N-RalfKrgsaq8IV9Mm6RHgnCICevFEf4-XfMbmF-FQrvCrYeopKIPkJtIhlJPVMA_BvmUtwI4pL8o';
+
+// Wait until SW is fully activated (fixes "no active Service Worker" error)
+function waitForActivation(reg) {
+  if (reg.active) return Promise.resolve(reg.active);
+  return new Promise((resolve, reject) => {
+    const sw = reg.installing || reg.waiting;
+    if (!sw) return reject(new Error('No SW installing or waiting'));
+    sw.addEventListener('statechange', function handler(e) {
+      if (e.target.state === 'activated') {
+        sw.removeEventListener('statechange', handler);
+        resolve(e.target);
+      } else if (e.target.state === 'redundant') {
+        sw.removeEventListener('statechange', handler);
+        reject(new Error('SW became redundant'));
+      }
+    });
+    // Timeout fallback after 10s
+    setTimeout(() => resolve(null), 10000);
+  });
+}
 
 export function useFirebaseNotifications() {
   const { token: authToken, isLoggedIn } = useAuth();
@@ -21,47 +38,40 @@ export function useFirebaseNotifications() {
 
     const init = async () => {
       try {
-        // 1. Guard: check FCM is supported in this browser
         const supported = await isSupported();
-        if (!supported) {
-          console.warn('[FCM] Messaging not supported in this browser.');
-          return;
-        }
+        if (!supported) return;
 
-        // 2. Get the messaging instance (app is always initialized)
+        // Only run if permission already granted (don't auto-prompt here — Login.jsx handles it)
+        if (Notification.permission !== 'granted') return;
+
         const messaging = getMessaging(app);
 
-        // 3. Request permission (or use existing grant)
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          console.warn('[FCM] Notification permission denied.');
+        // Register SW and WAIT for it to be truly active
+        let swReg = null;
+        try {
+          swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+            scope: '/firebase-cloud-messaging-push-scope',
+          });
+          // Critical: wait for activation before subscribing
+          await waitForActivation(swReg);
+          console.log('[FCM] Service worker active.');
+        } catch (swErr) {
+          console.error('[FCM] SW registration/activation failed:', swErr);
           return;
         }
 
-        // 4. Register service worker with a specific scope to avoid PWA conflict
-        let swReg = null;
-        try {
-          // Use the dedicated Firebase push scope (standard practice)
-          swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-            scope: '/firebase-cloud-messaging-push-scope', 
-          });
-          console.log('[FCM] Service worker registered with scope:', swReg.scope);
-        } catch (swErr) {
-          console.error('[FCM] SW registration failed:', swErr);
-        }
-
-        // 5. Get FCM token
+        // Get FCM token
         const currentToken = await getToken(messaging, {
           vapidKey: VAPID_KEY,
-          ...(swReg ? { serviceWorkerRegistration: swReg } : {}),
+          serviceWorkerRegistration: swReg,
         });
 
         if (!currentToken) {
-          console.warn('[FCM] No token available — check VAPID key and SW scope.');
+          console.warn('[FCM] No token — check VAPID key.');
           return;
         }
 
-        // 6. Register token with backend
+        // Register with backend
         try {
           await fetch(`${API}/api/notifications/register`, {
             method: 'POST',
@@ -69,44 +79,31 @@ export function useFirebaseNotifications() {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${authToken}`,
             },
-            body: JSON.stringify({
-              token: currentToken,
-              device_info: navigator.userAgent,
-            }),
+            body: JSON.stringify({ token: currentToken, device_info: navigator.userAgent }),
           });
           console.log('[FCM] Token registered with backend.');
         } catch (regErr) {
-          console.error('[FCM] Failed to register token with backend:', regErr);
+          console.error('[FCM] Backend register failed:', regErr);
         }
 
-        // 7. Foreground message handler — show via SW so it lands in OS tray
+        // Foreground handler — show via SW so it appears in OS tray
         unsubscribeFn = onMessage(messaging, (payload) => {
-          console.log('[FCM] Foreground message:', payload);
           const notif = payload.notification || {};
           const data  = payload.data || {};
           const title = notif.title || data.title || 'Feast At Night';
           const body  = notif.body  || data.body  || '';
-
-          if (!title || Notification.permission !== 'granted') return;
-
-          // Use SW to show the notification — works on both mobile & desktop
+          if (!title) return;
           navigator.serviceWorker.ready.then((reg) => {
             reg.showNotification(title, {
               body,
-              icon:              '/pwa-192x192.png',
-              badge:             '/pwa-192x192.png',
-              vibrate:           [200, 100, 200],
-              requireInteraction: false,
-              tag:               data.order_id ? `order-${data.order_id}` : 'feast-fg',
-              renotify:          true,
-              data: {
-                url:      data.click_action || '/',
-                order_id: data.order_id || null,
-                type:     data.type || 'general',
-              },
+              icon: '/pwa-192x192.png',
+              badge: '/pwa-192x192.png',
+              vibrate: [200, 100, 200],
+              tag: data.order_id ? `order-${data.order_id}` : 'feast-fg',
+              renotify: true,
+              data: { url: data.click_action || '/' },
             });
           }).catch(() => {
-            // Last-resort fallback for desktop-only environments
             new Notification(title, { body, icon: '/pwa-192x192.png' });
           });
         });
@@ -117,9 +114,6 @@ export function useFirebaseNotifications() {
     };
 
     init();
-
-    return () => {
-      if (unsubscribeFn) unsubscribeFn();
-    };
+    return () => { if (unsubscribeFn) unsubscribeFn(); };
   }, [isLoggedIn, authToken]);
 }

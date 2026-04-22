@@ -17,11 +17,12 @@ function validate(form) {
 export default function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
-  const [form, setForm]     = useState({ email: '', password: '' })
-  const [touched, setT]     = useState({})
-  const [loading, setLoad]  = useState(false)
-  const [apiError, setApiE] = useState('')
-  const [showPass, setShow] = useState(false)
+  const [form, setForm]       = useState({ email: '', password: '' })
+  const [touched, setT]       = useState({})
+  const [loading, setLoad]    = useState(false)
+  const [apiError, setApiE]   = useState('')
+  const [showPass, setShow]   = useState(false)
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false)
 
   const setSlice = (key) => (e) => {
     setForm(f => ({ ...f, [key]: e.target.value }))
@@ -46,7 +47,12 @@ export default function Login() {
       const data = await res.json()
       if (!data.success) throw new Error(data.message)
       login(data.data.token, data.data.user)
-      navigate('/home', { replace: true })
+      // Show notification prompt if not already decided
+      if (Notification.permission === 'default') {
+        setShowNotifPrompt(true)
+      } else {
+        navigate('/home', { replace: true })
+      }
     } catch (err) {
       setApiE(err.message || 'Login failed. Please try again.')
     } finally { setLoad(false) }
@@ -61,6 +67,7 @@ export default function Login() {
   `
 
   return (
+    <>
     <main className="relative h-full w-full flex flex-col items-center justify-center px-4 py-6 sm:p-6 overflow-y-auto bg-[#0A0A0B]">
       {/* Immersive Background */}
       <div className="absolute inset-0 z-0">
@@ -211,6 +218,43 @@ export default function Login() {
 
       </div>
     </main>
-  )
+
+    {/* Notification Permission Prompt */}
+    {showNotifPrompt && (
+      <div className="fixed inset-0 z-[999] bg-black/50 flex items-end">
+        <motion.div
+          className="bg-white w-full rounded-t-3xl px-6 pt-5 pb-10 shadow-2xl"
+          initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 28 }}
+        >
+          <div className="flex justify-center mb-4">
+            <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center">
+              <span className="material-symbols-outlined text-[#a83100] text-3xl icon-filled">notifications</span>
+            </div>
+          </div>
+          <h3 className="font-headline font-black text-xl text-gray-900 text-center mb-1">Stay Updated!</h3>
+          <p className="text-sm text-gray-500 text-center mb-6 leading-relaxed">
+            Allow notifications to get real-time order updates, exclusive offers, and delivery alerts. 🔔
+          </p>
+          <motion.button
+            className="w-full py-4 bg-gradient-to-r from-[#e34105] to-[#ff7138] text-white font-headline font-black rounded-2xl text-base mb-3"
+            whileTap={{ scale: 0.97 }}
+            onClick={async () => {
+              setShowNotifPrompt(false)
+              await Notification.requestPermission()
+              navigate('/home', { replace: true })
+            }}
+          >
+            Allow Notifications
+          </motion.button>
+          <button
+            className="w-full py-3 text-sm text-gray-400 font-medium"
+            onClick={() => { setShowNotifPrompt(false); navigate('/home', { replace: true }) }}
+          >
+            Maybe later
+          </button>
+        </motion.div>
+      </div>
+    )}
+  </>
 }
 
