@@ -591,7 +591,7 @@ export default function Menu() {
             loop
             muted
             playsInline
-            className="w-full h-auto rounded-xl shadow-sm mb-6"
+            className="w-full aspect-video rounded-xl shadow-sm mb-6 object-cover"
           >
             <source src="/VID_2.mp4" type="video/mp4" />
           </video>
