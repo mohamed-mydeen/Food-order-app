@@ -155,13 +155,12 @@ export default function Contact() {
 
 
                    {[
-                     { day: 'Mon – Fri', time: '10:30 PM – 1:00 AM' },
-                     { day: 'Saturday',  time: '10:30 PM – 1:00 AM' },
-                     { day: 'Sunday',    time: '10:30 PM – 1:00 AM' },
+                     { day: 'Mon – Sat', time: '10:30 PM – 1:00 AM' },
+                     { day: 'Sunday',    time: '11:30 AM – 2:30 PM' },
                    ].map(({ day, time }) => (
-                     <div key={day} className="flex justify-between items-center w-full">
-                       <span className="text-[13px] font-medium text-on-surface-variant">{day}</span>
-                       <span className="text-[13px] font-bold text-on-surface">{time}</span>
+                     <div key={day} className="flex items-center w-full">
+                       <span className="text-[13px] font-medium text-on-surface-variant min-w-[70px]">{day}</span>
+                       <span className="text-[12px] font-bold text-on-surface flex-1 text-right leading-tight">{time}</span>
                      </div>
                    ))}
                  </div>

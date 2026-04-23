@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import api from '../api/axios'
 
-const CATEGORIES = ['All', 'Mandi', 'Burgers', 'Pizza', 'Biryani', 'Shawarma', 'Desserts', 'Drinks', 'Snacks']
+const CATEGORIES = ['All', 'Mandi', 'Burgers', 'Pizza', 'Biryani', 'Shawarma', 'Desserts', 'Drinks', 'Snacks', 'Sandwich']
 
 const emptyForm = { name: '', price: '', category: '', description: '', in_stock: true, image: null }
 

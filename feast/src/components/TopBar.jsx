@@ -295,24 +295,8 @@ function SideDrawer({ open, onClose }) {
               )}
             </div>
 
-            {/* Footer with Timings */}
-            <div className="flex-shrink-0 border-t border-surface-container px-4 py-4 space-y-3 bg-surface-container-low">
-              <div className="bg-surface rounded-xl p-3 border border-surface-container text-center shadow-sm">
-                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2 flex items-center justify-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">schedule</span> Operating Hours
-                </p>
-                <div className="flex justify-between items-center text-xs font-bold text-on-surface mb-1">
-                  <span className="text-on-surface-variant">Mon - Sat</span>
-                  <span>10:30 PM - 1:00 AM</span>
-                </div>
-                <div className="flex justify-between items-center text-xs font-bold text-on-surface">
-                  <span className="text-primary">Sunday</span>
-                  <div className="text-right">
-                    <p className="text-primary">11:30 AM - 2:30 PM</p>
-                    <p>10:30 PM - 1:00 AM</p>
-                  </div>
-                </div>
-              </div>
+            {/* Footer */}
+            <div className="flex-shrink-0 border-t border-surface-container px-4 py-4 bg-surface-container-low">
               <p className="text-center text-[10px] text-outline">© 2026 Feast At Night</p>
             </div>
           </motion.div>
