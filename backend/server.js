@@ -1,54 +1,91 @@
 require("dotenv").config();
+
+// ── Validate env vars before anything else ──────────────────────────────────
+const validateEnv = require("./utils/validateEnv");
+validateEnv();
+
 const express = require("express");
-const cors = require("cors");
+const cors    = require("cors");
+const helmet  = require("helmet");
 const { sequelize } = require("./models");
+const { authLimiter, apiLimiter } = require("./middleware/rateLimiter");
 
 // Route imports
-const authRoutes = require("./routes/authRoutes");
-const productRoutes = require("./routes/productRoutes");
-const cartRoutes = require("./routes/cartRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const userRoutes = require("./routes/userRoutes");
-const dashboardRoutes = require("./routes/dashboardRoutes");
-const offerRoutes = require("./routes/offerRoutes");
-const analyticsRoutes = require("./routes/analyticsRoutes");
-const bugRoutes = require("./routes/bugRoutes");
+const authRoutes         = require("./routes/authRoutes");
+const productRoutes      = require("./routes/productRoutes");
+const cartRoutes         = require("./routes/cartRoutes");
+const orderRoutes        = require("./routes/orderRoutes");
+const userRoutes         = require("./routes/userRoutes");
+const dashboardRoutes    = require("./routes/dashboardRoutes");
+const offerRoutes        = require("./routes/offerRoutes");
+const analyticsRoutes    = require("./routes/analyticsRoutes");
+const bugRoutes          = require("./routes/bugRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
-const reviewRoutes = require("./routes/reviewRoutes");
-const wishlistRoutes = require("./routes/wishlistRoutes");
+const reviewRoutes       = require("./routes/reviewRoutes");
+const wishlistRoutes     = require("./routes/wishlistRoutes");
 const { incrementViews } = require("./controllers/analyticsController");
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 5000;
 
-// ─── Middleware ───────────────────────────────────────────────────────────────
+// ─── Allowed Origins ─────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  "https://mpmhub.vercel.app",          // Production frontend
+  "https://mpmhub-admin.vercel.app",    // Admin panel (if separate)
+  /^http:\/\/localhost:\d+$/,            // Any localhost port (dev)
+  /^http:\/\/127\.0\.0\.1:\d+$/,        // Any 127.0.0.1 port (dev)
+];
+
+// ─── Security Headers (Helmet) ───────────────────────────────────────────────
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // CSP managed by Vercel/frontend separately
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+// ─── CORS ────────────────────────────────────────────────────────────────────
 app.use(
   cors({
-    // Allow any localhost port (5173, 5174, 5175, 3000, etc.)
     origin: function (origin, callback) {
-      // Allow any origin (development and production)
-      callback(null, true);
+      // Allow requests with no origin (mobile apps, Postman, curl)
+      if (!origin) return callback(null, true);
+
+      const allowed = ALLOWED_ORIGINS.some((o) =>
+        typeof o === "string" ? o === origin : o.test(origin)
+      );
+
+      if (allowed) return callback(null, true);
+
+      callback(new Error(`CORS: origin '${origin}' not allowed`));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// ─── Body Parsers (with size limits) ─────────────────────────────────────────
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+
+// ─── General API Rate Limiter ────────────────────────────────────────────────
+app.use("/api", apiLimiter);
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
-app.use("/api/auth", authRoutes);
+// Auth routes get stricter rate limiting
+app.use("/api/auth", authLimiter, authRoutes);
+
 // Track page views on every product fetch (public endpoint visited by frontend)
 app.use("/api/products", (req, res, next) => { if (req.method === "GET") incrementViews(); next(); });
-app.use("/api/products", productRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/offers", offerRoutes);
-app.use("/api/analytics", analyticsRoutes);
-app.use("/api/bugs", bugRoutes);
+app.use("/api/products",      productRoutes);
+app.use("/api/cart",          cartRoutes);
+app.use("/api/orders",        orderRoutes);
+app.use("/api/users",         userRoutes);
+app.use("/api/dashboard",     dashboardRoutes);
+app.use("/api/offers",        offerRoutes);
+app.use("/api/analytics",     analyticsRoutes);
+app.use("/api/bugs",          bugRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews",       reviewRoutes);
 app.use("/api/wishlist",      wishlistRoutes);
@@ -58,7 +95,8 @@ app.get("/", (req, res) => {
   res.json({
     success: true,
     message: "🍽️  Feast At Night API is running",
-    version: "1.0.0",
+    version: "1.2.0",
+    env: process.env.NODE_ENV || "development",
   });
 });
 
@@ -69,10 +107,17 @@ app.use((req, res) => {
 
 // ─── Global Error Handler ────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
+  // CORS error — give a clear message
+  if (err.message && err.message.startsWith("CORS:")) {
+    return res.status(403).json({ success: false, message: err.message });
+  }
   console.error("❌ Error:", err.message);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    message:
+      process.env.NODE_ENV === "production"
+        ? "Internal Server Error"
+        : err.message || "Internal Server Error",
   });
 });
 
@@ -80,26 +125,28 @@ app.use((err, req, res, next) => {
 (async () => {
   try {
     await sequelize.authenticate();
-    console.log('✅ Database connected successfully');
+    console.log("✅ Database connected successfully");
 
     // NEVER use alter:true in production — it breaks on TiDB/MySQL UNIQUE KEY cols.
-    // In development, use alter only if explicitly set via env var DEV_SYNC=true
-    const shouldAlter = process.env.NODE_ENV !== 'production' && process.env.DEV_SYNC === 'true';
+    const shouldAlter = process.env.NODE_ENV !== "production" && process.env.DEV_SYNC === "true";
     try {
       await sequelize.sync({ alter: shouldAlter });
-      console.log('✅ Database synced');
+      console.log("✅ Database synced");
     } catch (syncErr) {
-      // If alter fails (e.g. unique key constraint already exists), fall back to no-op sync
-      console.warn('⚠️  alter sync failed, retrying with force:false...', syncErr.message);
+      console.warn("⚠️  alter sync failed, retrying with force:false...", syncErr.message);
       await sequelize.sync({ force: false });
-      console.log('✅ Database synced (no-alter fallback)');
+      console.log("✅ Database synced (no-alter fallback)");
     }
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(`🌐 Environment: ${process.env.NODE_ENV || "development"}`);
     });
   } catch (error) {
-    console.error('❌ Unable to start server:', error);
+    console.error("❌ Unable to start server:", error);
     process.exit(1);
   }
 })();
+
+
+

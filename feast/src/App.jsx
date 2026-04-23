@@ -18,6 +18,7 @@ const Contact  = lazy(() => import('./pages/Contact'))
 const About    = lazy(() => import('./pages/About'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Wishlist = lazy(() => import('./pages/Wishlist'))
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess'))
 
 import InstallBanner from './components/InstallBanner'
 import NotificationBanner from './components/NotificationBanner'
@@ -59,6 +60,13 @@ export default function App() {
 
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      
+      {/* Desktop Warning Banner */}
+      <div className="fixed top-0 left-0 right-0 z-[100000] hidden md:flex items-center justify-center bg-[#1c1c1e] text-white py-3 px-4 shadow-md border-b border-white/10">
+        <span className="material-symbols-outlined text-primary text-[20px] mr-2.5">phone_iphone</span>
+        <p className="text-sm font-bold tracking-wide">For the best experience, please open Feast At Night on your mobile device.</p>
+      </div>
+
       <div className="app-shell">
         <Suspense fallback={<PageLoader />}>
           <Routes>
@@ -75,6 +83,7 @@ export default function App() {
             <Route path="/about"    element={<About />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="*"         element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

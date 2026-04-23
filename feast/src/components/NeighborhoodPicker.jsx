@@ -20,7 +20,7 @@ export default function NeighborhoodPicker({ value, onChange, error, touched }) 
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className={`w-full flex items-center justify-between bg-surface-container-low border rounded-xl px-4 py-3.5 transition-all text-sm
+        className={`w-full flex items-center justify-between bg-surface-container-low border rounded-xl pl-11 pr-4 py-3.5 transition-all text-sm
           ${error && touched 
             ? 'border-red-400 focus:ring-2 focus:ring-red-200' 
             : 'border-outline-variant/30 focus:ring-2 focus:ring-primary/20'

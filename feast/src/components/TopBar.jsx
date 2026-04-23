@@ -146,47 +146,62 @@ function SideDrawer({ open, onClose }) {
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
-            {/* Header — Mandi image banner */}
-            <div className="relative px-6 pt-10 pb-8 overflow-hidden"
-              style={{ backgroundImage: `url(${mandiSidebar})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-            >
-              {/* Dark overlay */}
-              <div className="absolute inset-0 bg-black/65" />
+            {/* Header — Premium Glassmorphic Design */}
+            <div className="relative px-6 pt-12 pb-8 overflow-hidden">
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 hover:scale-105"
+                style={{ backgroundImage: `url(${mandiSidebar})` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-[#0A0A0B]" />
+              
               <div className="relative z-10">
                 {isLoggedIn ? (
-                  <>
-                    <div className="w-14 h-14 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center mb-3 shadow-lg">
-                      <span className="font-headline font-black text-white text-2xl">
-                        {user?.name?.charAt(0)?.toUpperCase() || '?'}
-                      </span>
+                  <div className="flex flex-col">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-orange-400 p-0.5 shadow-2xl mb-4">
+                      <div className="w-full h-full rounded-[14px] bg-[#111111] flex items-center justify-center overflow-hidden">
+                        <span className="font-headline font-black text-white text-2xl">
+                          {user?.name?.charAt(0)?.toUpperCase() || '?'}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-white font-headline font-black text-lg leading-tight">{user?.name}</p>
-                    <p className="text-white/70 text-xs mt-0.5">{user?.email}</p>
-                    {user?.phone && <p className="text-white/60 text-xs">{user.phone}</p>}
-                  </>
+                    <h3 className="text-white font-headline font-black text-xl tracking-tight leading-none">{user?.name}</h3>
+                    <div className="flex flex-col gap-1 mt-2">
+                      <p className="text-white/60 text-xs font-medium flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[14px] opacity-70">mail</span>
+                        {user?.email}
+                      </p>
+                      {user?.phone && (
+                        <p className="text-white/40 text-[11px] font-bold tracking-tight flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[14px] opacity-70">call</span>
+                          {user.phone}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 ) : (
-                  <>
-                    <div className="w-14 h-14 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center mb-3">
-                      <span className="material-symbols-outlined text-white text-3xl">person</span>
+                  <div className="flex flex-col">
+                    <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mb-4 shadow-xl">
+                      <span className="material-symbols-outlined text-white/80 text-3xl">person</span>
                     </div>
-                    <p className="text-white font-headline font-black text-lg">Welcome!</p>
-                    <div className="flex gap-2 mt-3">
+                    <h3 className="text-white font-headline font-black text-xl leading-tight">Welcome!</h3>
+                    <p className="text-white/60 text-xs mt-1 font-medium">Join the feast today</p>
+                    <div className="flex gap-2 mt-4">
                       <button onClick={() => go('/login')}
-                        className="px-4 py-1.5 bg-white text-primary rounded-full text-xs font-bold">
-                        Sign In
+                        className="px-5 py-2 bg-primary text-on-primary rounded-xl text-xs font-black tracking-wide shadow-lg shadow-primary/20">
+                        SIGN IN
                       </button>
                       <button onClick={() => go('/signup')}
-                        className="px-4 py-1.5 bg-white/20 text-white rounded-full text-xs font-bold border border-white/30">
-                        Sign Up
+                        className="px-5 py-2 bg-white/10 backdrop-blur-md text-white rounded-xl text-xs font-bold border border-white/10">
+                        SIGN UP
                       </button>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
 
               {/* Close button */}
               <button onClick={onClose}
-                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors"
+                className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 hover:bg-black/40 transition-all z-20"
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
@@ -207,8 +222,8 @@ function SideDrawer({ open, onClose }) {
                   <motion.button
                     key={label}
                     onClick={() => go(path)}
-                    className={`w-full flex items-center gap-4 px-6 py-2.5 text-left transition-colors border-b border-surface-container/50 last:border-0 ${
-                      isActive ? 'bg-primary/8 text-primary' : 'text-on-surface hover:bg-surface-container-low'
+                    className={`w-full flex items-center gap-4 px-6 py-3 text-left transition-all ${
+                      isActive ? 'bg-primary/10 text-primary border-r-4 border-primary' : 'text-on-surface hover:bg-white/[0.03]'
                     }`}
                     variants={{
                       hidden: { opacity: 0, x: -18 },
@@ -249,7 +264,7 @@ function SideDrawer({ open, onClose }) {
               {/* Extra links */}
               {[
                 { icon: 'settings',      label: 'Settings',      action: () => go('/settings') },
-                { icon: 'help_outline',  label: 'Help & Support', action: () => go('/contact') },
+                { icon: 'help_outline',  label: 'Help & Support',action: () => go('/contact') },
                 { icon: 'share',         label: 'Share App',     action: async () => {
                     const url = window.location.origin;
                     if (navigator.share) {
@@ -310,23 +325,36 @@ function SideDrawer({ open, onClose }) {
 
 export default function TopBar({ showSubtitle = true }) {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const { isLoggedIn, user } = useAuth()
   const { canInstall, promptInstall } = usePWAInstall()
+
+  const isSubPage = ['/settings', '/orders', '/wishlist', '/about'].includes(pathname)
 
   return (
     <>
       <div className="flex-shrink-0 z-30 bg-surface shadow-sm sticky top-0">
         <div className="flex justify-between items-center px-4 py-3 w-full">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            {/* Hamburger Icon */}
-            <motion.button
-              onClick={() => setDrawerOpen(true)}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors flex-shrink-0 -ml-1"
-              whileTap={{ scale: 0.88 }}
-            >
-              <span className="material-symbols-outlined text-[24px] text-primary">menu</span>
-            </motion.button>
+            {/* Back or Hamburger Icon */}
+            {isSubPage ? (
+              <motion.button
+                onClick={() => navigate(-1)}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors flex-shrink-0 -ml-1"
+                whileTap={{ scale: 0.88 }}
+              >
+                <span className="material-symbols-outlined text-[24px] text-primary">arrow_back</span>
+              </motion.button>
+            ) : (
+              <motion.button
+                onClick={() => setDrawerOpen(true)}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors flex-shrink-0 -ml-1"
+                whileTap={{ scale: 0.88 }}
+              >
+                <span className="material-symbols-outlined text-[24px] text-primary">menu</span>
+              </motion.button>
+            )}
 
             {/* Swiggy-style Location Context */}
             <div 

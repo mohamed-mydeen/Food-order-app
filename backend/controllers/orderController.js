@@ -53,7 +53,7 @@ const placeOrder = async (req, res) => {
     const itemNames = cartItems.slice(0, 2).map(i => i.product.name).join(', ');
     await sendToUser(userId, {
       title: `Order Confirmed! 🎉`,
-      body: `${itemNames}${cartItems.length > 2 ? ' & more' : ''} — Ready panna aagudhu! 🍗\nDelivery ku wait pannunga 🚚`,
+      body: `Your order for ${itemNames}${cartItems.length > 2 ? ' and more' : ''} has been received and is being processed.`,
       data: { order_id: String(order.id), type: 'order_placed' }
     });
 
@@ -252,10 +252,10 @@ const updateOrderStatus = async (req, res) => {
 
     // ── Status Update Notification with proper priority ──
     const statusMessages = {
-      'Preparing':        { title: '👨‍🍳 Order Preparing!',        body: `Order #${order.id} — Ungal food fresh-a prepare aaguthu 🔥\nKonjam wait pannunga 😊` },
-      'Out for Delivery': { title: '🚚 On the Way!',              body: `Order #${order.id} — Delivery partner kita irukaaru!\nEdhirpaathu ready-a iru 😎` },
-      'Delivered':        { title: '🎉 Delivered! Enjoy!',        body: `Order #${order.id} — Hot-a saapidu! 😋\nRating kudunga plz 🙏` },
-      'Cancelled':        { title: '❌ Order Cancelled',          body: `Order #${order.id} cancel aagiduchu.\nHelp-a? Contact us 📞` },
+      'Preparing':        { title: `Order is Preparing 👨‍🍳`,  body: `Your food is currently being prepared fresh in the kitchen. We'll notify you when it's out for delivery.` },
+      'Out for Delivery': { title: `Order is on the way! 🚚`,   body: `Good news! Your order is out for delivery. Our partner will reach your location shortly.` },
+      'Delivered':        { title: `Order Delivered! 🎉`,      body: `Your order has been successfully delivered. We hope you enjoy your Feast At Night!` },
+      'Cancelled':        { title: `Order Cancelled ❌`,       body: `Unfortunately, your order was cancelled. If you need assistance, please contact our support team.` },
     };
     const msg = statusMessages[status];
     if (msg) {

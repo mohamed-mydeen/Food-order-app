@@ -124,9 +124,9 @@ export default function ForgotPassword() {
         {/* Messages */}
         <AnimatePresence mode="wait">
           {error && (
-            <motion.div key="error" className="mb-6 bg-red-500/10 text-red-400 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3 text-sm font-bold"
+            <motion.div key="error" className="mb-6 bg-[#1c1c1e] text-slate-300 border border-white/5 shadow-lg rounded-2xl p-4 flex items-start gap-3 text-sm font-medium leading-relaxed"
               initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
-              <span className="material-symbols-outlined">error</span>
+              <span className="material-symbols-outlined text-amber-500 text-[20px] mt-0.5">info</span>
               <p className="flex-1">{error}</p>
             </motion.div>
           )}

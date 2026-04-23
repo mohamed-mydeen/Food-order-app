@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Disallow authenticated/private routes
+Disallow: /cart
+Disallow: /orders
+Disallow: /profile
+Disallow: /settings
+Disallow: /order-success
+
+Sitemap: https://mpmhub.vercel.app/sitemap.xml

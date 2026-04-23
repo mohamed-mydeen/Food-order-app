@@ -49,22 +49,22 @@ const makeGPayLink = (amt, ref) => {
 /* ── Payment Options ──────────────────────────────────── */
 const PAYMENT_OPTIONS = [
   {
-    id: 'GPAY', method: 'UPI', label: 'Google Pay / UPI',
-    sub: 'GPay opens first — pay, then order is confirmed',
-    badge: 'Recommended', badgeCls: 'bg-emerald-50 text-emerald-600',
+    id: 'GPAY', method: 'UPI', label: 'Google Pay / PhonePe / UPI',
+    sub: 'Pay instantly via any UPI app',
+    badge: null, badgeCls: '',
     logo: (
-      <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-white border border-gray-100 shadow-sm">
-        <img src="https://cdn.simpleicons.org/googlepay/5F6368" alt="GPay" className="w-6 h-6 object-contain"
+      <div className="w-9 h-9 rounded-md border border-gray-200 bg-white flex items-center justify-center p-1.5 shadow-sm flex-shrink-0">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="w-full h-full object-contain"
           onError={e => { e.target.style.display = 'none' }} />
       </div>
     ),
   },
   {
     id: 'COD', method: 'COD', label: 'Cash on Delivery',
-    sub: 'Pay at your doorstep', badge: null, badgeCls: '',
+    sub: 'Pay in cash or UPI at your doorstep', badge: null, badgeCls: '',
     logo: (
-      <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-emerald-50 text-emerald-600">
-        <span className="material-symbols-outlined text-[20px]">payments</span>
+      <div className="w-9 h-9 rounded-md border border-gray-200 bg-white flex items-center justify-center shadow-sm text-emerald-600 flex-shrink-0">
+        <span className="material-symbols-outlined text-[20px] font-light">payments</span>
       </div>
     ),
   }
@@ -79,10 +79,9 @@ export default function Cart() {
 
   const [placing, setPlacing]             = useState(false)
   const [address, setAddress]             = useState(user?.address || '')
-  const [selectedPayment, setPayment]     = useState('GPAY')
-  const [orderSuccess, setOrderSuccess]   = useState(false)
+  const [selectedPayment, setPayment]     = useState(null)
   const [error, setError]                 = useState('')
-  const [countdown, setCountdown]         = useState(5)
+
   const [recentOrders, setRecentOrders]   = useState([])
   const [ordersLoading, setOrdersLoading] = useState(false)
   const [updatingItem, setUpdatingItem]   = useState(null)
@@ -128,7 +127,7 @@ export default function Cart() {
       await fetchCart()
       playSuccessChime()
       setReturnFromUpi(false)
-      setOrderSuccess(true)
+      navigate('/order-success', { state: { total: pendingData.total, method: 'UPI' } })
     } catch (err) {
       setError(err.message || 'Order confirmation failed. Please try again.')
     } finally {
@@ -142,13 +141,7 @@ export default function Cart() {
     setPendingData(null)
   }
 
-  /* Countdown redirect after order success */
-  useEffect(() => {
-    if (!orderSuccess) return
-    if (countdown <= 0) { navigate('/orders'); return }
-    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
-    return () => clearTimeout(t)
-  }, [orderSuccess, countdown, navigate])
+
 
   /* Fetch recent orders for empty cart */
   useEffect(() => {
@@ -215,7 +208,7 @@ export default function Cart() {
 
       await fetchCart()
       playSuccessChime()
-      setOrderSuccess(true)
+      navigate('/order-success', { state: { total, method: selectedPayment } })
     } catch (err) {
       setError(err.message || 'Order failed. Please try again.')
     } finally {
@@ -336,56 +329,7 @@ export default function Cart() {
     </div>
   )
 
-  /* ── Order success ── */
-  if (orderSuccess) {
-    const confetti = Array.from({ length: 32 }, (_, i) => ({
-      id: i, x: Math.random() * 100, delay: Math.random() * 0.8,
-      color: ['#a83100', '#ff784c', '#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6'][i % 6],
-      size: 6 + Math.random() * 8, rotation: Math.random() * 360,
-    }))
-    return (
-      <div className="flex flex-col h-full w-full bg-surface text-on-surface overflow-hidden relative">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {confetti.map(c => (
-            <motion.div key={c.id} className="absolute rounded-sm"
-              style={{ left: `${c.x}%`, top: '-20px', width: c.size, height: c.size, backgroundColor: c.color }}
-              initial={{ y: -20, rotate: c.rotation, opacity: 1 }}
-              animate={{ y: '110vh', rotate: c.rotation + 1080, opacity: [1, 1, 0] }}
-              transition={{ duration: 2.5 + Math.random() * 1.5, delay: c.delay, ease: 'easeIn' }} />
-          ))}
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8 text-center relative z-10">
-          <div className="relative">
-            <motion.div className="absolute inset-0 rounded-full bg-green-200"
-              initial={{ scale: 0.8, opacity: 0.8 }} animate={{ scale: 1.7, opacity: 0 }}
-              transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 0.4 }} />
-            <motion.div className="w-28 h-28 rounded-full bg-green-500 flex items-center justify-center shadow-2xl shadow-green-500/40"
-              initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 240, damping: 18 }}>
-              <svg viewBox="0 0 52 52" className="w-14 h-14">
-                <motion.path d="M14 27 L22 35 L38 17" fill="none" stroke="white" strokeWidth="5"
-                  strokeLinecap="round" strokeLinejoin="round"
-                  initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.5, delay: 0.4, ease: 'easeOut' }} />
-              </svg>
-            </motion.div>
-          </div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <h2 className="font-headline font-black text-3xl text-on-surface tracking-tight">Order Confirmed! 🎉</h2>
-            <p className="text-on-surface-variant text-sm mt-2">
-              {chosen?.method === 'UPI' ? 'Payment received — your order is being prepared!' : `Pay ₹${total.toFixed(0)} when your order arrives`}
-            </p>
-          </motion.div>
-          <motion.div className="flex flex-col gap-3 w-full max-w-xs"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85 }}>
-            <p className="text-xs text-on-surface-variant">Redirecting in <strong className="text-on-surface">{countdown}s</strong></p>
-            <button onClick={() => navigate('/orders')} className="w-full py-3.5 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20">View My Orders</button>
-            <button onClick={() => navigate('/home')} className="w-full py-3 border border-outline-variant text-on-surface-variant rounded-full font-medium text-sm">Back to Home</button>
-          </motion.div>
-        </div>
-      </div>
-    )
-  }
+
 
   /* ── Empty cart ── */
   if (cartItems.length === 0) return (
@@ -578,27 +522,36 @@ export default function Cart() {
           <Divider />
 
           {/* Payment Method */}
-          <div className="bg-surface px-5 pt-4 pb-2">
-            <p className="font-bold text-sm text-on-surface mb-3">Payment</p>
-            {PAYMENT_OPTIONS.map(opt => (
-              <button key={opt.id} onClick={() => setPayment(opt.id)}
-                className={`w-full flex items-center gap-3.5 py-3.5 transition-all rounded-xl px-3 mb-2 ${selectedPayment === opt.id ? 'bg-primary/5 border border-primary/20' : 'bg-surface-container border border-transparent'}`}>
-                <div className="flex-shrink-0">{opt.logo}</div>
-                <div className="flex-1 text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-on-surface">{opt.label}</span>
-                    {opt.badge && <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${opt.badgeCls}`}>{opt.badge}</span>}
-                  </div>
-                  <p className="text-xs text-on-surface-variant mt-0.5">{opt.sub}</p>
-                </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selectedPayment === opt.id ? 'border-primary' : 'border-outline-variant'}`}>
-                  {selectedPayment === opt.id && (
-                    <motion.div layoutId="pay-dot" className="w-2.5 h-2.5 rounded-full bg-primary"
-                      transition={{ type: 'spring', stiffness: 400, damping: 28 }} />
-                  )}
-                </div>
-              </button>
-            ))}
+          <div className="bg-surface px-5 pt-5 pb-5">
+            <h3 className="font-black text-[15px] text-on-surface mb-3 tracking-tight">Select Payment Method</h3>
+            <div className="border border-outline-variant/30 rounded-2xl overflow-hidden bg-surface shadow-sm">
+              {PAYMENT_OPTIONS.map((opt, idx) => {
+                const isSelected = selectedPayment === opt.id;
+                return (
+                  <button 
+                    key={opt.id} 
+                    onClick={() => setPayment(opt.id)}
+                    className={`w-full flex items-start gap-4 p-4 transition-colors ${
+                      idx !== PAYMENT_OPTIONS.length - 1 ? 'border-b border-outline-variant/20' : ''
+                    } ${isSelected ? 'bg-primary/5' : 'bg-transparent hover:bg-surface-container-lowest'}`}
+                  >
+                    <div className="flex-shrink-0 pt-0.5">{opt.logo}</div>
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`font-bold text-sm ${isSelected ? 'text-primary' : 'text-on-surface'}`}>{opt.label}</span>
+                        {/* Swiggy-style Radio Checkmark */}
+                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
+                          isSelected ? 'bg-primary border-primary' : 'border-[1.5px] border-outline-variant/50'
+                        }`}>
+                          {isSelected && <span className="material-symbols-outlined text-white text-[14px] font-bold">check</span>}
+                        </div>
+                      </div>
+                      <p className="text-[12px] text-on-surface-variant mt-1 leading-relaxed pr-6">{opt.sub}</p>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -634,7 +587,7 @@ export default function Cart() {
             ) : (
                 <>
                 <span className="font-black tracking-wide uppercase">
-                  Pay via {chosen?.method === 'UPI' ? 'GPay' : 'Cash'}
+                  {chosen ? `Pay via ${chosen.method === 'UPI' ? 'GPay' : 'Cash'}` : 'Select Payment'}
                 </span>
                 <motion.span 
                     animate={{ x: [0, 4, 0] }} 

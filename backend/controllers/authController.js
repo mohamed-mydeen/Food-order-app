@@ -169,12 +169,8 @@ const forgotPassword = async (req, res) => {
 
     const user = await User.findOne({ where: { email: email.toLowerCase() } });
     
-    if (!user) {
-      return res.status(404).json({ success: false, message: "No account found with this email." });
-    }
-
-    if (user.phone !== phoneClean) {
-      return res.status(401).json({ success: false, message: "The phone number provided does not match our records for this email." });
+    if (!user || user.phone !== phoneClean) {
+      return res.status(401).json({ success: false, message: "We couldn't verify an account with that email and phone combination. Please check your details." });
     }
 
     // Generate a short-lived token for password reset (15 minutes)

@@ -58,9 +58,9 @@ function SettingRow({ icon, label, sub, onClick, right, danger = false, custom =
 // ── Section wrapper ───────────────────────────────────────────────────────────
 function Section({ title, children }) {
   return (
-    <div className="mx-4 mb-3">
-      <p className="text-xs font-black uppercase tracking-widest text-secondary mb-1.5 px-1">{title}</p>
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden divide-y divide-surface-container">
+    <div className="mx-4 mb-5 mt-2">
+      <p className="text-[11px] font-black uppercase tracking-widest text-on-surface-variant mb-2 opacity-80">{title}</p>
+      <div className="bg-surface rounded-2xl shadow-sm overflow-hidden divide-y divide-surface-container border border-surface-container/50">
         {children}
       </div>
     </div>
@@ -73,6 +73,11 @@ export default function Settings() {
   const { user, token, logout, updateUser, isLoggedIn } = useAuth()
 
   const [theme, setTheme]           = useState(getTheme)
+  const [notifEnabled, setNotifEnabled] = useState(() => {
+    if (!('Notification' in window)) return false
+    const pref = localStorage.getItem('fan_notif_pref')
+    return Notification.permission === 'granted' && pref !== 'false'
+  })
   const [orders, setOrders]         = useState([])
   const [ordersLoading, setOLoad]   = useState(true)
   const [addressOpen, setAddrOpen]  = useState(false)
@@ -113,6 +118,33 @@ export default function Settings() {
       setTimeout(() => setAddrOpen(false), 900)
     } catch (err) { setAddrMsg(err.message || 'Failed') }
     finally { setSavingAddr(false) }
+  }
+
+  const handleToggleNotifications = async () => {
+    if (!('Notification' in window)) {
+      alert("This browser does not support notifications.")
+      return
+    }
+
+    if (notifEnabled) {
+      // Turn OFF instantly in-app
+      localStorage.setItem('fan_notif_pref', 'false')
+      setNotifEnabled(false)
+    } else {
+      // Turn ON
+      if (Notification.permission === 'default') {
+        const permission = await Notification.requestPermission()
+        if (permission === 'granted') {
+          localStorage.setItem('fan_notif_pref', 'true')
+          setNotifEnabled(true)
+        }
+      } else if (Notification.permission === 'denied') {
+        alert("Notifications are currently blocked. Please click the 'lock' or 'site settings' icon in your browser's address bar to Allow them.")
+      } else if (Notification.permission === 'granted') {
+        localStorage.setItem('fan_notif_pref', 'true')
+        setNotifEnabled(true)
+      }
+    }
   }
 
   const handleLogout = () => { logout(); navigate('/login') }
@@ -170,24 +202,49 @@ export default function Settings() {
             />
           </Section>
 
-          {/* ── Appearance ───────────────────────────────────────── */}
-          <Section title="Appearance">
-            <SettingRow icon="palette" label="Theme" sub={`Currently: ${theme}`} custom>
-              <div className="flex gap-2 mt-2">
-                {THEMES.map(t => (
-                  <button key={t} onClick={() => handleTheme(t)}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all flex flex-col items-center gap-1
-                      ${theme === t
-                        ? 'bg-primary text-on-primary border-primary shadow'
-                        : 'bg-surface-container text-on-surface-variant border-transparent hover:border-outline-variant'}`}>
-                    <span className={`material-symbols-outlined text-[18px] ${theme === t ? 'text-on-primary icon-filled' : 'text-on-surface-variant'}`}>
-                      {THEME_ICONS[t]}
-                    </span>
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </SettingRow>
+          {/* ── Preferences ───────────────────────────────────────── */}
+          <Section title="Preferences">
+            <SettingRow 
+              icon="notifications_active" 
+              label="Notifications" 
+              sub={notifEnabled ? 'You will receive order updates' : 'Tap to enable order updates'}
+              onClick={handleToggleNotifications} 
+              right={
+                <div className="flex items-center gap-3">
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${notifEnabled ? 'bg-green-100 text-green-700' : 'bg-surface-container-high text-on-surface-variant'}`}>
+                    {notifEnabled ? 'ON' : 'OFF'}
+                  </span>
+                  <div className={`w-10 h-6 rounded-full flex items-center transition-colors px-1 ${notifEnabled ? 'bg-green-500' : 'bg-surface-container-highest'}`}>
+                    <motion.div layout className="w-4 h-4 bg-white rounded-full shadow-sm" animate={{ x: notifEnabled ? 16 : 0 }} transition={{ type: 'spring', stiffness: 500, damping: 30 }} />
+                  </div>
+                </div>
+              } 
+            />
+            <SettingRow 
+              icon="palette" 
+              label="Theme" 
+              sub={theme}
+              onClick={() => {
+                 const next = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length]
+                 handleTheme(next)
+              }}
+              right={
+                <div 
+                  className="flex bg-surface-container-highest rounded-full p-1 shadow-inner gap-0.5"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {THEMES.map(t => (
+                    <button key={t} onClick={() => handleTheme(t)}
+                      className={`w-8 h-8 rounded-full transition-all flex items-center justify-center
+                        ${theme === t ? 'bg-surface shadow-sm text-primary scale-105' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                      <span className={`material-symbols-outlined text-[16px] ${theme === t ? 'icon-filled' : ''}`}>
+                        {THEME_ICONS[t]}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              } 
+            />
           </Section>
 
           {/* ── Help & Support ───────────────────────────────────── */}
