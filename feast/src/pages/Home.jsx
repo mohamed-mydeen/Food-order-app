@@ -17,10 +17,10 @@ function ProductSheet({ product, onClose }) {
   const { isLoggedIn } = useAuth()
   const { addToCart, cartItems } = useCart()
   const { wishlist, toggleWishlist } = useWishlist()
-  const [qty, setQty]       = useState(1)
+  const [qty, setQty] = useState(1)
   const [adding, setAdding] = useState(false)
-  const [added, setAdded]   = useState(false)
-  const inCart    = cartItems?.find(it => it.product_id === product.id)
+  const [added, setAdded] = useState(false)
+  const inCart = cartItems?.find(it => it.product_id === product.id)
   const currentQty = inCart?.quantity || 0
 
   const handleAdd = async () => {
@@ -48,7 +48,7 @@ function ProductSheet({ product, onClose }) {
               ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
               : <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">🍽️</div>}
             {inCart && <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">{currentQty} in cart</div>}
-            <button 
+            <button
               onClick={() => toggleWishlist(product.id)}
               className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white"
             >
@@ -82,10 +82,10 @@ function ProductSheet({ product, onClose }) {
           {added
             ? <div className="w-full py-4 bg-green-500 text-white rounded-full font-bold text-base flex items-center justify-center gap-2"><span className="material-symbols-outlined">check_circle</span>Added to Cart!</div>
             : <button onClick={handleAdd} disabled={adding} className="w-full py-4 bg-primary text-on-primary rounded-full font-headline font-bold text-base shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70">
-                {adding
-                  ? <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Adding...</>
-                  : <><span className="material-symbols-outlined">add_shopping_cart</span>{isLoggedIn ? 'Add to Cart' : 'Sign In to Add'}</>}
-              </button>}
+              {adding
+                ? <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Adding...</>
+                : <><span className="material-symbols-outlined">add_shopping_cart</span>{isLoggedIn ? 'Add to Cart' : 'Sign In to Add'}</>}
+            </button>}
           <button onClick={onClose} className="w-full py-3 text-secondary font-medium text-sm">Continue Browsing</button>
         </div>
       </motion.div>
@@ -106,24 +106,24 @@ export default function Home() {
   const navigate = useNavigate()
   const { isLoggedIn } = useAuth()
   const { wishlist, toggleWishlist } = useWishlist()
-  const { products, loading }       = useProducts()
-  const [query, setQuery]           = useState('')
+  const { products, loading } = useProducts()
+  const [query, setQuery] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [recentSearches, setRecentSearches] = useState(() => {
     try { return JSON.parse(localStorage.getItem('fan_recent_searches')) || [] } catch { return [] }
   })
-  
+
   const [categories, setCategories] = useState([])
-  const [selected, setSelected]     = useState(null)
-  
+  const [selected, setSelected] = useState(null)
+
   // Recommendations state
-  const [recs, setRecs]             = useState([])
-  const [recsLoading, setRecsLoading]= useState(true)
-  const [recsMsg, setRecsMsg]       = useState('')
+  const [recs, setRecs] = useState([])
+  const [recsLoading, setRecsLoading] = useState(true)
+  const [recsMsg, setRecsMsg] = useState('')
 
   // Offer popup state
-  const [offerOpen, setOfferOpen]   = useState(false)
+  const [offerOpen, setOfferOpen] = useState(false)
 
   const saveRecentSearch = (term) => {
     if (!term) return
@@ -176,17 +176,17 @@ export default function Home() {
   const q = query.toLowerCase().trim()
   const filteredItems = q
     ? products.filter(
-        p =>
-          p.name.toLowerCase().includes(q) ||
-          (p.description || '').toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q)
-      )
+      p =>
+        p.name.toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+    )
     : []
   const isSearching = q.length > 0
 
   // Recommendations fetch
   const { token } = useAuth()
-  
+
   useEffect(() => {
     if (!token) {
       setRecsLoading(false)
@@ -198,7 +198,7 @@ export default function Home() {
     })
       .then(r => r.json())
       .then(d => { if (d.success) { setRecs(d.data || []); setRecsMsg(d.message || '') } })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setRecsLoading(false))
   }, [token])
 
@@ -212,8 +212,8 @@ export default function Home() {
     <div className="relative flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
       <div className="flex-1 overflow-y-auto hide-scrollbar"
-           style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
-        <main className="px-4 pt-4 pb-4 space-y-6">
+        style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
+        <main className="px-[15px] pt-4 pb-4 space-y-6">
 
           {/* Timing Banner */}
           <motion.div
@@ -224,7 +224,7 @@ export default function Home() {
             <div className="absolute -right-4 top-1/2 -translate-y-1/2 opacity-10 blur-[1px]">
               <span className="material-symbols-outlined text-[80px] font-variation-fill text-white">clear_night</span>
             </div>
-            
+
             <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 relative z-10 text-indigo-200">
               <span className="material-symbols-outlined text-[24px]">schedule</span>
             </div>
@@ -262,12 +262,12 @@ export default function Home() {
                 onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if(e.key === 'Enter' && query.trim()) saveRecentSearch(query.trim())
+                  if (e.key === 'Enter' && query.trim()) saveRecentSearch(query.trim())
                 }}
               />
               <AnimatePresence>
                 {query && (
-                  <motion.button 
+                  <motion.button
                     initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setQuery('')} className="p-1.5 -mr-1.5 ml-2 flex items-center justify-center bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-colors"
@@ -305,11 +305,10 @@ export default function Home() {
                   recognition.onend = () => setIsListening(false);
                   recognition.start();
                 }}
-                className={`relative z-10 w-[52px] h-[52px] rounded-[18px] flex items-center justify-center transition-all duration-300 ${
-                  isListening
-                    ? 'bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.25),0_4px_16px_rgba(239,68,68,0.35)] border-0'
-                    : 'bg-white border border-outline-variant/20 shadow-[0_4px_12px_rgba(0,0,0,0.04)]'
-                }`}
+                className={`relative z-10 w-[52px] h-[52px] rounded-[18px] flex items-center justify-center transition-all duration-300 ${isListening
+                  ? 'bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.25),0_4px_16px_rgba(239,68,68,0.35)] border-0'
+                  : 'bg-white border border-outline-variant/20 shadow-[0_4px_12px_rgba(0,0,0,0.04)]'
+                  }`}
                 whileTap={{ scale: 0.88 }}
                 initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -317,9 +316,8 @@ export default function Home() {
                 aria-label={isListening ? 'Listening…' : 'Voice search'}
               >
                 <motion.span
-                  className={`material-symbols-outlined text-[24px] font-variation-fill ${
-                    isListening ? 'text-white' : 'text-primary'
-                  }`}
+                  className={`material-symbols-outlined text-[24px] font-variation-fill ${isListening ? 'text-white' : 'text-primary'
+                    }`}
                   animate={isListening ? { scale: [1, 1.15, 1] } : { scale: 1 }}
                   transition={isListening ? { repeat: Infinity, duration: 0.8, ease: 'easeInOut' } : {}}
                 >
@@ -418,60 +416,18 @@ export default function Home() {
           {/* ── NORMAL HOME CONTENT ── */}
           {!isSearching && (
             <>
-              {/* Category chips */}
-              {!loading && categories.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-                  {categories.map((cat, i) => (
-                    <motion.button
-                      key={cat}
-                      onClick={() => navigate('/menu')}
-                      className="flex-none px-4 py-2.5 rounded-full flex items-center gap-1.5 font-semibold text-sm shadow-sm cursor-pointer bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.07 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.93 }}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">restaurant</span>
-                      <span className="whitespace-nowrap">{cat}</span>
-                    </motion.button>
-                  ))}
-                </div>
-              )}
+              {/* Video Banner */}
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-auto rounded-xl shadow-sm mb-6"
+              >
+                <source src="/V1.mp4" type="video/mp4" />
+              </video>
 
-              {/* Hero Banner */}
-              {loading ? (
-                <SkeletonBanner />
-              ) : (
-                <motion.div
-                  className="relative overflow-hidden rounded-xl h-40 flex items-center bg-primary cursor-pointer select-none"
-                  initial={{ opacity: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={openOffer}
-                  role="button"
-                  aria-label="View today's offer"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/60 to-transparent z-10" />
-                  <div className="absolute inset-0 opacity-30"
-                    style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDv_61kKf4sSB2_h414yOye8GDqaJZWZOKLGUg3U3CWcU00JOGhw1tVjefdIUHhk96UjVscotstLRm1xkRxibcCJ_BhyxQo_mvTmSPY0NIqYTfAS0GD2ZktyPOrDzCYw61Mg4aEoWsEDsCTVotmamfrEt1d91AG03EHHTcS3MZpxiyWLZyav1eiJ0otoct8_d4YKyAXG0RxCYZZQw-HurGdoJXH6r-cKk4tqr3z8fmy58mJcT9jdH2YWf4Np_Brc1qK9rDbIztpLpU')", backgroundSize: 'cover' }}
-                  />
-                  <div className="relative z-20 px-6 space-y-1">
-                    <div className="bg-white text-primary px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-widest inline-block mb-1">
-                      LIMITED OFFER
-                    </div>
-                    <h2 className="text-white font-headline font-extrabold text-2xl leading-tight">
-                      View Today Offer For You<br />
-                      <span className="text-primary-container text-xl">Feast At Night Special</span>
-                    </h2>
-                  </div>
-                  {/* Tap hint arrow */}
-                  <div className="absolute right-5 z-20 bg-white/20 rounded-full p-2">
-                    <span className="material-symbols-outlined text-white text-[22px]">local_offer</span>
-                  </div>
-                </motion.div>
-              )}
+
 
               {/* Best Food Options — circular scroll */}
               {products.length > 0 && (
@@ -490,26 +446,26 @@ export default function Home() {
                     {loading
                       ? Array.from({ length: 4 }).map((_, i) => <SkeletonCircle key={i} />)
                       : topProducts.map((p, i) => (
-                          <motion.button
-                            key={p.id}
-                            onClick={() => setSelected(p)}
-                            className="flex-none w-20 text-center group cursor-pointer"
-                            initial={{ opacity: 0, y: 16 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.07 }}
-                            whileHover={{ scale: 1.08 }}
-                            whileTap={{ scale: 0.93 }}
-                          >
-                            <div className="w-20 h-20 rounded-full overflow-hidden mb-2 ring-2 ring-transparent group-hover:ring-primary-container transition-all shadow-md bg-gray-100">
-                              {p.image ? (
-                                <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>
-                              )}
-                            </div>
-                            <span className="text-xs font-bold text-on-secondary-fixed-variant line-clamp-2">{p.name}</span>
-                          </motion.button>
-                        ))
+                        <motion.button
+                          key={p.id}
+                          onClick={() => setSelected(p)}
+                          className="flex-none w-20 text-center group cursor-pointer"
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.07 }}
+                          whileHover={{ scale: 1.08 }}
+                          whileTap={{ scale: 0.93 }}
+                        >
+                          <div className="w-20 h-20 rounded-full overflow-hidden mb-2 ring-2 ring-transparent group-hover:ring-primary-container transition-all shadow-md bg-gray-100">
+                            {p.image ? (
+                              <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>
+                            )}
+                          </div>
+                          <span className="text-xs font-bold text-on-secondary-fixed-variant line-clamp-2">{p.name}</span>
+                        </motion.button>
+                      ))
                     }
                   </div>
                 </div>
@@ -617,7 +573,7 @@ export default function Home() {
                               ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                               : <div className="w-full h-full flex items-center justify-center text-3xl">🍽️</div>
                             }
-                            
+
                             {/* Sold Out badge */}
                             {p.in_stock === false && (
                               <div className="absolute inset-x-0 bottom-0 top-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-20">

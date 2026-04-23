@@ -104,10 +104,10 @@ function RatingDistBar({ distribution, total }) {
 
 /* ── Review Submit Form ──────────────────────────────────────────── */
 function ReviewForm({ productId, existingReview, token, onDone }) {
-  const [rating,    setRating]    = useState(existingReview?.rating || 0)
-  const [comment,   setComment]   = useState(existingReview?.comment || '')
+  const [rating, setRating] = useState(existingReview?.rating || 0)
+  const [comment, setComment] = useState(existingReview?.comment || '')
   const [submitting, setSubmitting] = useState(false)
-  const [error,     setError]      = useState('')
+  const [error, setError] = useState('')
 
   const handleSubmit = async () => {
     if (!rating) { setError('Please select a star rating.'); return }
@@ -155,7 +155,7 @@ function ReviewForm({ productId, existingReview, token, onDone }) {
         className="w-full mt-3 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
       >
         {submitting
-          ? <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Submitting...</>
+          ? <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Submitting...</>
           : <><span className="material-symbols-outlined text-[16px]">rate_review</span>{existingReview ? 'Update Review' : 'Submit Review'}</>
         }
       </button>
@@ -168,17 +168,17 @@ function ProductSheet({ product, onClose }) {
   const navigate = useNavigate()
   const { isLoggedIn, token } = useAuth()
   const { addToCart, cartItems } = useCart()
-  const [qty,       setQty]       = useState(1)
-  const [adding,    setAdding]    = useState(false)
-  const [added,     setAdded]     = useState(false)
-  const [reviews,   setReviews]   = useState([])
-  const [stats,     setStats]     = useState(null)
-  const [myReview,  setMyReview]  = useState(null)
-  const [showForm,  setShowForm]  = useState(false)
+  const [qty, setQty] = useState(1)
+  const [adding, setAdding] = useState(false)
+  const [added, setAdded] = useState(false)
+  const [reviews, setReviews] = useState([])
+  const [stats, setStats] = useState(null)
+  const [myReview, setMyReview] = useState(null)
+  const [showForm, setShowForm] = useState(false)
   const [revLoading, setRevLoading] = useState(true)
   const [showAllRev, setShowAllRev] = useState(false)
 
-  const inCart     = cartItems?.find(it => it.product_id === product.id)
+  const inCart = cartItems?.find(it => it.product_id === product.id)
   const currentQty = inCart?.quantity || 0
 
   // Fetch reviews + my review status
@@ -197,7 +197,7 @@ function ProductSheet({ product, onClose }) {
         const myData = await myRes.json()
         if (myData.success && myData.reviewed) setMyReview(myData.data)
       }
-    } catch {} finally { setRevLoading(false) }
+    } catch { } finally { setRevLoading(false) }
   }, [product.id, isLoggedIn, token])
 
   useEffect(() => { loadReviews() }, [loadReviews])
@@ -424,7 +424,7 @@ function ProductSheet({ product, onClose }) {
               className="w-full py-4 bg-primary text-on-primary rounded-full font-headline font-bold text-base shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-70"
             >
               {adding
-                ? <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Adding...</>
+                ? <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Adding...</>
                 : <><span className="material-symbols-outlined">add_shopping_cart</span>{isLoggedIn ? 'Add to Cart' : 'Sign In to Add'}</>
               }
             </button>
@@ -443,7 +443,7 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
   const [stats, setStats] = useState(null)
   const { wishlist, toggleWishlist } = useWishlist()
   const { isLoggedIn } = useAuth()
-  
+
   const isWishlisted = wishlist.includes(item.id)
 
   const handleWishlistClick = (e) => {
@@ -459,7 +459,7 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
     fetch(`${API}/api/reviews/product/${item.id}`)
       .then(r => r.json())
       .then(d => { if (d.success) setStats(d.stats) })
-      .catch(() => {})
+      .catch(() => { })
   }, [item.id])
 
   return (
@@ -487,7 +487,7 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        
+
         {/* Out of Stock Overlay */}
         {item.in_stock === false && (
           <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-20">
@@ -498,7 +498,7 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
         )}
 
         {/* Wishlist Heart Button */}
-        <button 
+        <button
           onClick={handleWishlistClick}
           className="absolute top-3 left-3 z-10 w-11 h-11 flex items-center justify-center rounded-full bg-black/25 backdrop-blur-md hover:bg-black/45 transition-colors shadow-sm"
         >
@@ -557,13 +557,13 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
 /* ── Menu Page ───────────────────────────────────────────────────── */
 export default function Menu() {
   const { products, loading, error, stale } = useProducts()
-  const [categories,     setCategories]     = useState(() => {
+  const [categories, setCategories] = useState(() => {
     const raw = localStorage.getItem('fan_products_v1')
     if (raw) { try { const { data } = JSON.parse(raw); return ['All', ...new Set(data.map(p => p.category))] } catch { return ['All'] } }
     return ['All']
   })
   const [activeCategory, setActiveCategory] = useState('All')
-  const [selected,       setSelected]       = useState(null)
+  const [selected, setSelected] = useState(null)
 
   useEffect(() => {
     if (products.length) setCategories(['All', ...new Set(products.map(p => p.category))])
@@ -575,8 +575,8 @@ export default function Menu() {
     <div className="relative flex flex-col h-full w-full bg-surface text-on-surface">
       <TopBar />
       <div className="flex-1 overflow-y-auto hide-scrollbar"
-           style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
-        <main className="px-4 pt-4 max-w-5xl mx-auto">
+        style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
+        <main className="px-[15px] pt-4 max-w-5xl mx-auto">
 
           {stale && !loading && (
             <div className="flex items-center gap-1.5 mb-3 px-1">
@@ -585,30 +585,24 @@ export default function Menu() {
             </div>
           )}
 
-          {/* Hero */}
-          <motion.section
-            className="mb-6 relative overflow-hidden rounded-xl h-44 flex flex-col justify-end p-6 bg-gradient-to-br from-primary to-orange-700"
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+          {/* Video Banner */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto rounded-xl shadow-sm mb-6"
           >
-            <div className="absolute inset-0 opacity-20"
-              style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDrntNqGechpYpSEUuhayBKhUwSqbs2Wa-G44zdVUECHCgoQShJ9lOLQrsKXDlOMb39z60BolaYKLoPKSj6aSgdjFdP5VKrcyc3XIVxNbA9gzqTqTC38ZWCmbAbGHiE2bH1wMYDXs3VESKWD66J-3unGoY1UCk9kF-pTOeR7-w1cr7xfAgB7-_NbWLRcQV27H2zZUaqZye9cPURcPKwWr8NpeMlVWhfKumSXKgSTxXj55vNIuh43g10MDcL6d-q4f4ZA_2bMpNep3Y')", backgroundSize: 'cover', backgroundPosition: 'center' }}
-            />
-            <div className="relative z-10">
-              <h2 className="text-white font-headline font-extrabold text-3xl tracking-tighter mb-1">The Midnight Curations</h2>
-              <p className="text-white/80 text-sm italic">
-                {loading ? 'Loading your menu...' : `${products.length} items — tap to explore & review`}
-              </p>
-            </div>
-          </motion.section>
+            <source src="/VID_2.mp4" type="video/mp4" />
+          </video>
 
           {/* Category Pills */}
           {!loading && categories.length > 1 && (
             <div className="flex gap-3 mb-6 overflow-x-auto pb-2 hide-scrollbar">
               {categories.map((cat, i) => (
                 <motion.button key={cat} onClick={() => setActiveCategory(cat)}
-                  className={`px-5 py-2.5 rounded-full font-headline font-bold text-sm whitespace-nowrap transition-all ${
-                    activeCategory === cat ? 'bg-primary-container text-on-primary-container shadow-md' : 'bg-white text-on-surface-variant shadow-sm'
-                  }`}
+                  className={`px-5 py-2.5 rounded-full font-headline font-bold text-sm whitespace-nowrap transition-all ${activeCategory === cat ? 'bg-primary-container text-on-primary-container shadow-md' : 'bg-white text-on-surface-variant shadow-sm'
+                    }`}
                   initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                   whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}
@@ -628,7 +622,7 @@ export default function Menu() {
               </div>
             )}
 
-            {loading && <div className="grid grid-cols-1 gap-4">{[1,2,3].map(i => <SkeletonCard key={i} tall />)}</div>}
+            {loading && <div className="grid grid-cols-1 gap-4">{[1, 2, 3].map(i => <SkeletonCard key={i} tall />)}</div>}
 
             {!loading && error && products.length === 0 && (
               <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
