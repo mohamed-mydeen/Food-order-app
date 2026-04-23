@@ -561,12 +561,7 @@ export default function Menu() {
         style={{ paddingBottom: 'max(90px, calc(env(safe-area-inset-bottom) + 90px))' }}>
         <main className="px-[15px] pt-4 max-w-5xl mx-auto">
 
-          {stale && !loading && (
-            <div className="flex items-center gap-1.5 mb-3 px-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-[10px] text-outline">Cached data</span>
-            </div>
-          )}
+
 
           {/* Video Banner */}
           <video
