@@ -34,11 +34,26 @@ export default function OfferPopup({ isOpen, onClose }) {
     }
   }
 
+let cachedOffer = undefined
+let offerFetchTime = 0
+
   /* ── Fetch active offer from backend ──────────────────────────── */
   useEffect(() => {
+    if (cachedOffer !== undefined && Date.now() - offerFetchTime < 300000) {
+      if (cachedOffer) setOffer(cachedOffer)
+      return
+    }
     fetch(`${API}/api/offers/active`)
       .then(r => r.json())
-      .then(d => { if (d.success && d.data) setOffer(d.data) })
+      .then(d => { 
+        if (d.success && d.data) {
+          cachedOffer = d.data
+          setOffer(d.data)
+        } else {
+          cachedOffer = null
+        }
+        offerFetchTime = Date.now()
+      })
       .catch(() => {}) // silently fail — popup just won't show
   }, [])
 

@@ -14,6 +14,8 @@ const CACHE_KEY    = 'fan_products_v1'
 const CACHE_TTL_MS = 10 * 60 * 1000   // 10 minutes
 const API_URL      = `${import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'}/api/products`
 
+let globalProductsFetchTime = 0
+
 function readCache() {
   try {
     const raw = localStorage.getItem(CACHE_KEY)
@@ -50,6 +52,9 @@ export function useProducts() {
     const isFresh  = cacheAge < 60_000 && cached?.data?.length > 0
 
     if (isFresh) return   // cache is very fresh, no need to hit API yet
+    
+    if (Date.now() - globalProductsFetchTime < 60_000) return // Debounce across components
+    globalProductsFetchTime = Date.now()
 
     const controller = new AbortController()
 

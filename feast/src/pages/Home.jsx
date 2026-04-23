@@ -184,6 +184,9 @@ export default function Home() {
     : []
   const isSearching = q.length > 0
 
+let cachedRecs = undefined
+let recsFetchTime = 0
+
   // Recommendations fetch
   const { token } = useAuth()
 
@@ -192,12 +195,24 @@ export default function Home() {
       setRecsLoading(false)
       return
     }
+    if (cachedRecs !== undefined && Date.now() - recsFetchTime < 300000) {
+      setRecs(cachedRecs)
+      setRecsLoading(false)
+      return
+    }
     setRecsLoading(true)
     fetch(`${API}/api/orders/recommendations`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
-      .then(d => { if (d.success) { setRecs(d.data || []); setRecsMsg(d.message || '') } })
+      .then(d => { 
+        if (d.success) { 
+          cachedRecs = d.data || []
+          setRecs(cachedRecs)
+          setRecsMsg(d.message || '') 
+        }
+        recsFetchTime = Date.now()
+      })
       .catch(() => { })
       .finally(() => setRecsLoading(false))
   }, [token])
