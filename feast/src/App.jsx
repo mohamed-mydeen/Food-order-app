@@ -20,6 +20,7 @@ const Settings = lazy(() => import('./pages/Settings'))
 const Wishlist = lazy(() => import('./pages/Wishlist'))
 
 import InstallBanner from './components/InstallBanner'
+import NotificationBanner from './components/NotificationBanner'
 import BottomNav from './components/BottomNav'
 import { useFirebaseNotifications } from './hooks/useFirebaseNotifications'
 
@@ -77,6 +78,9 @@ export default function App() {
             <Route path="*"         element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
+
+        {/* Global floating Notification prompt */}
+        <NotificationBanner />
 
         {/* Global floating PWA install prompt */}
         <InstallBanner />
