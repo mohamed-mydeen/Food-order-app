@@ -440,7 +440,6 @@ function ProductSheet({ product, onClose }) {
 
 /* ── Menu Item Card (with rating & wishlist) ────────────────────────────────── */
 const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
-  const [stats, setStats] = useState(null)
   const { wishlist, toggleWishlist } = useWishlist()
   const { isLoggedIn } = useAuth()
 
@@ -455,12 +454,7 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
     toggleWishlist(item.id)
   }
 
-  useEffect(() => {
-    fetch(`${API}/api/reviews/product/${item.id}`)
-      .then(r => r.json())
-      .then(d => { if (d.success) setStats(d.stats) })
-      .catch(() => { })
-  }, [item.id])
+
 
   return (
     <motion.div
@@ -512,12 +506,7 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
           {item.category}
         </div>
 
-        {/* Rating badge (Swiggy/Zomato style) */}
-        {stats?.avg_rating && (
-          <div className="absolute bottom-3 left-3">
-            <RatingBadge avg={stats.avg_rating} count={stats.total_reviews} />
-          </div>
-        )}
+
 
         <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-full">Tap to view</div>
@@ -529,13 +518,7 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
         {item.description && (
           <p className="text-on-surface-variant text-xs mt-0.5 line-clamp-1">{item.description}</p>
         )}
-        {/* Inline stars */}
-        {stats?.total_reviews > 0 && (
-          <div className="flex items-center gap-1 mt-1">
-            <StarRow rating={Math.round(parseFloat(stats.avg_rating))} size={11} />
-            <span className="text-[10px] text-on-surface-variant">{stats.avg_rating} ({stats.total_reviews})</span>
-          </div>
-        )}
+
         <div className="flex items-center justify-between mt-3">
           <span className="font-headline font-black text-xl text-primary">
             ₹{parseFloat(item.price).toFixed(0)}
