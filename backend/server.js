@@ -130,6 +130,18 @@ app.use((err, req, res, next) => {
       console.log("✅ Database synced (no-alter fallback)");
     }
 
+    // --- Schema Patch for FCM Tokens ---
+    try {
+      await sequelize.query('ALTER TABLE notification_tokens DROP INDEX token').catch(()=>null);
+      await sequelize.query('ALTER TABLE notification_tokens DROP INDEX token_unique').catch(()=>null);
+      await sequelize.query('ALTER TABLE notification_tokens DROP INDEX notification_tokens_token_unique').catch(()=>null);
+      await sequelize.query('ALTER TABLE notification_tokens MODIFY token TEXT').catch(()=>null);
+      await sequelize.query('ALTER TABLE notification_tokens MODIFY device_info TEXT').catch(()=>null);
+      console.log("✅ Applied NotificationToken schema patch");
+    } catch (e) {
+      console.log("⚠️ NotificationToken schema patch error:", e.message);
+    }
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`🌐 Environment: ${process.env.NODE_ENV || "development"}`);

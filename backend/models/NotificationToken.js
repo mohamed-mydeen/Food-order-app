@@ -15,12 +15,11 @@ const NotificationToken = sequelize.define(
       references: { model: "users", key: "id" },
     },
     token: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
-      unique: true,
     },
     device_info: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true,
     }
   },
