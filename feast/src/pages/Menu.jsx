@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo } from 'react'
+import React, { useState, useEffect, useCallback, memo, forwardRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TopBar from '../components/TopBar'
@@ -439,7 +439,7 @@ function ProductSheet({ product, onClose }) {
 }
 
 /* ── Menu Item Card (with rating & wishlist) ────────────────────────────────── */
-const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
+const MenuItemCard = memo(forwardRef(function MenuItemCard({ item, index, onSelect, ...rest }, ref) {
   const { wishlist, toggleWishlist } = useWishlist()
   const { isLoggedIn } = useAuth()
 
@@ -458,6 +458,8 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
 
   return (
     <motion.div
+      ref={ref}
+      {...rest}
       layout
       className={`group bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer relative ${item.in_stock === false ? 'opacity-75 grayscale-[0.6]' : ''}`}
       initial={{ opacity: 0, y: 20 }}
@@ -537,7 +539,7 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
       </div>
     </motion.div>
   )
-})
+}))
 
 /* ── Menu Page ───────────────────────────────────────────────────── */
 export default function Menu() {
