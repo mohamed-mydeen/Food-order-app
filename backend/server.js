@@ -48,16 +48,8 @@ app.use(
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (mobile apps, Postman, curl)
-      if (!origin) return callback(null, true);
-
-      const allowed = ALLOWED_ORIGINS.some((o) =>
-        typeof o === "string" ? o === origin : o.test(origin)
-      );
-
-      if (allowed) return callback(null, true);
-
-      callback(new Error(`CORS: origin '${origin}' not allowed`));
+      // Temporarily allow all origins (including Admin panel) until custom domain is set up
+      callback(null, true);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
