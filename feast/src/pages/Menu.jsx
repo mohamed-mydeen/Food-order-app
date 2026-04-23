@@ -458,11 +458,13 @@ const MenuItemCard = memo(function MenuItemCard({ item, index, onSelect }) {
 
   return (
     <motion.div
+      layout
       className={`group bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer relative ${item.in_stock === false ? 'opacity-75 grayscale-[0.6]' : ''}`}
-      initial={{ opacity: 0, y: 28 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: item.in_stock === false ? 0.75 : 1, y: 0 }}
-      transition={{ delay: index * 0.04, duration: 0.4, ease: 'easeOut' }}
-      whileHover={{ scale: 1.02, y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.12)' }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      whileHover={{ y: -4, boxShadow: '0 20px 40px rgba(0,0,0,0.12)' }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onSelect(item)}
     >
@@ -618,11 +620,12 @@ export default function Menu() {
             )}
 
             {displayItems.length > 0 && (
-              <motion.div className="grid grid-cols-1 gap-5"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-                {displayItems.map((item, i) => (
-                  <MenuItemCard key={item.id} item={item} index={i} onSelect={setSelected} />
-                ))}
+              <motion.div className="grid grid-cols-1 gap-5" layout>
+                <AnimatePresence mode='popLayout'>
+                  {displayItems.map((item, i) => (
+                    <MenuItemCard key={item.id} item={item} index={i} onSelect={setSelected} />
+                  ))}
+                </AnimatePresence>
               </motion.div>
             )}
           </section>
