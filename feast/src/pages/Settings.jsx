@@ -78,6 +78,7 @@ export default function Settings() {
     const pref = localStorage.getItem('fan_notif_pref')
     return Notification.permission === 'granted' && pref !== 'false'
   })
+  const [notifGuideOpen, setNotifGuideOpen] = useState(false)
   const [orders, setOrders]         = useState([])
   const [ordersLoading, setOLoad]   = useState(true)
   const [addressOpen, setAddrOpen]  = useState(false)
@@ -139,7 +140,7 @@ export default function Settings() {
           setNotifEnabled(true)
         }
       } else if (Notification.permission === 'denied') {
-        alert("Notifications are currently blocked. Please click the 'lock' or 'site settings' icon in your browser's address bar to Allow them.")
+        setNotifGuideOpen(true)
       } else if (Notification.permission === 'granted') {
         localStorage.setItem('fan_notif_pref', 'true')
         setNotifEnabled(true)
@@ -322,6 +323,62 @@ export default function Settings() {
                   {savingAddr
                     ? <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Saving…</>
                     : 'Save Address'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── Notification Blocked Guide Modal ────────────────────────── */}
+      <AnimatePresence>
+        {notifGuideOpen && (
+          <>
+            <motion.div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setNotifGuideOpen(false)} />
+            <motion.div
+              className="fixed bottom-0 left-0 right-0 z-50 bg-surface rounded-t-3xl shadow-2xl"
+              style={{ paddingBottom: 'max(24px, calc(env(safe-area-inset-bottom) + 16px))' }}
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+            >
+              <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-5" />
+
+              {/* Header */}
+              <div className="px-6 mb-5 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined text-amber-500 text-[26px]">notifications_off</span>
+                </div>
+                <div>
+                  <h3 className="font-headline font-black text-lg text-on-surface">Notifications Blocked</h3>
+                  <p className="text-on-surface-variant text-xs mt-0.5">Follow these steps to enable them</p>
+                </div>
+              </div>
+
+              {/* Steps */}
+              <div className="px-6 space-y-3 mb-6">
+                {[
+                  { step: '1', icon: 'lock', text: 'Tap the Lock 🔒 icon in the address bar at the top of your browser' },
+                  { step: '2', icon: 'tune', text: 'Tap "Site settings" or "Permissions"' },
+                  { step: '3', icon: 'notifications_active', text: 'Find "Notifications" and change it from Block → Allow' },
+                  { step: '4', icon: 'refresh', text: 'Reload this page — notifications will be active!' },
+                ].map(({ step, icon, text }) => (
+                  <div key={step} className="flex items-start gap-3 bg-surface-container rounded-xl px-4 py-3">
+                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-black">{step}</span>
+                    </div>
+                    <p className="text-on-surface text-sm font-medium leading-snug flex-1">{text}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="px-6">
+                <button
+                  onClick={() => setNotifGuideOpen(false)}
+                  className="w-full py-3.5 rounded-2xl bg-primary text-on-primary font-headline font-bold text-sm"
+                >
+                  Got it!
                 </button>
               </div>
             </motion.div>
