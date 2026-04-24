@@ -432,7 +432,10 @@ let recsFetchTime = 0
           {!isSearching && (
             <>
               {/* Video Banner */}
-              <div className="relative w-full aspect-video rounded-xl shadow-sm mb-6 overflow-hidden bg-slate-900 flex items-center justify-center">
+              <div 
+                className="relative w-full aspect-video rounded-xl shadow-sm mb-6 overflow-hidden bg-slate-900 flex items-center justify-center cursor-pointer group"
+                onClick={openOffer}
+              >
                 {/* Loading Spinner underneath the video */}
                 <div className="absolute flex flex-col items-center gap-2 text-white/50">
                   <svg className="animate-spin w-6 h-6" fill="none" viewBox="0 0 24 24">
