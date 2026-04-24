@@ -98,6 +98,16 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          /* Video files (mp4, webm) */
+          {
+            urlPattern: /\.(?:mp4|webm)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'fan-videos',
+              expiration: { maxEntries: 5, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           /* JS/CSS – stale-while-revalidate for instant load */
           {
             urlPattern: /\.(?:js|css)$/i,
