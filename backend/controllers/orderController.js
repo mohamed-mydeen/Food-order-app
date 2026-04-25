@@ -80,7 +80,7 @@ const getUserOrders = async (req, res) => {
 };
 
 // ─── GET /api/orders/recommendations ──────────────────────────────────────────
-// Returns product recommendations based on this user's order history
+// Returns product recommendations based on this user's order history AND global buying behavior
 const getRecommendations = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -101,25 +101,30 @@ const getRecommendations = async (req, res) => {
 
     const orderedProductIds = userOrderedItems.map(i => i.product_id);
 
+    // Step 2: Global Popular Items (Other customers' buying behavior)
+    const popularItems = await OrderItem.findAll({
+      attributes: ['product_id', [fn('SUM', col('quantity')), 'global_ordered']],
+      group: ['product_id'],
+      order: [[literal('global_ordered'), 'DESC']],
+      limit: 10,
+      include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'price', 'image', 'category', 'description'] }],
+    });
+
     if (orderedProductIds.length === 0) {
-      // New user — return popular products overall
-      const popular = await OrderItem.findAll({
-        attributes: ['product_id', [fn('SUM', col('quantity')), 'total_ordered']],
-        group: ['product_id'],
-        order: [[literal('total_ordered'), 'DESC']],
-        limit: 6,
-        include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'price', 'image', 'category', 'description'] }],
-      });
+      // New user — return purely popular products
       return res.json({
         success: true,
         type: 'popular',
         message: 'Trending items at Feast At Night 🔥',
-        data: popular.map(i => ({ ...i.product.toJSON(), order_count: i.get('total_ordered') })),
+        data: popularItems.slice(0, 6).map(i => {
+          const p = i.product ? i.product.toJSON() : {};
+          return { ...p, tag: 'Popular', order_count: i.get('global_ordered') };
+        }).filter(i => i.id), // Ensure product exists
       });
     }
 
-    // Step 2: Find categories the user orders most (Aggregated in JS to avoid SQL ONLY_FULL_GROUP_BY errors)
-    const userOrderItems = await OrderItem.findAll({
+    // Step 3: Find categories the user orders most
+    const userOrderItemsForCats = await OrderItem.findAll({
       include: [
         { model: Order, as: 'order', where: { user_id: userId }, attributes: [] },
         { model: Product, as: 'product', attributes: ['category'] },
@@ -128,43 +133,61 @@ const getRecommendations = async (req, res) => {
     });
     
     const categoryCounts = {};
-    userOrderItems.forEach(item => {
+    userOrderItemsForCats.forEach(item => {
       const cat = item.product?.category;
-      if (cat) {
-        categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-      }
+      if (cat) categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
     });
 
     const topCategories = Object.entries(categoryCounts)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
+      .slice(0, 2)
       .map(entry => entry[0]);
 
-    // Step 3: Get products from those categories that user hasn't ordered (or ordered least)
-    const recommended = await Product.findAll({
+    // Step 4: Category-based recommendations (Specific customer behavior)
+    const categoryRecommended = await Product.findAll({
       where: {
         ...(topCategories.length > 0 ? { category: { [Op.in]: topCategories } } : {}),
-        id: { [Op.notIn]: orderedProductIds.slice(0, 5) }, // exclude user's top 5 to show new things
+        id: { [Op.notIn]: orderedProductIds.slice(0, 3) }, // exclude user's top 3 to show new things
       },
-      limit: 6,
+      limit: 3,
       order: [['id', 'ASC']],
       attributes: ['id', 'name', 'price', 'image', 'category', 'description'],
     });
 
-    // Step 4: Also include their #1 most ordered item as a "favourite"
+    const resultsMap = new Map();
+
+    // 1. Add "Your Favourite" (Specific to customer)
     const topProduct = await Product.findByPk(orderedProductIds[0], {
       attributes: ['id', 'name', 'price', 'image', 'category', 'description'],
     });
+    if (topProduct) {
+      resultsMap.set(topProduct.id, { ...topProduct.toJSON(), tag: 'Your Favourite' });
+    }
 
-    const results = [];
-    if (topProduct) results.push({ ...topProduct.toJSON(), tag: 'Your Favourite' });
-    recommended.forEach(p => results.push({ ...p.toJSON(), tag: 'Recommended' }));
+    // 2. Add category-based recommendations (Specific to customer)
+    categoryRecommended.forEach(p => {
+      if (!resultsMap.has(p.id)) {
+        resultsMap.set(p.id, { ...p.toJSON(), tag: 'Recommended for You' });
+      }
+    });
+
+    // 3. Add Collaborative/Global Popular items (Other customers' behavior)
+    const popularToRecommend = popularItems
+      .filter(i => i.product && !resultsMap.has(i.product_id))
+      .slice(0, 3); // take top 3 popular items
+      
+    popularToRecommend.forEach(i => {
+      resultsMap.set(i.product_id, { ...i.product.toJSON(), tag: 'Popular Right Now' });
+    });
+
+    // Convert map to array and limit to 6 items total
+    const finalResults = Array.from(resultsMap.values()).slice(0, 6);
 
     return res.json({
       success: true,
-      type: 'personalised',
-      message: "Curated based on your previous orders.",
-      data: results,
+      type: 'hybrid',
+      message: "Curated for you based on your taste & global trends.",
+      data: finalResults,
     });
   } catch (error) {
     console.error("getRecommendations:", error);

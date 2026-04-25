@@ -52,19 +52,9 @@ export default function NeighborhoodPicker({ value, onChange, error, touched }) 
         <span className={value ? 'text-on-surface font-semibold' : 'text-outline font-medium'}>
           {value || 'Select your area...'}
         </span>
-        <div className="flex items-center gap-2">
-          {value && (() => {
-            const n = NEIGHBORHOODS.find(x => x.name === value)
-            return n ? (
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${feeColor(n.fee)}`}>
-                ₹{n.fee}
-              </span>
-            ) : null
-          })()}
-          <span className="material-symbols-outlined text-outline text-[20px]">
-            expand_more
-          </span>
-        </div>
+        <span className="material-symbols-outlined text-outline text-[20px]">
+          expand_more
+        </span>
       </button>
 
       {/* Bottom Sheet */}
@@ -135,20 +125,7 @@ export default function NeighborhoodPicker({ value, onChange, error, touched }) 
                 </div>
               </div>
 
-              {/* Fee Legend */}
-              <div className="px-4 py-2 flex items-center gap-3 border-b border-surface-container overflow-x-auto hide-scrollbar">
-                {[
-                  { label: '≤ ₹20', cls: 'bg-green-100 text-green-700' },
-                  { label: '≤ ₹60', cls: 'bg-blue-100 text-blue-700'  },
-                  { label: '≤ ₹100', cls: 'bg-amber-100 text-amber-700'},
-                  { label: '₹120+', cls: 'bg-red-100 text-red-600'    },
-                ].map(({ label, cls }) => (
-                  <span key={label} className={`text-[10px] font-black px-2.5 py-1 rounded-full whitespace-nowrap ${cls}`}>
-                    {label}
-                  </span>
-                ))}
-                <span className="text-[10px] text-on-surface-variant whitespace-nowrap ml-1">delivery fee</span>
-              </div>
+
 
               {/* Grouped List */}
               <div className="flex-1 overflow-y-auto pb-8 hide-scrollbar">
@@ -189,9 +166,7 @@ export default function NeighborhoodPicker({ value, onChange, error, touched }) 
                                   {n.name}
                                 </span>
                               </div>
-                              <span className={`text-[11px] font-black px-2.5 py-1 rounded-full flex-shrink-0 ${feeColor(n.fee)}`}>
-                                ₹{n.fee}
-                              </span>
+
                             </motion.button>
                           )
                         })}

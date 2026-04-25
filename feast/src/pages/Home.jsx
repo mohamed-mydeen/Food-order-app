@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import TopBar from '../components/TopBar'
@@ -157,6 +157,25 @@ export default function Home() {
     setOfferOpen(true)
   }, [])
 
+  // Smooth video loop – fade out near end, fade back in on restart
+  const videoRef = useRef(null)
+  const handleVideoTimeUpdate = useCallback(() => {
+    const v = videoRef.current
+    if (!v || !v.duration) return
+    if (v.duration - v.currentTime < 0.6) {
+      v.style.transition = 'opacity 0.5s ease'
+      v.style.opacity = 0
+    }
+  }, [])
+  const handleVideoLoop = useCallback(() => {
+    const v = videoRef.current
+    if (!v) return
+    v.currentTime = 0
+    v.play()
+    v.style.transition = 'opacity 0.5s ease'
+    v.style.opacity = 1
+  }, [])
+
   // Derive categories from cached products
   useEffect(() => {
     if (products.length > 0) {
@@ -184,8 +203,8 @@ export default function Home() {
     : []
   const isSearching = q.length > 0
 
-let cachedRecs = undefined
-let recsFetchTime = 0
+  let cachedRecs = undefined
+  let recsFetchTime = 0
 
   // Recommendations fetch
   const { token } = useAuth()
@@ -205,11 +224,11 @@ let recsFetchTime = 0
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
-      .then(d => { 
-        if (d.success) { 
+      .then(d => {
+        if (d.success) {
           cachedRecs = d.data || []
           setRecs(cachedRecs)
-          setRecsMsg(d.message || '') 
+          setRecsMsg(d.message || '')
         }
         recsFetchTime = Date.now()
       })
@@ -432,8 +451,8 @@ let recsFetchTime = 0
           {!isSearching && (
             <>
               {/* Video Banner */}
-              <div 
-                className="relative w-full aspect-video rounded-xl shadow-sm mb-6 overflow-hidden bg-slate-900 flex items-center justify-center cursor-pointer group"
+              <div
+                className="relative w-full aspect-video rounded-xl mb-6 overflow-hidden bg-black flex items-center justify-center cursor-pointer group"
                 onClick={openOffer}
               >
                 <video
@@ -442,9 +461,9 @@ let recsFetchTime = 0
                   muted
                   playsInline
                   preload="auto"
-                  className="relative z-10 w-full h-full object-cover"
+                  className="relative z-10 w-full h-full object-cover scale-[1.16]"
                 >
-                  <source src="/V1.mp4" type="video/mp4" />
+                  <source src="/V11.mp4" type="video/mp4" />
                 </video>
               </div>
 
@@ -463,7 +482,7 @@ let recsFetchTime = 0
                       View All <span className="material-symbols-outlined text-sm">arrow_forward</span>
                     </motion.button>
                   </div>
-                  <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4">
+                  <div className="flex gap-4 items-start overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4">
                     {loading
                       ? Array.from({ length: 4 }).map((_, i) => <SkeletonCircle key={i} />)
                       : topProducts.map((p, i) => (
