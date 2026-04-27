@@ -28,12 +28,12 @@ const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
 // ── Tag colour map ────────────────────────────────────────────────────────────
 const TAG_STYLES = {
-  '⭐ Your Favourite':    'bg-amber-500 text-white',
-  '⭐ You Love This':    'bg-amber-400 text-white',
-  '🧠 AI Pick':          'bg-violet-600 text-white',
-  '👥 Neighbours Like':  'bg-blue-500 text-white',
-  '📦 Try Something New':'bg-teal-500 text-white',
-  '🔥 Trending':         'bg-orange-500 text-white',
+  ' Your Favourite':    'bg-amber-500 text-white',
+  ' You Love This':    'bg-amber-400 text-white',
+  ' AI Pick':          'bg-violet-600 text-white',
+  ' Neighbours Like':  'bg-blue-500 text-white',
+  ' Try Something New':'bg-teal-500 text-white',
+  ' Trending':         'bg-orange-500 text-white',
 }
 
 function getTagStyle(tag) {
@@ -218,7 +218,7 @@ export default function RecommendationsSection({ onSelectProduct }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-headline font-bold text-lg text-on-surface">
-              {meta.type === 'ai' ? '✨ For You' : meta.type === 'trending' ? '🔥 Trending Now' : 'Recommendations'}
+              {meta.type === 'ai' ? ' For You' : meta.type === 'trending' ? '🔥 Trending Now' : 'Recommendations'}
             </h3>
             <AITypeBadge type={meta.type} />
           </div>
@@ -263,9 +263,7 @@ export default function RecommendationsSection({ onSelectProduct }) {
             </AnimatePresence>
           )}
         </div>
-        {/* Right gradient fade edge */}
-        <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-surface to-transparent pointer-events-none" />
-      </div>
+        </div>
     </div>
   )
 }

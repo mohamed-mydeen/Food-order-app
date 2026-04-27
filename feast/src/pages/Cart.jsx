@@ -75,16 +75,16 @@ const Divider = () => <div className="h-2 bg-surface-container" />
 export default function Cart() {
   const navigate = useNavigate()
   const { token, user, isLoggedIn, updateUser } = useAuth()
-  const { cartItems, updateQty, fetchCart } = useCart()
+  const { cartItems, addToCart, updateQty, fetchCart } = useCart()
 
   const [placing, setPlacing]             = useState(false)
   const [address, setAddress]             = useState(user?.address || '')
   const [selectedPayment, setPayment]     = useState(null)
   const [error, setError]                 = useState('')
 
-  const [recentOrders, setRecentOrders]   = useState([])
-  const [ordersLoading, setOrdersLoading] = useState(false)
-  const [updatingItem, setUpdatingItem]   = useState(null)
+  const [wishlistProducts, setWishlistProducts] = useState([])
+  const [wishlistLoading, setWishlistLoading]   = useState(false)
+  const [updatingItem, setUpdatingItem]         = useState(null)
 
   // UPI "pay-first" return state
   const [returnFromUpi, setReturnFromUpi] = useState(false)
@@ -143,13 +143,36 @@ export default function Cart() {
 
 
 
-  /* Fetch recent orders for empty cart */
+  /* Fetch wishlist products for empty cart — with session cache */
   useEffect(() => {
     if (!token || cartItems.length > 0) return
-    setOrdersLoading(true)
-    fetch(`${API}/orders/user`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json()).then(d => { if (d.success) setRecentOrders(d.data.slice(0, 3)) })
-      .catch(() => {}).finally(() => setOrdersLoading(false))
+
+    // Check session cache first (5-min TTL)
+    const CACHE_KEY = 'fan_wishlist_cart_cache'
+    try {
+      const raw = sessionStorage.getItem(CACHE_KEY)
+      if (raw) {
+        const { data, ts } = JSON.parse(raw)
+        if (Date.now() - ts < 5 * 60 * 1000 && data?.length >= 0) {
+          setWishlistProducts(data)
+          setWishlistLoading(false)
+          return
+        }
+      }
+    } catch { /* ignore */ }
+
+    setWishlistLoading(true)
+    fetch(`${API}/wishlist`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) {
+          const items = d.data || []
+          setWishlistProducts(items)
+          try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: items, ts: Date.now() })) } catch { /* ignore */ }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setWishlistLoading(false))
   }, [token, cartItems.length])
 
   const handleUpdateQty = async (productId, newQty, action) => {
@@ -336,6 +359,7 @@ export default function Cart() {
     <div className="flex flex-col h-full w-full bg-surface-container text-on-surface">
       <TopBar />
       <div className="flex-1 overflow-y-auto hide-scrollbar">
+        {/* Empty state hero */}
         <div className="flex flex-col items-center gap-4 pt-10 pb-6 px-8 text-center bg-surface">
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}
             className="w-24 h-24 bg-orange-500/10 rounded-full flex items-center justify-center text-5xl">🛒
@@ -349,54 +373,122 @@ export default function Cart() {
             <span className="material-symbols-outlined text-[18px]">restaurant_menu</span>Browse Menu
           </button>
         </div>
+
+        {/* ── Saved Items (Wishlist) — Shopsy style ── */}
         <div className="px-4 pt-5" style={{ paddingBottom: 'max(100px, calc(env(safe-area-inset-bottom) + 100px))' }}>
-          <div className="flex items-center justify-between mb-3">
-            <p className="font-headline font-black text-base text-on-surface">Recent Orders</p>
-            {recentOrders.length > 0 && <button onClick={() => navigate('/orders')} className="text-xs text-primary font-bold">View all</button>}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-red-500 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
+              <p className="font-headline font-black text-base text-on-surface">Saved Items</p>
+            </div>
+            {wishlistProducts.length > 0 && (
+              <button onClick={() => navigate('/wishlist')} className="text-xs text-primary font-bold flex items-center gap-1">
+                View all <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+              </button>
+            )}
           </div>
-          {ordersLoading && (
-            <div className="space-y-3">
-              {[1, 2].map(i => (
-                <div key={i} className="bg-surface rounded-2xl p-4 flex gap-3 animate-pulse border border-surface-container">
-                  <div className="w-14 h-14 rounded-xl bg-surface-container flex-shrink-0" />
-                  <div className="flex-1 space-y-2 py-1">
-                    <div className="h-3 bg-surface-container rounded w-3/4" /><div className="h-2.5 bg-surface-container rounded w-1/2" /><div className="h-3 bg-surface-container rounded w-1/4" />
+
+          {/* Skeleton */}
+          {wishlistLoading && (
+            <div className="grid grid-cols-2 gap-3">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="bg-surface rounded-2xl overflow-hidden animate-pulse border border-surface-container">
+                  <div className="h-32 bg-surface-container-high" />
+                  <div className="p-3 space-y-2">
+                    <div className="h-3 bg-surface-container-highest rounded w-3/4" />
+                    <div className="h-2.5 bg-surface-container-highest rounded w-1/2" />
+                    <div className="h-8 bg-surface-container-highest rounded-xl mt-2" />
                   </div>
                 </div>
               ))}
             </div>
           )}
-          {!ordersLoading && recentOrders.length === 0 && (
-            <div className="flex flex-col items-center py-8 text-center">
-              <span className="text-4xl mb-3">🛍️</span>
-              <p className="text-on-surface-variant text-sm">No orders placed yet</p>
+
+          {/* Empty wishlist */}
+          {!wishlistLoading && wishlistProducts.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center py-10 text-center gap-3"
+            >
+              <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
+                <span className="material-symbols-outlined text-red-300 text-3xl">favorite</span>
+              </div>
+              <div>
+                <p className="font-bold text-on-surface text-sm">No saved items yet</p>
+                <p className="text-on-surface-variant text-xs mt-1">Tap the ♡ on any dish to save it here</p>
+              </div>
+              <button onClick={() => navigate('/menu')}
+                className="mt-1 px-6 py-2.5 border border-primary text-primary rounded-full text-sm font-bold">
+                Explore Menu
+              </button>
+            </motion.div>
+          )}
+
+          {/* Wishlist product grid */}
+          {!wishlistLoading && wishlistProducts.length > 0 && (
+            <div className="grid grid-cols-2 gap-3">
+              {wishlistProducts.slice(0, 6).map((item, i) => {
+                const product = item.product || item
+                const soldOut = product.in_stock === false
+                return (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    className={`bg-surface rounded-2xl border border-surface-container overflow-hidden shadow-sm ${soldOut ? 'opacity-70' : ''}`}
+                  >
+                    {/* Image */}
+                    <div className="relative h-32 bg-gray-100 overflow-hidden">
+                      {product.image
+                        ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
+                        : <div className="w-full h-full flex items-center justify-center text-3xl">🍽️</div>
+                      }
+                      {/* Category pill */}
+                      <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-[9px] font-bold text-slate-700 px-2 py-0.5 rounded-full">
+                        {product.category}
+                      </span>
+                      {/* Sold out overlay */}
+                      {soldOut && (
+                        <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] flex items-center justify-center">
+                          <span className="bg-surface-container-highest text-on-surface-variant font-black uppercase tracking-widest text-[8px] px-2 py-1 rounded-sm shadow-sm">Sold Out</span>
+                        </div>
+                      )}
+                      {/* Saved badge */}
+                      <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center shadow">
+                        <span className="material-symbols-outlined text-white text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
+                      </div>
+                    </div>
+
+                    {/* Details */}
+                    <div className="p-3">
+                      <p className="font-bold text-xs text-on-surface line-clamp-1">{product.name}</p>
+                      <p className="font-black text-sm text-primary mt-0.5">₹{parseFloat(product.price).toFixed(0)}</p>
+                      <motion.button
+                        onClick={async () => {
+                          if (soldOut) return
+                          setUpdatingItem(product.id)
+                          await addToCart(product.id, 1)
+                          setUpdatingItem(null)
+                        }}
+                        disabled={soldOut || updatingItem === product.id}
+                        whileTap={{ scale: 0.95 }}
+                        className={`mt-2 w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all
+                          ${soldOut
+                            ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
+                            : 'bg-primary/10 text-primary border border-primary/20 active:bg-primary/20'}`}
+                      >
+                        {updatingItem === product.id
+                          ? <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                          : <><span className="material-symbols-outlined text-[13px]">add_shopping_cart</span>{soldOut ? 'Unavailable' : 'Add to Cart'}</>
+                        }
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                )
+              })}
             </div>
           )}
-          {!ordersLoading && recentOrders.map((order, i) => {
-            const itemNames = order.items?.map(it => it.product?.name).filter(Boolean) || []
-            const firstImage = order.items?.find(it => it.product?.image)?.product?.image
-            const totalQty = order.items?.reduce((s, it) => s + (it.quantity || 1), 0) || 0
-            const STATUS_COLORS = { Pending: 'text-amber-500', Preparing: 'text-blue-400', 'Out for Delivery': 'text-violet-400', Delivered: 'text-green-400', Cancelled: 'text-red-400' }
-            return (
-              <motion.div key={order.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                className="bg-surface rounded-2xl border border-surface-container mb-3 overflow-hidden shadow-sm">
-                <div className="flex gap-3 p-4">
-                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-surface-container flex-shrink-0">
-                    {firstImage ? <img src={firstImage} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-on-surface text-sm line-clamp-1">{itemNames.join(', ') || 'Order items'}</p>
-                    <p className="text-xs text-on-surface-variant mt-0.5">{totalQty} item{totalQty !== 1 ? 's' : ''} · ₹{parseFloat(order.total_amount).toFixed(0)}</p>
-                    <span className={`text-[11px] font-black uppercase tracking-wide ${STATUS_COLORS[order.status] || 'text-on-surface-variant'}`}>{order.status}</span>
-                  </div>
-                  <motion.button whileTap={{ scale: 0.92 }} onClick={() => navigate('/menu')}
-                    className="self-center flex-shrink-0 flex items-center gap-1 px-3 py-2 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
-                    <span className="material-symbols-outlined text-[13px]">refresh</span>Reorder
-                  </motion.button>
-                </div>
-              </motion.div>
-            )
-          })}
         </div>
       </div>
     </div>
