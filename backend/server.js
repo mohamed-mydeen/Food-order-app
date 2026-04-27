@@ -23,6 +23,7 @@ const bugRoutes          = require("./routes/bugRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const reviewRoutes       = require("./routes/reviewRoutes");
 const wishlistRoutes     = require("./routes/wishlistRoutes");
+const trackRoutes        = require("./routes/trackRoutes");
 const { incrementViews } = require("./controllers/analyticsController");
 
 const app  = express();
@@ -81,6 +82,8 @@ app.use("/api/bugs",          bugRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews",       reviewRoutes);
 app.use("/api/wishlist",      wishlistRoutes);
+app.use("/api/track",         trackRoutes);          // AI behaviour events
+app.use("/api/recommendations", trackRoutes);        // AI insights (admin)
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {

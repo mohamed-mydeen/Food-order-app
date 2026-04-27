@@ -9,6 +9,7 @@ const BugReport = require("./BugReport");
 const NotificationToken = require("./NotificationToken");
 const Review = require("./Review");
 const Wishlist = require("./Wishlist");
+const UserEvent = require("./UserEvent");
 
 // ─── Associations ─────────────────────────────────────────────────────────────
 
@@ -53,5 +54,12 @@ Wishlist.belongsTo(User, { foreignKey: "user_id", as: "user" });
 Product.hasMany(Wishlist, { foreignKey: "product_id", as: "wishlistEntries", onDelete: "CASCADE" });
 Wishlist.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 
-module.exports = { sequelize, User, Product, Cart, Order, OrderItem, Offer, BugReport, NotificationToken, Review, Wishlist };
+// UserEvents (AI behaviour tracking)
+User.hasMany(UserEvent, { foreignKey: "user_id", as: "events", onDelete: "CASCADE" });
+UserEvent.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+Product.hasMany(UserEvent, { foreignKey: "product_id", as: "events", onDelete: "CASCADE" });
+UserEvent.belongsTo(Product, { foreignKey: "product_id", as: "product" });
+
+module.exports = { sequelize, User, Product, Cart, Order, OrderItem, Offer, BugReport, NotificationToken, Review, Wishlist, UserEvent };
 

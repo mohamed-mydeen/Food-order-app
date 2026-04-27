@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
 import { useProducts } from '../hooks/useProducts'
+import { useTracker } from '../hooks/useTracker'
 
 const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'
 
@@ -541,9 +542,10 @@ const MenuItemCard = memo(forwardRef(function MenuItemCard({ item, index, onSele
   )
 }))
 
-/* ── Menu Page ───────────────────────────────────────────────────── */
+/* ── Menu Page ───────────────────────────────────────────── */
 export default function Menu() {
   const { products, loading, error, stale } = useProducts()
+  const { trackClick } = useTracker()
   const [categories, setCategories] = useState(() => {
     const raw = localStorage.getItem('fan_products_v1')
     if (raw) { try { const { data } = JSON.parse(raw); return ['All', ...new Set(data.map(p => p.category))] } catch { return ['All'] } }
@@ -628,7 +630,12 @@ export default function Menu() {
               <motion.div className="grid grid-cols-1 gap-5" layout>
                 <AnimatePresence mode='popLayout'>
                   {displayItems.map((item, i) => (
-                    <MenuItemCard key={item.id} item={item} index={i} onSelect={setSelected} />
+                    <MenuItemCard
+                      key={item.id}
+                      item={item}
+                      index={i}
+                      onSelect={(p) => { setSelected(p); trackClick(p.id) }}
+                    />
                   ))}
                 </AnimatePresence>
               </motion.div>

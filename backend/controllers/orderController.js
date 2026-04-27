@@ -1,5 +1,6 @@
-const { Order, OrderItem, Cart, Product, User, NotificationToken } = require("../models");
+const { Order, OrderItem, Cart, Product, User, NotificationToken, UserEvent } = require("../models");
 const { sendToUser } = require("../utils/notificationHelper");
+const { getHybridRecommendations } = require("../utils/recommendationEngine");
 const { Op, fn, col, literal } = require("sequelize");
 
 // ─── POST /api/orders ──────────────────────────────────────────────────────────
@@ -45,6 +46,19 @@ const placeOrder = async (req, res) => {
     await OrderItem.bulkCreate(orderItemsData);
     await Cart.destroy({ where: { user_id: userId } });
 
+    // ── Log AI behaviour events for all ordered products ──
+    try {
+      const eventRows = orderItemsData.map(item => ({
+        user_id: userId,
+        product_id: item.product_id,
+        event_type: "order",
+        value: item.quantity,
+      }));
+      await UserEvent.bulkCreate(eventRows);
+    } catch (evErr) {
+      console.warn("AI event log failed (non-critical):", evErr.message);
+    }
+
     const fullOrder = await Order.findByPk(order.id, {
       include: [{ model: OrderItem, as: "items", include: [{ model: Product, as: "product" }] }],
     });
@@ -80,115 +94,12 @@ const getUserOrders = async (req, res) => {
 };
 
 // ─── GET /api/orders/recommendations ──────────────────────────────────────────
-// Returns product recommendations based on this user's order history AND global buying behavior
+// Fully AI-powered: collaborative filtering + K-Means + content-based + trending
 const getRecommendations = async (req, res) => {
   try {
     const userId = req.user.userId;
-
-    // Step 1: Get product IDs this user has ordered, sorted by frequency
-    const userOrderedItems = await OrderItem.findAll({
-      include: [{
-        model: Order,
-        as: "order",
-        where: { user_id: userId },
-        attributes: [],
-      }],
-      attributes: ['product_id', [fn('SUM', col('OrderItem.quantity')), 'total_ordered']],
-      group: ['product_id'],
-      order: [[literal('total_ordered'), 'DESC']],
-      limit: 10,
-    });
-
-    const orderedProductIds = userOrderedItems.map(i => i.product_id);
-
-    // Step 2: Global Popular Items (Other customers' buying behavior)
-    const popularItems = await OrderItem.findAll({
-      attributes: ['product_id', [fn('SUM', col('quantity')), 'global_ordered']],
-      group: ['product_id'],
-      order: [[literal('global_ordered'), 'DESC']],
-      limit: 10,
-      include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'price', 'image', 'category', 'description'] }],
-    });
-
-    if (orderedProductIds.length === 0) {
-      // New user — return purely popular products
-      return res.json({
-        success: true,
-        type: 'popular',
-        message: 'Trending items at Feast At Night 🔥',
-        data: popularItems.slice(0, 6).map(i => {
-          const p = i.product ? i.product.toJSON() : {};
-          return { ...p, tag: 'Popular', order_count: i.get('global_ordered') };
-        }).filter(i => i.id), // Ensure product exists
-      });
-    }
-
-    // Step 3: Find categories the user orders most
-    const userOrderItemsForCats = await OrderItem.findAll({
-      include: [
-        { model: Order, as: 'order', where: { user_id: userId }, attributes: [] },
-        { model: Product, as: 'product', attributes: ['category'] },
-      ],
-      attributes: ['product_id'],
-    });
-    
-    const categoryCounts = {};
-    userOrderItemsForCats.forEach(item => {
-      const cat = item.product?.category;
-      if (cat) categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-    });
-
-    const topCategories = Object.entries(categoryCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 2)
-      .map(entry => entry[0]);
-
-    // Step 4: Category-based recommendations (Specific customer behavior)
-    const categoryRecommended = await Product.findAll({
-      where: {
-        ...(topCategories.length > 0 ? { category: { [Op.in]: topCategories } } : {}),
-        id: { [Op.notIn]: orderedProductIds.slice(0, 3) }, // exclude user's top 3 to show new things
-      },
-      limit: 3,
-      order: [['id', 'ASC']],
-      attributes: ['id', 'name', 'price', 'image', 'category', 'description'],
-    });
-
-    const resultsMap = new Map();
-
-    // 1. Add "Your Favourite" (Specific to customer)
-    const topProduct = await Product.findByPk(orderedProductIds[0], {
-      attributes: ['id', 'name', 'price', 'image', 'category', 'description'],
-    });
-    if (topProduct) {
-      resultsMap.set(topProduct.id, { ...topProduct.toJSON(), tag: 'Your Favourite' });
-    }
-
-    // 2. Add category-based recommendations (Specific to customer)
-    categoryRecommended.forEach(p => {
-      if (!resultsMap.has(p.id)) {
-        resultsMap.set(p.id, { ...p.toJSON(), tag: 'Recommended for You' });
-      }
-    });
-
-    // 3. Add Collaborative/Global Popular items (Other customers' behavior)
-    const popularToRecommend = popularItems
-      .filter(i => i.product && !resultsMap.has(i.product_id))
-      .slice(0, 3); // take top 3 popular items
-      
-    popularToRecommend.forEach(i => {
-      resultsMap.set(i.product_id, { ...i.product.toJSON(), tag: 'Popular Right Now' });
-    });
-
-    // Convert map to array and limit to 6 items total
-    const finalResults = Array.from(resultsMap.values()).slice(0, 6);
-
-    return res.json({
-      success: true,
-      type: 'hybrid',
-      message: "Curated for you based on your taste & global trends.",
-      data: finalResults,
-    });
+    const result = await getHybridRecommendations(userId);
+    return res.json(result);
   } catch (error) {
     console.error("getRecommendations:", error);
     return res.status(500).json({ success: false, message: "Failed to fetch recommendations." });

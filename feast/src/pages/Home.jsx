@@ -8,6 +8,8 @@ import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
 import OfferPopup, { shouldShowOffer, markOfferSeen } from '../components/OfferPopup'
 import { useProducts } from '../hooks/useProducts'
+import { useTracker } from '../hooks/useTracker'
+import RecommendationsSection from '../components/RecommendationsSection'
 
 const API = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'
 
@@ -107,6 +109,7 @@ export default function Home() {
   const { isLoggedIn } = useAuth()
   const { wishlist, toggleWishlist } = useWishlist()
   const { products, loading } = useProducts()
+  const { trackView, trackClick, trackWishlist } = useTracker()
   const [query, setQuery] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
   const [isListening, setIsListening] = useState(false)
@@ -116,11 +119,6 @@ export default function Home() {
 
   const [categories, setCategories] = useState([])
   const [selected, setSelected] = useState(null)
-
-  // Recommendations state
-  const [recs, setRecs] = useState([])
-  const [recsLoading, setRecsLoading] = useState(true)
-  const [recsMsg, setRecsMsg] = useState('')
 
   // Offer popup state
   const [offerOpen, setOfferOpen] = useState(false)
@@ -146,6 +144,7 @@ export default function Home() {
       return
     }
     toggleWishlist(productId)
+    trackWishlist(productId)
   }
 
   const closeOffer = useCallback(() => {
@@ -202,39 +201,6 @@ export default function Home() {
     )
     : []
   const isSearching = q.length > 0
-
-  let cachedRecs = undefined
-  let recsFetchTime = 0
-
-  // Recommendations fetch
-  const { token } = useAuth()
-
-  useEffect(() => {
-    if (!token) {
-      setRecsLoading(false)
-      return
-    }
-    if (cachedRecs !== undefined && Date.now() - recsFetchTime < 300000) {
-      setRecs(cachedRecs)
-      setRecsLoading(false)
-      return
-    }
-    setRecsLoading(true)
-    fetch(`${API}/api/orders/recommendations`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (d.success) {
-          cachedRecs = d.data || []
-          setRecs(cachedRecs)
-          setRecsMsg(d.message || '')
-        }
-        recsFetchTime = Date.now()
-      })
-      .catch(() => { })
-      .finally(() => setRecsLoading(false))
-  }, [token])
 
   // Show top 6 as "best options" scroll row
   const topProducts = products.slice(0, 6)
@@ -488,7 +454,7 @@ export default function Home() {
                       : topProducts.map((p, i) => (
                         <motion.button
                           key={p.id}
-                          onClick={() => setSelected(p)}
+                          onClick={() => { setSelected(p); trackClick(p.id) }}
                           className="flex-none w-20 text-center group cursor-pointer"
                           initial={{ opacity: 0, y: 16 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -565,87 +531,8 @@ export default function Home() {
                 </div>
               )}
 
-              {/* ── Personalised Recommendations ── */}
-              {(recsLoading || recs.length > 0) && (
-                <div className="space-y-3 pb-2">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-headline font-bold text-lg text-on-surface">Recommendations</h3>
-                      {recsMsg && <p className="text-[11px] text-on-surface-variant mt-0.5">{recsMsg}</p>}
-                    </div>
-                    {!recsLoading && (
-                      <motion.button
-                        onClick={() => navigate('/menu')}
-                        className="text-primary font-bold text-xs flex items-center gap-1"
-                        whileTap={{ scale: 0.92 }}
-                      >
-                        See All <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                      </motion.button>
-                    )}
-                  </div>
-                  <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4">
-                    {recsLoading ? (
-                      [1, 2, 3].map(i => (
-                        <div key={`skel-rec-${i}`} className="flex-none w-36 bg-surface-container rounded-2xl overflow-hidden animate-pulse">
-                          <div className="h-24 bg-surface-container-high" />
-                          <div className="p-2.5 space-y-2">
-                            <div className="h-3 bg-surface-container-highest rounded w-3/4" />
-                            <div className="h-3 bg-surface-container-highest rounded w-1/2" />
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      recs.map((p, i) => (
-                        <motion.div
-                          role="button"
-                          tabIndex={0}
-                          key={`rec-${p.id}`}
-                          onClick={() => setSelected(p)}
-                          onKeyDown={(e) => e.key === 'Enter' && setSelected(p)}
-                          className={`flex-none w-36 bg-white rounded-2xl overflow-hidden shadow-sm border border-surface-container text-left cursor-pointer relative ${p.in_stock === false ? 'opacity-80 grayscale-[0.5]' : ''}`}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: p.in_stock === false ? 0.8 : 1, x: 0 }}
-                          transition={{ delay: i * 0.06 }}
-                          whileTap={{ scale: 0.96 }}
-                        >
-                          <div className="relative h-24 bg-gray-100 overflow-hidden text-center">
-                            {p.image
-                              ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
-                              : <div className="w-full h-full flex items-center justify-center text-3xl">🍽️</div>
-                            }
-
-                            {/* Sold Out badge */}
-                            {p.in_stock === false && (
-                              <div className="absolute inset-x-0 bottom-0 top-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-20">
-                                <span className="bg-surface-container-highest text-on-surface-variant font-headline font-black uppercase tracking-widest text-[9px] px-2 py-1 rounded-sm shadow-sm ring-1 ring-black/5 block">
-                                  Sold Out
-                                </span>
-                              </div>
-                            )}
-
-                            {p.tag && (
-                              <span className="absolute top-1.5 left-1.5 bg-primary/90 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full z-10">
-                                {p.tag}
-                              </span>
-                            )}
-                            {/* Wishlist Button */}
-                            <button
-                              onClick={(e) => handleWishlistClick(e, p.id)}
-                              className="absolute top-1.5 right-1.5 z-30 w-6 h-6 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white"
-                            >
-                              <span className={`material-symbols-outlined text-[13px] ${wishlist.includes(p.id) ? 'text-red-500 font-variation-fill' : ''}`}>favorite</span>
-                            </button>
-                          </div>
-                          <div className="p-2.5 relative z-30">
-                            <p className={`font-bold text-xs line-clamp-1 ${p.in_stock === false ? 'text-on-surface-variant line-through' : 'text-on-surface'}`}>{p.name}</p>
-                            <p className={`font-black text-sm mt-0.5 ${p.in_stock === false ? 'text-on-surface-variant' : 'text-primary'}`}>₹{parseFloat(p.price).toFixed(0)}</p>
-                          </div>
-                        </motion.div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
+              {/* ── AI Personalised Recommendations ── */}
+              <RecommendationsSection onSelectProduct={(p) => { setSelected(p); trackClick(p.id) }} />
 
               {/* Empty state */}
               {!loading && products.length === 0 && (
