@@ -104,9 +104,6 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.42, ease: 'easeOut' } },
 }
 
-// Module-level: persists video position across React navigation (component unmount/mount)
-let _savedVideoTime = 0
-
 export default function Home() {
   const navigate = useNavigate()
   const { isLoggedIn } = useAuth()
@@ -176,26 +173,6 @@ export default function Home() {
     v.play()
     v.style.transition = 'opacity 0.5s ease'
     v.style.opacity = 1
-  }, [])
-
-  // Restore video position on mount; save it on unmount
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    const onReady = () => {
-      if (_savedVideoTime > 0) {
-        v.currentTime = _savedVideoTime
-      }
-      v.play().catch(() => {})
-    }
-    if (v.readyState >= 2) {
-      onReady()
-    } else {
-      v.addEventListener('canplay', onReady, { once: true })
-    }
-    return () => {
-      _savedVideoTime = v.currentTime
-    }
   }, [])
 
   // Derive categories from cached products
@@ -445,14 +422,11 @@ export default function Home() {
                 onClick={openOffer}
               >
                 <video
-                  ref={videoRef}
                   autoPlay
                   loop
                   muted
                   playsInline
                   preload="auto"
-                  onTimeUpdate={handleVideoTimeUpdate}
-                  onEnded={handleVideoLoop}
                   className="relative z-10 w-full h-full object-cover scale-[1.16]"
                 >
                   <source src="/V11.mp4" type="video/mp4" />
