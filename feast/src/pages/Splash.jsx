@@ -19,8 +19,22 @@ export default function Splash() {
 
     const timer = setTimeout(() => {
       setVisible(false)
-      // If logged in, go straight to home. Otherwise, go to login to prompt account/skip.
-      setTimeout(() => navigate(isLoggedIn ? '/home' : '/login'), 500)
+      setTimeout(() => {
+        if (isLoggedIn) {
+          // Returning logged-in user → go straight to home
+          navigate('/home', { replace: true })
+        } else {
+          const hasVisited = localStorage.getItem('fan_has_visited')
+          if (!hasVisited) {
+            // Brand-new user — show signup page first
+            localStorage.setItem('fan_has_visited', '1')
+            navigate('/signup', { replace: true })
+          } else {
+            // Returning non-logged-in user → login page
+            navigate('/login', { replace: true })
+          }
+        }
+      }, 500)
     }, 1500)
     return () => clearTimeout(timer)
   }, [navigate, isLoggedIn])

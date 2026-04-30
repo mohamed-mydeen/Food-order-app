@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const API           = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'
 const AUTO_CLOSE_MS = 5000
 const SESSION_KEY   = 'fan_offer_seen'
 
-export default function OfferPopup({ isOpen, onClose }) {
+// offer is now passed as a prop from Home.jsx (which fetches it)
+export default function OfferPopup({ isOpen, onClose, offer }) {
   const timerRef = useRef(null)
-  const [offer, setOffer]         = useState(null)
   const [imgLoaded, setImgLoaded] = useState(false)
   const [downloading, setDownloading] = useState(false)
 
@@ -34,29 +33,6 @@ export default function OfferPopup({ isOpen, onClose }) {
     }
   }
 
-let cachedOffer = undefined
-let offerFetchTime = 0
-
-  /* ── Fetch active offer from backend ──────────────────────────── */
-  useEffect(() => {
-    if (cachedOffer !== undefined && Date.now() - offerFetchTime < 300000) {
-      if (cachedOffer) setOffer(cachedOffer)
-      return
-    }
-    fetch(`${API}/api/offers/active`)
-      .then(r => r.json())
-      .then(d => { 
-        if (d.success && d.data) {
-          cachedOffer = d.data
-          setOffer(d.data)
-        } else {
-          cachedOffer = null
-        }
-        offerFetchTime = Date.now()
-      })
-      .catch(() => {}) // silently fail — popup just won't show
-  }, [])
-
   /* ── Auto-close after 5s when opened ─────────────────────────── */
   useEffect(() => {
     if (isOpen) {
@@ -65,7 +41,12 @@ let offerFetchTime = 0
     return () => clearTimeout(timerRef.current)
   }, [isOpen, onClose])
 
-  // Don't mount if no active offer from backend
+  // Reset imgLoaded when offer changes (new image)
+  useEffect(() => {
+    setImgLoaded(false)
+  }, [offer?.image_url])
+
+  // Don't mount if no active offer passed from parent
   if (!offer?.image_url) return null
 
   return (

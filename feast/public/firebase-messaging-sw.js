@@ -10,48 +10,59 @@ const firebaseConfig = {
   appId: "1:238045088917:web:e48057aac007d92e271f9c"
 };
 
-firebase.initializeApp(firebaseConfig);
-const messaging = firebase.messaging();
+// ── Safe Firebase init (guards against iOS / unsupported envs) ───────────
+let messaging = null;
+try {
+  firebase.initializeApp(firebaseConfig);
+  messaging = firebase.messaging();
+} catch (initErr) {
+  console.warn('[FCM SW] Firebase init failed (may be unsupported environment):', initErr);
+}
 
-// ── Background / app-closed message handler ─────────────────────────────────
+// ── Background / app-closed message handler ─────────────────────────────
 // This fires when the PWA is in the BACKGROUND or CLOSED.
-messaging.onBackgroundMessage((payload) => {
-  console.log('[FCM SW] Background message received:', payload);
+if (messaging) {
+  try {
+    messaging.onBackgroundMessage((payload) => {
+      console.log('[FCM SW] Background message received:', payload);
 
-  const notification = payload.notification || {};
-  const data = payload.data || {};
-  
-  const title = notification.title || data.title || 'Feast At Night';
-  const body = notification.body || data.body || '';
-  const image = notification.image || data.image || undefined;
+      const notification = payload.notification || {};
+      const data = payload.data || {};
 
-  // Build rich notification options
-  const options = {
-    body: body,
-    icon: '/pwa-192x192.png',
-    badge: '/pwa-192x192.png',
-    image: image,
-    vibrate: [200, 100, 200, 100, 200],
-    sound: 'default',
-    requireInteraction: true,   // keeps it on screen until user interacts
-    tag: data.order_id ? `order-${data.order_id}` : 'feast-notification',
-    renotify: true,             // vibrate again if same tag is updated
-    data: {
-      url: data.click_action || '/',
-      order_id: data.order_id || null,
-      type: data.type || 'general',
-    },
-    actions: [
-      { action: 'view',    title: '👁️ View Order' },
-      { action: 'dismiss', title: '✖ Dismiss' },
-    ],
-  };
+      const title = notification.title || data.title || 'Feast At Night';
+      const body = notification.body || data.body || '';
+      const image = notification.image || data.image || undefined;
 
-  // Show the notification
-  self.registration.showNotification(title, options);
-});
+      // Build rich notification options
+      const options = {
+        body: body,
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        image: image,
+        vibrate: [200, 100, 200, 100, 200],
+        requireInteraction: true,   // keeps it on screen until user interacts
+        tag: data.order_id ? `order-${data.order_id}` : 'feast-notification',
+        renotify: true,             // vibrate again if same tag is updated
+        data: {
+          url: data.click_action || '/',
+          order_id: data.order_id || null,
+          type: data.type || 'general',
+        },
+        actions: [
+          { action: 'view',    title: '👁️ View Order' },
+          { action: 'dismiss', title: '✖ Dismiss' },
+        ],
+      };
 
-// ── Notification click handler ───────────────────────────────────────────────
+      // Show the notification
+      self.registration.showNotification(title, options);
+    });
+  } catch (bgErr) {
+    console.warn('[FCM SW] onBackgroundMessage setup failed (may be iOS):', bgErr);
+  }
+}
+
+// ── Notification click handler ───────────────────────────────────────────
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
@@ -77,7 +88,7 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// ── Push event fallback (in case Firebase compat doesn't handle it) ──────────
+// ── Push event fallback (in case Firebase compat doesn't handle it) ──────
 self.addEventListener('push', (event) => {
   if (!event.data) return;
   try {

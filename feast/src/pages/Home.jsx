@@ -113,6 +113,7 @@ export default function Home() {
   const [query, setQuery] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
   const [isListening, setIsListening] = useState(false)
+  const [voiceToast, setVoiceToast] = useState(false)  // inline toast for unsupported voice search
   const [recentSearches, setRecentSearches] = useState(() => {
     try { return JSON.parse(localStorage.getItem('fan_recent_searches')) || [] } catch { return [] }
   })
@@ -120,8 +121,9 @@ export default function Home() {
   const [categories, setCategories] = useState([])
   const [selected, setSelected] = useState(null)
 
-  // Offer popup state
+  // Offer popup + active offer from backend
   const [offerOpen, setOfferOpen] = useState(false)
+  const [activeOffer, setActiveOffer] = useState(null)
 
   const saveRecentSearch = (term) => {
     if (!term) return
@@ -182,13 +184,39 @@ export default function Home() {
     }
   }, [products]);
 
-  // Handle Offer Popup Auto-Show
+  // Fetch active offer from backend (with retry for Render cold-starts)
   useEffect(() => {
-    if (!loading && shouldShowOffer()) {
-      const timer = setTimeout(() => setOfferOpen(true), 600);
-      return () => clearTimeout(timer);
+    let cancelled = false
+    const API_URL = import.meta.env.VITE_API_URL || 'https://food-order-app-mpah.onrender.com'
+
+    const fetchOffer = async (attempt = 1) => {
+      try {
+        const res = await fetch(`${API_URL}/api/offers/active`, { cache: 'no-store' })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        if (cancelled) return
+        if (data.success && data.data?.image_url) {
+          setActiveOffer(data.data)
+        }
+      } catch {
+        // Retry up to 3 times (handles Render cold-start delay)
+        if (!cancelled && attempt < 4) {
+          setTimeout(() => fetchOffer(attempt + 1), attempt * 3000)
+        }
+      }
     }
-  }, [loading]);
+
+    fetchOffer()
+    return () => { cancelled = true }
+  }, [])
+
+  // Auto-show offer popup once offer is loaded and session allows it
+  useEffect(() => {
+    if (activeOffer && !loading && shouldShowOffer()) {
+      const timer = setTimeout(() => setOfferOpen(true), 800)
+      return () => clearTimeout(timer)
+    }
+  }, [activeOffer, loading])
 
   // Search filter
   const q = query.toLowerCase().trim()
@@ -291,7 +319,12 @@ export default function Home() {
                 onClick={() => {
                   if (isListening) return; // prevent double-tap
                   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                  if (!SpeechRecognition) return alert("Voice search is not supported in your browser.");
+                  if (!SpeechRecognition) {
+                    // Use inline toast instead of alert() (alert is blocked in iOS PWA standalone)
+                    setVoiceToast(true)
+                    setTimeout(() => setVoiceToast(false), 3000)
+                    return
+                  }
                   const recognition = new SpeechRecognition();
                   recognition.lang = 'en-IN';
                   recognition.interimResults = false;
@@ -558,8 +591,23 @@ export default function Home() {
         )}
       </AnimatePresence>
 
+      {/* Voice search unsupported — inline toast (safe on iOS PWA) */}
+      <AnimatePresence>
+        {voiceToast && (
+          <motion.div
+            className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[9999] bg-gray-900 text-white text-xs font-bold px-5 py-3 rounded-full shadow-xl whitespace-nowrap"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+          >
+            <span className="material-symbols-outlined text-[14px] align-middle mr-1">mic_off</span>
+            Voice search not supported on this browser
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Offer Popup */}
-      <OfferPopup isOpen={offerOpen} onClose={closeOffer} />
+      <OfferPopup isOpen={offerOpen} onClose={closeOffer} offer={activeOffer} />
 
     </div>
   )
