@@ -59,18 +59,18 @@ export default function Login() {
   }
 
   const inputClass = (key) => `
-    w-full bg-white border rounded-2xl pl-12 pr-4 py-4 focus:outline-none transition-all text-[15px] font-medium shadow-sm
+    w-full bg-white border rounded-2xl pl-11 pr-4 py-3.5 focus:outline-none transition-all text-[14px] font-medium shadow-sm
     ${touched[key] && errors[key] 
-      ? 'border-red-400 focus:ring-4 focus:ring-red-100 placeholder:text-red-300' 
-      : 'border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 placeholder:text-slate-400'
+      ? 'border-red-400 focus:ring-2 focus:ring-red-100 placeholder:text-red-300' 
+      : 'border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 placeholder:text-slate-400'
     }
   `
 
   return (
     <>
-    <main className="relative h-full w-full flex flex-col items-center justify-center px-4 py-6 sm:p-6 overflow-y-auto bg-[#0A0A0B]">
+    <main className="relative h-full w-full flex flex-col items-center justify-center px-5 py-8 overflow-y-auto bg-[#0A0A0B]">
       {/* Immersive Background */}
-      <div className="absolute inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <img 
           className="w-full h-full object-cover scale-110 opacity-60"
           src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop"
@@ -80,34 +80,33 @@ export default function Login() {
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 w-full max-w-md flex flex-col">
+      <div className="relative z-10 w-full max-w-[340px] flex flex-col">
         
         {/* Branding Section */}
         <motion.div 
-          className="text-center mb-10"
+          className="text-center mb-6"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-md px-4 py-1.5 rounded-full mb-4 border border-primary/30">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] font-black tracking-[0.2em] text-primary uppercase">Tirunelveli's Night Kitchen</span>
+          <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full mb-3 border border-primary/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-[9px] font-black tracking-[0.2em] text-primary uppercase">Tirunelveli's Night Kitchen</span>
           </div>
-          <h1 className="font-headline font-black text-4xl sm:text-5xl text-white tracking-tighter leading-none mb-3">
-            FEAST AT <br />
-            <span className="text-primary italic">NIGHT</span>
+          <h1 className="font-headline font-black text-3xl text-white tracking-tighter leading-none mb-1.5">
+            FEAST AT <span className="text-primary italic">NIGHT</span>
           </h1>
-          <p className="text-slate-400 text-sm font-medium">Delivering happiness, one bite at a time.</p>
+          <p className="text-slate-400 text-xs font-medium">Delivering happiness, one bite at a time.</p>
         </motion.div>
 
         {/* Login Card */}
         <motion.div 
-          className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+          className="bg-white rounded-[26px] px-6 py-7 shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', damping: 20 }}
         >
-          <h2 className="text-2xl font-black text-slate-900 mb-2">Welcome Back</h2>
-          <p className="text-slate-500 text-sm mb-8 font-medium">Please sign in to continue your feast.</p>
+          <h2 className="text-xl font-black text-slate-900 mb-1">Welcome Back</h2>
+          <p className="text-slate-500 text-xs mb-5 font-medium">Sign in to continue your feast.</p>
 
           <AnimatePresence>
             {apiError && (
@@ -170,17 +169,16 @@ export default function Login() {
             <motion.button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#e34105] to-[#ff7138] shadow-[0_10px_25px_rgba(227,65,5,0.3)] text-white font-headline font-black tracking-wide rounded-2xl py-4 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-60 text-base"
-              whileHover={{ y: -2 }}
+              className="w-full bg-gradient-to-r from-[#e34105] to-[#ff7138] shadow-[0_8px_20px_rgba(227,65,5,0.28)] text-white font-headline font-black tracking-wide rounded-2xl py-3.5 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-60 text-sm"
               whileTap={{ scale: 0.98 }}
             >
               {loading ? (
                 <div className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                  Authenticating...
+                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  Authenticating…
                 </div>
               ) : (
-                <>SIGN IN <span className="material-symbols-outlined text-[20px]">arrow_forward</span></>
+                <>SIGN IN <span className="material-symbols-outlined text-[18px]">arrow_forward</span></>
               )}
             </motion.button>
 
@@ -199,22 +197,15 @@ export default function Login() {
         </motion.div>
 
         {/* Footer Link */}
-        <motion.div 
-          className="mt-8 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <p className="text-slate-400 text-sm font-medium">
-            New to Feast At Night?{' '}
-            <button 
-              onClick={() => navigate('/signup')} 
-              className="text-white font-black hover:text-primary transition-colors underline underline-offset-4 decoration-primary/50 decoration-2"
-            >
-              Create Account
-            </button>
-          </p>
-        </motion.div>
+        <p className="mt-5 text-center text-slate-400 text-xs font-medium">
+          New to Feast At Night?{' '}
+          <button 
+            onClick={() => navigate('/signup')} 
+            className="text-white font-black hover:text-primary transition-colors underline underline-offset-2 decoration-primary/50"
+          >
+            Create Account
+          </button>
+        </p>
 
       </div>
     </main>
